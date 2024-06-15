@@ -13,7 +13,7 @@
         </div>
         <div class="card-body">
             <a class="btn btn-primary" href="<?= url('/') ?>/admin/datauser/tambah"><i class="fa-solid fa-plus"></i> Tambah Data</a>
-            <div class="table-responsive">            
+            <div class="table-responsive">
                 <table class="table table-responsive" id="datatablesSimple">
                     <thead>
                         <tr>
@@ -22,7 +22,7 @@
                             <th>Nomor Telepon</th>
                             <th>Alamat</th>
                             <th>Role</th>
-                            <th>Status</th>
+
                             <th>#</th>
                         </tr>
                     </thead>
@@ -33,7 +33,7 @@
                             <th>Nomor Telepon</th>
                             <th>Alamat</th>
                             <th>Role</th>
-                            <th>Status</th>
+
                             <th>#</th>
                         </tr>
                     </tfoot>
@@ -55,13 +55,7 @@
                                 Pelanggan
                                 @endif
                             </td>
-                            <td>
-                                @if($key->status_user == 1)
-                                Aktif
-                                @else
-                                Tidak Aktif
-                                @endif
-                            </td>
+
                             <td>
                                 <a href="<?= url('/') ?>/admin/datauser/ubah/{{$key->id_user}}" class="btn btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
                                 <a href="<?= url('/') ?>/admin/datauser/hapus/{{$key->id_user}}" class="btn btn-danger"><i class="fa-solid fa-trash"></i></a>

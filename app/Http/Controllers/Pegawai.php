@@ -369,7 +369,7 @@ class Pegawai extends Controller
     {
         date_default_timezone_set('Asia/Jakarta');
         DB::table('tb_ongkir')->insert([
-            'ongkir_fromlocation'   => $request->dari,
+            'ongkir_fromlocation'   => 'Kertosono',
             'ongkir_tolocation'     => $request->ke,
             'ongkir_price'          => $request->harga,
             'ongkir_created'        => date('Y-m-d H:i:s'),
@@ -415,7 +415,7 @@ class Pegawai extends Controller
 
         $uri_one = request()->segment(4);
         DB::table('tb_ongkir')->where('ongkir_id', $uri_one)->update([
-            'ongkir_fromlocation'   => $request->dari,
+            'ongkir_fromlocation'   => 'Kertosono',
             'ongkir_tolocation'     => $request->ke,
             'ongkir_price'          => $request->harga,
             'ongkir_created'        => date('Y-m-d H:i:s'),

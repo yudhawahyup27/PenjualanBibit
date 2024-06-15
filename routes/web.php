@@ -99,3 +99,10 @@ Route::get('/pemilik/stokbibit', [Pemilik::class, 'stokbibit']);
 
 Route::get('/pemilik/laporanpenjualan', [Pemilik::class, 'laporanpenjualan']);
 
+Route::get('/get-price/{id}', [Pelanggan::class, 'getPrice']);
+Route::get('/get-batang/{id}', [Pelanggan::class, 'getkuantitas']);
+Route::get('/pelanggan/bibitborongan', [Pelanggan::class,'bibitBorongan']);
+Route::post('/pelanggan/bibitborongan/checkout', [Pelanggan::class,'bayar_cart_borongan']);
+
+
+

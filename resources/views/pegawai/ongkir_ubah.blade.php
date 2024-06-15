@@ -17,7 +17,7 @@
                 {{@csrf_field()}}
                 <div class="mb-3">
                     <label>Dikirim Dari</label>
-                    <input class="form-control" type="text" name="dari" value="{{$dataongkir->ongkir_fromlocation}}" placeholder="Isikan Dikirim Dari" required />
+                    <input class="form-control" type="text" name="dari" value="{{$dataongkir->ongkir_fromlocation}}" placeholder="Isikan Dikirim Dari" required disabled />
                 </div>
                 <div class="mb-3">
                     <label>Dikirim Ke</label>

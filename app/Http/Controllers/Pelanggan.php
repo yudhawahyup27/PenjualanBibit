@@ -124,8 +124,10 @@ class Pelanggan extends Controller
 
     public function detail_product(Request $request)
     {
-        $uri_one = request()->segment(3);
+        $uri_one = $request->segment(3);
         $getSesionId = $request->session()->get('id');
+
+
 
         // Fetch the product details
         $product = DB::table('tb_produk')->where('id_produk', $uri_one)->first();
@@ -135,7 +137,9 @@ class Pelanggan extends Controller
             'menu'    => 'home',
             'submenu' => 'pelanggan',
             'produk'  => $product,
+
         ];
+
         if ($getSesionId) {
             $users = DB::table('tb_user')->where('id_user', $getSesionId)->limit(1)->first();
             $kecamatan = DB::table('tb_alamatpengiriman')
@@ -145,13 +149,32 @@ class Pelanggan extends Controller
             $data['nama'] = $users->nama_user;
             $data['kecamatan'] = $kecamatan;
         } else {
-
             $data['nama'] = null;
             $data['kecamatan'] = collect();
         }
+
         return view('pelanggan/detail_produk', $data);
+
     }
 
+    public function getPrice($id)
+    {
+        $product = DB::table('tb_produkborong')->find($id);
+        if ($product) {
+            return response()->json(['harga' => $product->harga]);
+        } else {
+            return response()->json(['error' => 'Produk tidak ditemukan'], 404);
+        }
+    }
+    public function getkuantitas($id)
+    {
+        $product = DB::table('luas_tb')->find($id);
+        if ($product) {
+            return response()->json(['jumlah_batang' => $product->jumlah_batang]);
+        } else {
+            return response()->json(['error' => 'Luas Kosong'], 404);
+        }
+    }
 
     public function payment_product(Request $request)
     {
@@ -223,32 +246,40 @@ class Pelanggan extends Controller
     {
         $username = $request->input('username');
         $password = $request->input('password');
-        $users = DB::table('tb_user')->where('username_user', $username)->where('password_user', $password)->limit(1)->get();
 
-        if ($users) {
-            foreach ($users as $key) {
-                $data_id        = $key->id_user;
-                $data_username  = $key->username_user;
-                $data_role      = $key->role_user;
-            }
-            $request->session()->put('id', $data_id);
-            $request->session()->put('username', $data_username);
-            $request->session()->put('role', $data_role);
+        // Fetch the user from the database
+        $user = DB::table('tb_user')
+                    ->where('username_user', $username)
+                    ->where('password_user', $password)
+                    ->first();
+
+        // Check if the user exists
+        if ($user) {
+            // User exists, set session variables
+            $request->session()->put('id', $user->id_user);
+            $request->session()->put('username', $user->username_user);
+            $request->session()->put('role', $user->role_user);
             $request->session()->put('login', TRUE);
 
-            if ($data_role == 1) {
-                return redirect('/admin/dashboard');
-            } elseif ($data_role == 2) {
-                return redirect('/pegawai/dashboard');
-            } elseif ($data_role == 3) {
-                return redirect('/pemilik/dashboard');
-            } elseif ($data_role == 4) {
-                return redirect('/');
-            } else {
-                return redirect('/');
+            // Redirect based on user role
+            switch ($user->role_user) {
+                case 1:
+                    return redirect('/admin/dashboard');
+                case 2:
+                    return redirect('/pegawai/dashboard');
+                case 3:
+                    return redirect('/pemilik/dashboard');
+                case 4:
+                    return redirect('/');
+                default:
+                    return redirect('/');
             }
+        } else {
+            // User does not exist, redirect back with an error message
+            return redirect()->back()->with('error', 'Invalid username or password');
         }
     }
+
 
     public function detail_one()
     {
@@ -295,6 +326,7 @@ class Pelanggan extends Controller
         $getSesionId = $request->session()->get('id');
         $getProduk = DB::table('tb_produk')->where('id_produk', $uri_one)->first();
 
+
         // Hitung total terjual dan total sisa stok
         $totalterjual = $getProduk->terjual_bibit + $request->qty;
         $sisa_stok = $getProduk->stok_bibit - $request->qty;
@@ -302,12 +334,22 @@ class Pelanggan extends Controller
         // Validasi apakah jumlah yang diminta melebihi stok yang tersedia
         if ($sisa_stok >= 0) {
             if ($request->action == 'cart') {
+                $pengiriman = $request->pengiriman;
+                $ongkir = 0; // Set ongkir default
+
+                // Jika pengiriman kecamatan, ambil ongkir dari tabel kecamatan
+                if ($pengiriman != 0) {
+                    $kecamatan = DB::table('tb_kecamatan')->where('kecamatan_id', $pengiriman)->first();
+                    $ongkir = $kecamatan->ongkir;
+                }
+
+                // Insert ke tabel keranjang
                 DB::table('tb_keranjang')->insert([
                     'keranjang_id_produk' => $uri_one,
                     'keranjang_id_user' => $getSesionId,
                     'qty_keranjang' => $request->qty,
-                    'pengiriman_keranjang' => $request->pengiriman,
-                    'price_keranjang' => $getProduk->harga_bibit * $request->qty,
+                    'pengiriman_keranjang' => $pengiriman,
+                    'price_keranjang' => $getProduk->harga_bibit * $request->qty + $ongkir, // Tambahkan ongkir ke harga total
                     'created_keranjang'  => date('Y-m-d H:i:s'),
                 ]);
 
@@ -327,33 +369,128 @@ class Pelanggan extends Controller
         }
     }
 
+    public function bayar_cart_borongan(Request $request)
+    {
+        // Validasi data yang diterima dari form
+        $request->validate([
+            'produkborong_select' => 'required',
+            'tanggal_tanam' => 'required|date',
+            'lahan_select' => 'required',
+            'jumlah_perbatang' => 'required|numeric',
+            'bukti_pembayaran' => 'required|file|mimes:jpeg,png,pdf|max:2048',
+            'pengiriman' => 'required',
+            'metodepembayaran' => 'required',
+        ]);
 
-    public function detail_cart(Request $request)
+    // ;
+    //     dd($request->all());
+
+        try {
+            // Mengambil sesi ID pengguna yang sedang login
+            $getSesionId = $request->session()->get('id');
+            if (!$getSesionId) {
+                throw new \Exception('User not authenticated');
+            }
+
+            // Generate kode transaksi unik
+            $getKodeBarang = 'TRX_' . uniqid();
+
+            // Menyimpan bukti pembayaran ke storage
+            $buktiPembayaranPath = $request->file('bukti_pembayaran')->store('public/bukti_pembayaran');
+            if (!$buktiPembayaranPath) {
+                throw new \Exception('Failed to store bukti pembayaran');
+            }
+
+            $totalTransaksi = $request->input('total');
+            if (is_null($totalTransaksi)) {
+                throw new \Exception('Total transaksi tidak boleh null.');
+            }
+            // Menyimpan data ke database
+            DB::table('tb_transaksi_borong')->insert([
+                'id_user_transaksi' => $getSesionId,
+                'kode_transaksi' => $getKodeBarang,
+                'nama_bibit' => $request->input('produkborong_select'),
+                'tanggal_tanam' => $request->input('tanggal_tanam'),
+                'luas_lahan' => $request->input('lahan_select'),
+                'kuantitas_bibit' => $request->input('jumlah_perbatang'),
+                'total_transaksi' => $request->input('total'),
+                'bukti_pembayaran' => $buktiPembayaranPath,
+                'pengiriman' => $request->input('pengiriman'),
+                'metodepembayaran' => $request->input('metodepembayaran'),
+                'status_transaksi' => '1',
+                'created_at' => now(),
+            ]);
+
+            // Redirect ke halaman status transaksi
+            return redirect('/pelanggan/statustransaksi')->with('success', 'Transaksi berhasil dilakukan');
+        } catch (\Exception $e) {
+            // Log error untuk debugging
+
+
+            // Redirect kembali dengan pesan error
+            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat melakukan transaksi: ' . $e->getMessage()]);
+        }
+    }
+
+
+
+
+            public function bibitborongan(Request $request)
+    {
+        $getSesionId = $request->session()->get('id');
+        $users = DB::table('tb_user')->where('id_user', $getSesionId)->first();
+        $produkborong = DB::table('tb_produkborong')->get();
+        $lahan = DB::table('luas_tb')->get();
+        $kecamatan = DB::table('tb_kecamatan')->get();
+        $metodepembayaran = DB::table('tb_metodepembayaran')->get();
+
+        // Ensure $metodepembayaran is properly fetched and assigned
+
+        // Pass data to the view
+        $data = [
+            'menu' => 'home',
+            'submenu' => 'pelanggan',
+            'kecamatan' => $kecamatan,
+            'produkborong' => $produkborong,
+            'lahan' => $lahan,
+            'nama' => $users->nama_user,
+            'metodepembayaran' => $metodepembayaran  // Ensure this variable is passed
+        ];
+
+        // Return the view with data
+        return view('pelanggan.bibitBorongan', $data);
+    }
+
+                    public function detail_cart(Request $request)
     {
         date_default_timezone_set('Asia/Jakarta');
         $uri_one = request()->segment(3);
+        $produkborong = DB::table('tb_produkborong')->get();
         $getSesionId = $request->session()->get('id');
-        $users = DB::table('tb_user')->where('id_user', $getSesionId)->limit(1)->first();
+        $users = DB::table('tb_user')->where('id_user', $getSesionId)->first();
         $product = DB::table('tb_produk')->where('id_produk', $uri_one)->first();
-        $cart   = DB::table('tb_keranjang')
-            ->join('tb_produk', 'tb_keranjang.keranjang_id_produk', '=', 'tb_produk.id_produk')
-            ->join('tb_kecamatan', 'tb_keranjang.pengiriman_keranjang', '=', 'tb_kecamatan.kecamatan_id')
-            ->where('keranjang_id_user', $getSesionId)->get();
+        $cart = DB::table('tb_keranjang')
+                ->join('tb_produk', 'tb_keranjang.keranjang_id_produk', '=', 'tb_produk.id_produk')
+                ->leftJoin('tb_kecamatan', 'tb_keranjang.pengiriman_keranjang', '=', 'tb_kecamatan.kecamatan_id')
+                ->where('keranjang_id_user', $getSesionId)
+                ->select('tb_keranjang.*', 'tb_produk.nama_bibit', 'tb_produk.gambar_bibit', 'tb_produk.harga_bibit', 'tb_kecamatan.kecamatan_name', 'tb_kecamatan.ongkir')
+                ->get();
 
         $countCart = DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->count();
 
         $data = [
-            'menu'      =>  'home',
-            'submenu'   =>  'pelanggan',
-            'nama'      =>   $users->nama_user,
-            'produk'    =>   $product,
-            'cart'      =>   $cart,
-            'countCart' =>   $countCart
-
+            'menu'      => 'home',
+            'submenu'   => 'pelanggan',
+            'nama'      => $users->nama_user,
+            'produk'    => $product,
+            'cart'      => $cart,
+            'produkborong' => $produkborong,
+            'countCart' => $countCart
         ];
 
         return view('pelanggan/cart', $data);
     }
+
 
     public function delete_cart_product()
     {
@@ -367,31 +504,65 @@ class Pelanggan extends Controller
         date_default_timezone_set('Asia/Jakarta');
         $uri_one = request()->segment(3);
         $getSesionId = $request->session()->get('id');
-        $users = DB::table('tb_user')->where('id_user', $getSesionId)->limit(1)->first();
+        $users = DB::table('tb_user')->where('id_user', $getSesionId)->first();
         $product = DB::table('tb_produk')->where('id_produk', $uri_one)->first();
-        $cart   = DB::table('tb_keranjang')
-            ->join('tb_produk', 'tb_keranjang.keranjang_id_produk', '=', 'tb_produk.id_produk')
-            ->join('tb_kecamatan', 'tb_keranjang.pengiriman_keranjang', '=', 'tb_kecamatan.kecamatan_id')
-            ->where('keranjang_id_user', $getSesionId)->get();
+        $produkborong = DB::table('tb_produkborong')->where('id', $uri_one)->first();
 
+        // Ambil semua item keranjang dengan informasi tambahan
+        $cart = DB::table('tb_keranjang')
+                ->join('tb_produk', 'tb_keranjang.keranjang_id_produk', '=', 'tb_produk.id_produk')
+                ->leftJoin('tb_kecamatan', function($join) {
+                    $join->on('tb_keranjang.pengiriman_keranjang', '=', 'tb_kecamatan.kecamatan_id')
+                         ->where('tb_keranjang.pengiriman_keranjang', '!=', 0); // Hanya ambil ongkir jika bukan ambil di toko
+                })
+                ->select('tb_keranjang.*', 'tb_produk.gambar_bibit', 'tb_produk.nama_bibit', 'tb_produk.harga_bibit', 'tb_kecamatan.kecamatan_name', 'tb_kecamatan.ongkir')
+                ->where('keranjang_id_user', $getSesionId)
+                ->get();
+
+        // Hitung jumlah total item dalam keranjang
         $countCart = DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->count();
-        $metodepembayaran = DB::table('tb_metodepembayaran')->get();
-        $sumPrice = DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->sum('price_keranjang');
-        $keranjang = DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->first();
 
+        // Ambil semua metode pembayaran
+        $metodepembayaran = DB::table('tb_metodepembayaran')->get();
+
+        // Hitung total harga semua item dalam keranjang
+        $sumPrice = DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->sum('price_keranjang');
+
+        // Ambil detail pertama dari keranjang untuk informasi tambahan
+        $keranjang = DB::table('tb_keranjang')
+                    ->leftJoin('tb_kecamatan', function($join) {
+                        $join->on('tb_keranjang.pengiriman_keranjang', '=', 'tb_kecamatan.kecamatan_id')
+                             ->where('tb_keranjang.pengiriman_keranjang', '!=', 0); // Hanya ambil ongkir jika bukan ambil di toko
+                    })
+                    ->select('tb_keranjang.*', 'tb_kecamatan.ongkir')
+                    ->where('keranjang_id_user', $getSesionId)
+                    ->first();
+
+        // Jika keranjang kosong, redirect ke halaman keranjang
+        if (!$keranjang) {
+            return redirect('/pengguna/keranjang');
+        }
+
+        // Siapkan data untuk dikirim ke view
         $data = [
-            'menu'      =>  'home',
-            'submenu'   =>  'pelanggan',
-            'nama'      =>   $users->nama_user,
-            'produk'    =>   $product,
-            'cart'      =>   $cart,
-            'countCart' =>   $countCart,
-            'metodepembayaran'  => $metodepembayaran,
-            'sumPrice'  =>   $sumPrice,
+            'menu' => 'home',
+            'submenu' => 'pelanggan',
+            'nama' => $users->nama_user,
+            'produk' => $product,
+            'cart' => $cart,
+            'produkborong' => $produkborong,
+            'countCart' => $countCart,
+            'metodepembayaran' => $metodepembayaran,
+            'sumPrice' => $sumPrice,
             'keranjang' => $keranjang,
         ];
+
         return view('pelanggan/checkoutcart', $data);
     }
+
+
+
+
 
     public function detail_cart_payment_create(Request $request)
     {
@@ -407,6 +578,18 @@ class Pelanggan extends Controller
         } else {
             $getKodeBarang =  'T' . date('Ymd') . intval($getMaxKeranjangId) + 1;
         }
+
+        $totalOngkir = 0;
+        foreach ($keranjang as $key) {
+            if ($key->pengiriman_keranjang != 0) { // Bukan ambil di toko
+                $kecamatan = DB::table('tb_kecamatan')->where('kecamatan_id', $key->pengiriman_keranjang)->first();
+                if ($kecamatan) {
+                    $totalOngkir += $kecamatan->ongkir;
+                }
+            }
+        }
+
+        $totalTransaksi = $sumTotalKeranjang + $totalOngkir;
 
         DB::table('tb_transaksi')->insert([
             'id_user_transaksi' => $getSesionId,

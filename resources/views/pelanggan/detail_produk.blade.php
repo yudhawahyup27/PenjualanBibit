@@ -87,52 +87,7 @@
 </div>
 </div>
 {{-- Modal Tambah Laham --}}
-
-<div class="modal fade" id="lahanmodal" tabindex="-1" role="dialog" aria-labelledby="quantityModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="quantityModalLabel">Peringatan</h5>
-          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-            <div class="mb-3">
-                <label for="nama_bibit" class="form-label">Nama Bibit</label>
-
-                <select class=" form-select">
-                    <option selected disabled>Select an option or type</option>
-                    <option value="1">Option 1</option>
-                    <option value="2">Option 2</option>
-                    <option value="lainnya">lainnya</option>
-                </select>
-              </div>
-            <div class="mb-3">
-                <label for="tanggal_tanam" class="form-label">Tanggal Tanam</label>
-                <input type="date" class="form-control" id="tanggal_tanam" placeholder="13/15/2024">
-              </div>
-              <div class="custom-select-container">
-                <label for="nama_bibit" class="form-label">Luas Lahan</label>
-                <select class=" form-select">
-                    <option selected disabled>Select an option or type</option>
-                    <option value="1">Option 1</option>
-                    <option value="2">Option 2</option>
-                    <option value="lainnya">lainnya</option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label for="nama_bibit" class="form-label">Nama Bibit</label>
-                <input class="form-control" type="text" placeholder="Disabled input" aria-label="Disabled input example" disabled>
-            </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-          <button type="button" class="btn btn-primary">Save changes</button>
-        </div>
-      </div>
-    </div>
-  </div>
+{{--  --}}
 <!-- Modal -->
 <div class="modal fade" id="quantityModal" tabindex="-1" role="dialog" aria-labelledby="quantityModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
@@ -173,6 +128,9 @@ document.getElementById('showPopupBtn').addEventListener('click', function() {
     $('#lahanmodal').modal('show');
 });
 
+
+
+
 document.getElementById('orderForm').addEventListener('submit', function(e) {
     var quantity = document.getElementById('quantityInput').value;
     if (quantity >= 350) {
@@ -184,6 +142,59 @@ document.getElementById('orderForm').addEventListener('submit', function(e) {
         alert('Please fill out all required fields.'); // Show alert for missing fields
     }
 });
+
+
+// harga
+function hitungTotal() {
+        // Ambil nilai kuantitas bibit dan harga satuan dari input
+        var kuantitas = parseFloat(document.getElementById('jumlah_perbatang').value);
+        var hargaSatuan = parseFloat(document.getElementById('harga_bibit').value);
+
+        // Hitung total bayar
+        var total = kuantitas * hargaSatuan;
+        // Tampilkan total bayar pada input
+        if (kuantitas== null || hargaSatuan == null) {
+            document.getElementById('total').value = 0;
+            }
+            else{
+
+                document.getElementById('total').value = total;
+            }
+    }
+
+    // Panggil fungsi hitungTotal setiap kali kuantitas bibit atau harga satuan berubah
+    document.getElementById('jumlah_perbatang').addEventListener('input', hitungTotal);
+    document.getElementById('harga_bibit').addEventListener('input', hitungTotal);
+document.getElementById('lahan_select').addEventListener('change', function() {
+        var lahanId = this.value;
+        if (lahanId) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/get-batang/' + lahanId, true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    document.getElementById('jumlah_perbatang').value = response.jumlah_batang;
+                    hitungTotal();
+                }
+            };
+            xhr.send();
+        }
+    });
+document.getElementById('produkborong_select').addEventListener('change', function() {
+        var productId = this.value;
+        if (productId) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/get-price/' + productId, true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    document.getElementById('harga_bibit').value = response.harga;
+                    hitungTotal();
+                }
+            };
+            xhr.send();
+        }
+    });
 
 </script>
 

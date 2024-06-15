@@ -15,11 +15,11 @@
                         <div class="text-center mb-4">
                             <h5>Masukkan Username dan Password Disini</h5>
                         </div>
-                        @if(session('status'))
+                        @if(session('error'))
                         <div class="alert alert-danger">
-                            <b>Opps!</b> {{session('status')}}
+                            {{ session('error') }}
                         </div>
-                        @endif
+                    @endif
                         <form method="post" action="<?= url('/') ?>/login">
                         {{@csrf_field()}}
                             <div class="form-floating mb-3">
@@ -44,4 +44,6 @@
         </div>
     </div>
 </main>
+
 @endSection
+

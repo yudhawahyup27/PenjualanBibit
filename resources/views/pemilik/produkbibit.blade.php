@@ -56,7 +56,7 @@
                                 @if($key->terjual_bibit == 0)
                                 0
                                 @else
-                                $key->terjual_bibit
+                                {{ $key->terjual_bibit }}
                                 @endif
                             </td>
                             <td>
