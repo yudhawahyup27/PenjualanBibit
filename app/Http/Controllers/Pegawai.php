@@ -112,7 +112,7 @@ class Pegawai extends Controller
             if ($getCount_fromNama < 1) {
                 DB::table('tb_produk')->insert([
                     'kode_bibit'        => $kodeBarang,
-                    'produk_id_user'    => $request->user,
+                    'produk_id_user'    => "18",
                     'nama_bibit'        => $request->nama,
                     'detail_bibit'      => $request->detail,
                     'harga_bibit'       => $request->harga,
@@ -132,7 +132,7 @@ class Pegawai extends Controller
                 $getDataStok = DB::table('tb_stok')->where('stok_kode_barang', $getData_fromNama->kode_bibit)->first();
                 DB::table('tb_produk')->insert([
                     'kode_bibit'        => $getData_fromNama->kode_bibit,
-                    'produk_id_user'    => $request->user,
+                    'produk_id_user'    => "18",
                     'nama_bibit'        => $request->nama,
                     'detail_bibit'      => $request->detail,
                     'harga_bibit'       => $request->harga,
@@ -152,7 +152,7 @@ class Pegawai extends Controller
             if ($getCount_fromNama < 1) {
                 DB::table('tb_produk')->insert([
                     'kode_bibit'        => $kodeBarang,
-                    'produk_id_user'    => $request->user,
+                    'produk_id_user'    => "18",
                     'nama_bibit'        => $request->nama,
                     'detail_bibit'      => $request->detail,
                     'harga_bibit'       => $request->harga,
@@ -171,7 +171,7 @@ class Pegawai extends Controller
                 $getDataStok = DB::table('tb_stok')->where('stok_kode_barang', $getData_fromNama->kode_bibit)->first();
                 DB::table('tb_produk')->insert([
                     'kode_bibit'        => $getData_fromNama->kode_bibit,
-                    'produk_id_user'    => $request->user,
+                    'produk_id_user'    => "18",
                     'nama_bibit'        => $request->nama,
                     'detail_bibit'      => $request->detail,
                     'harga_bibit'       => $request->harga,
@@ -436,9 +436,7 @@ class Pegawai extends Controller
         }
 
 
-            $pesen = DB::table('tb_transaksi')->join('tb_user', 'tb_transaksi.id_user_transaksi', '=', 'tb_user.id_user')
-            ->join('tb_status', 'tb_transaksi.id_transaksi', '=', 'tb_status.status_id')
-            ->get();
+            $pesen = DB::table('tb_transaksi')->join('tb_user', 'tb_transaksi.id_user_transaksi', '=', 'tb_user.id_user')->get();
 
                 // ->join('tb_user', 'tb_transaksi.id_user_transaksi', '=', 'tb_user.id_user')
                 // ->join('tb_status', 'tb_transaksi.status_transaksi', '=', 'tb_status.status_id')

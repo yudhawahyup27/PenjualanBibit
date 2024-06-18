@@ -567,7 +567,6 @@ class Pelanggan extends Controller
     public function detail_cart_payment_create(Request $request)
     {
         date_default_timezone_set('Asia/Jakarta');
-        $uri_one = request()->segment(3);
         $getSesionId = $request->session()->get('id');
         $keranjang = DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->get();
         $sumTotalKeranjang = DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->sum('price_keranjang');
@@ -576,7 +575,7 @@ class Pelanggan extends Controller
         if ($getMaxKeranjangId == 0) {
             $getKodeBarang = 'T' . date('Ymd') . '1';
         } else {
-            $getKodeBarang =  'T' . date('Ymd') . intval($getMaxKeranjangId) + 1;
+            $getKodeBarang = 'T' . date('Ymd') . intval($getMaxKeranjangId) + 1;
         }
 
         $totalOngkir = 0;
@@ -591,20 +590,26 @@ class Pelanggan extends Controller
 
         $totalTransaksi = $sumTotalKeranjang + $totalOngkir;
 
+        $buktiTransferPath = null;
+        if ($request->hasFile('bukti_transfer')) {
+            $buktiTransfer = $request->file('bukti_transfer');
+            $buktiTransferPath = $buktiTransfer->store('bukti_transfer', 'public');
+        }
+
         DB::table('tb_transaksi')->insert([
             'id_user_transaksi' => $getSesionId,
             'kode_transaksi' => $getKodeBarang,
-            'total_transaksi' => $sumTotalKeranjang,
+            'total_transaksi' => $totalTransaksi, // Changed to $totalTransaksi to include shipping
             'status_transaksi' => '1',
-            'created_transaksi'  => date('Y-m-d H:i:s'),
+            'created_transaksi' => date('Y-m-d H:i:s'),
+            'bukti_transfer' => $buktiTransferPath,
         ]);
 
         DB::table('tb_statuspengiriman')->insert([
             'statuspengiriman_id_status' => '1',
             'statuspengiriman_kodetransaksi' => $getKodeBarang,
-            'statuspengiriman_created'  => date('Y-m-d H:i:s'),
+            'statuspengiriman_created' => date('Y-m-d H:i:s'),
         ]);
-
 
         foreach ($keranjang as $key) {
             DB::table('tb_transaksi_keranjang')->insert([
@@ -614,12 +619,18 @@ class Pelanggan extends Controller
                 'qty_keranjang' => $key->qty_keranjang,
                 'pengiriman_keranjang' => $key->pengiriman_keranjang,
                 'price_keranjang' => $key->price_keranjang,
-                'created_keranjang'  => date('Y-m-d H:i:s'),
+                'created_keranjang' => date('Y-m-d H:i:s'),
             ]);
         }
 
+        DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->delete();
+
         return redirect()->to('/pelanggan/statustransaksi');
     }
+
+
+
+
 
     public function status_transaksi(Request $request)
     {
@@ -744,9 +755,31 @@ class Pelanggan extends Controller
         return view('pelanggan/tablemonitoring', $data);
     }
 
+    public function updateCartQuantity(Request $request)
+    {
+        $cartId = $request->input('cart_id');
+        $newQty = $request->input('qty');
+
+        // Get the current product price
+        $cartItem = DB::table('tb_keranjang')->where('id_keranjang', $cartId)->first();
+        $product = DB::table('tb_produk')->where('id_produk', $cartItem->keranjang_id_produk)->first();
+        $newTotalPrice = $product->harga_bibit * $newQty;
+
+        // Update the cart with the new quantity and total price
+        DB::table('tb_keranjang')
+            ->where('id_keranjang', $cartId)
+            ->update([
+                'qty_keranjang' => $newQty,
+                'price_keranjang' => $newTotalPrice
+            ]);
+
+        // Redirect back to the cart page with a success message
+        return redirect()->back()->with('success', 'Quantity and total price updated successfully.');
+    }
 
 
 }
+
 
 
 // mmonitoring bibit

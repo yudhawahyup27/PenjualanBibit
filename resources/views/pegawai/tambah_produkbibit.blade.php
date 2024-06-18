@@ -15,7 +15,7 @@
         <div class="card-body">
             <form method="post" action="<?= url('/') ?>/pegawai/produkbibit/tambah"  enctype="multipart/form-data">
                 {{@csrf_field()}}
-                <div class="mb-3">
+                <div hidden class="mb-3">
                     <label>Nama User</label>
                     <select hidden name="user" class="form-select">
                         <option selected disabled>--- Pilih User ---</option>

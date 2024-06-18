@@ -18,7 +18,7 @@
                     <thead>
                         <tr>
                             <th>No</th>
-                            <th>Username </th>
+
                             <th>Kode </th>
                             <th>Nama Bibit</th>
                             <th>Detail </th>
@@ -33,7 +33,7 @@
                     <tfoot>
                         <tr>
                             <th>No</th>
-                            <th>Username</th>
+
                             <th>Kode </th>
                             <th>Nama Bibit</th>
                             <th>Detail </th>
@@ -49,7 +49,6 @@
                         @foreach($dataproduk as $key)
                         <tr>
                             <td>{{$loop->iteration}}</td>
-                            <td>{{$key->nama_user}}</td>
                             <td>{{$key->kode_bibit}}</td>
                             <td>{{$key->nama_bibit}}</td>
                             <td>{{$key->detail_bibit}}</td>

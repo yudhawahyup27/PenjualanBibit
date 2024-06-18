@@ -17,7 +17,9 @@
             <div>
                 <h5>Detail Pesanan</h5>
                 @if($countCart == 0)
-                <script>window.location.href = '{{ url('/pengguna/keranjang') }}';</script>
+                <script>
+                    window.location.href = '{{ url('/pengguna/keranjang') }}';
+                </script>
                 <div><a href="{{ url('/') }}" class="btn_1">Beli Produk Sekarang</a></div>
                 @else
                 <div class="table-responsive">
@@ -57,15 +59,24 @@
                 <div class="row">
                     <div class="col-6">
                         <h5>Metode Pembayaran</h5>
-                        <form action="{{ url('/pelanggan/bayarsekarang') }}" method="post">
+                        <form action="{{ url('/pelanggan/bayarsekarang') }}" method="POST" enctype="multipart/form-data">
                             @csrf
+
                             <div class="mb-5">
-                                <select name="metodepembayaran" class="form-control" required>
-                                    <option selected disabled>--PILIH METODE PEMBAYARAN--</option>
-                                    @foreach($metodepembayaran as $mp)
-                                    <option value="{{ $mp->metodepembayaran_id }}">{{ $mp->metodepembayaran_bank }} - {{ $mp->metodepembayaran_name }} - {{ $mp->metodepembayaran_numberbank }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="form-group">
+                                    <label for="metodepembayaran">Pilih Metode Pembayaran:</label>
+                                    <select name="metodepembayaran" class="form-control" required>
+                                        <option selected disabled>--PILIH METODE PEMBAYARAN--</option>
+                                        @foreach($metodepembayaran as $mp)
+                                        <option value="{{ $mp->metodepembayaran_id }}">{{ $mp->metodepembayaran_bank }} - {{ $mp->metodepembayaran_name }} - {{ $mp->metodepembayaran_numberbank }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="bukti_transfer">Upload Bukti Transfer:</label>
+                                    <input type="file" class="form-control" id="bukti_transfer" name="bukti_transfer" required>
+                                </div>
+
                             </div>
                             <div><button type="submit" class="btn_1">Bayar Sekarang</button></div>
                         </form>
@@ -75,7 +86,7 @@
                         @if(isset($keranjang))
                         <h5>Ongkos Kirim:
                             <?php
-                            $ongkir = $keranjang->ongkir;
+                            $ongkir = $keranjang->ongkir ?? 0;
                             $total = $ongkir + $sumPrice;
                             ?>
                             <b>Rp {{ number_format($ongkir, 0, ',', '.') }}</b>

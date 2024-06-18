@@ -109,5 +109,9 @@ Route::get('/pelanggan/tablemonitorbibit', [Pelanggan::class,'monitoring']);
 Route::post('/pelanggan/bibitborongan/checkout', [Pelanggan::class,'bayar_cart_borongan']);
 
 Route::get('/pelanggan/tablemonitoring', [Pelanggan::class, 'monitoringbibittable']);
+// In your routes file
+
+Route::post('/pelanggan/keranjang/update', [Pelanggan::class, 'updateCartQuantity']);
+
 
 

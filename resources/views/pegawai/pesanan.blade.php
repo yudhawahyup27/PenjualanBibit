@@ -21,7 +21,7 @@
                             <th>Id User</th>
                             <th>Nama User</th>
                             <th>Total</th>
-                            <th>Status</th>
+                            <th>Bukti Transfer</th>
                             <th>#</th>
                         </tr>
                     </thead>
@@ -32,7 +32,7 @@
                             <th>Id User</th>
                             <th>Nama User</th>
                             <th>Total</th>
-                            <th>Status</th>
+                            <th>Pesanan</th>
                             <th>#</th>
                         </tr>
                     </tfoot>
@@ -44,7 +44,15 @@
                             <td>{{ $key->id_user_transaksi }}</td>
                             <td>{{ $key->nama_user }}</td>
                             <td>Rp {{ number_format((float)$key->total_transaksi, 0, ',', '.') }}</td>
-                            <td>{{ $key->status_name }}</td>
+                            @if ($key->bukti_transfer)
+                            <td><img src="{{ asset('/storage/' . $key->bukti_transfer) }}" alt="Bukti Transfer" width="100"></td>
+
+                                    @else
+                                    <td>bukti transferan tidak ada data</td>
+
+                            @endif
+
+
                             <td>
                                 @if($key->status_transaksi == 1)
                                 <a class="btn btn-primary" href="{{ url('/') }}/pegawai/pesanan/sudahbayar/{{ $key->id_transaksi }}">Sudah Bayar</a>
