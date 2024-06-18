@@ -8,13 +8,22 @@
         <li class="breadcrumb-item "><a href="/pegawai/produkbibit">Produk Bibit</a></li>
         <li class="breadcrumb-item active">Tambah Produk Bibit</li>
     </ol>
+    @if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
     <div class="card mb-4">
         <div class="card-header">
             Tambah Data Produk Bibit
         </div>
         <div class="card-body">
-            <form method="post" action="<?= url('/') ?>/pegawai/produkbibit/tambah"  enctype="multipart/form-data">
-                {{@csrf_field()}}
+            <form method="post" action="{{ url('/pegawai/produkbibit/tambah') }}" enctype="multipart/form-data">
+                @csrf
                 <div hidden class="mb-3">
                     <label>Nama User</label>
                     <select hidden name="user" class="form-select">
