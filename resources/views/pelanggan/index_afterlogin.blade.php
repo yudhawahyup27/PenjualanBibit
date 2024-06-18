@@ -47,15 +47,16 @@
         <div class="modal-dialog" role="document">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" id="quantityModalLabel">Peringatan</h5>
+              <h5 class="modal-title" id="quantityModalLabel"></h5>
               <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
             <div class="modal-body">
-                <P class="text-center fs-4">Pesan bibit sekarang</P>
-                <div class="d-flex justify-content-center" style="gap-2">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Ya</button>
+                <P class="text-center fs-1">Pesan dengan luas Lahan</P>
+                <div class="d-flex justify-content-center p-4" style="gap-4 ">
+                   <a href="/pelanggan/bibitborongan" class="btn btn-secondary mx-4" >Ya</a>
+
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tidak</button>
                 </div>
                 </div>

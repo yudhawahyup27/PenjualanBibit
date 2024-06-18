@@ -143,7 +143,7 @@ class Pegawai extends Controller
                 ]);
                 DB::table('tb_stok')->where('stok_kode_barang', $getData_fromNama->kode_bibit)->update([
                     'stok_jumlah'           => $getDataStok->stok_jumlah + $request->stok,
-                    'nama_bibit' => $getDataStok->nama_bibit + $request->nama,
+                    'nama_bibit' => $getDataStok->nama_bibit."". $request->nama,
                     'updated_at'            => date('Y-m-d H:i:s'),
                 ]);
             }
@@ -336,7 +336,7 @@ class Pegawai extends Controller
             return redirect()->to('/');
         }
 
-        $tblOngkir = DB::table('tb_ongkir')->get();
+        $tblOngkir = DB::table('tb_kecamatan')->get();
         $data = [
             'menu'          =>  'ongkir',
             'submenu'       =>  'pegawai',
@@ -368,12 +368,11 @@ class Pegawai extends Controller
     public function ongkoskirim_create(Request $request)
     {
         date_default_timezone_set('Asia/Jakarta');
-        DB::table('tb_ongkir')->insert([
-            'ongkir_fromlocation'   => 'Kertosono',
-            'ongkir_tolocation'     => $request->ke,
-            'ongkir_price'          => $request->harga,
-            'ongkir_created'        => date('Y-m-d H:i:s'),
-            'ongkir_updated'        => date('Y-m-d H:i:s'),
+        DB::table('tb_kecamatan')->insert([
+            'kecamatan_name'     => $request->ke,
+            'ongkir'          => $request->harga,
+            'kecamatan_created'        => date('Y-m-d H:i:s'),
+            'kecamatan_updated'        => date('Y-m-d H:i:s'),
         ]);
         return redirect()->to('/pegawai/ongkir');
     }
@@ -381,7 +380,7 @@ class Pegawai extends Controller
     public function ongkoskirim_delete(Request $request)
     {
         $uri_one = request()->segment(4);
-        DB::table('tb_ongkir')->where('ongkir_id', $uri_one)->delete();
+        DB::table('tb_kecamatan')->where('kecamatan_id', $uri_one)->delete();
         return redirect()->to('/pegawai/ongkir');
     }
 
@@ -399,7 +398,7 @@ class Pegawai extends Controller
         }
 
         $uri_one = request()->segment(4);
-        $tblOngkir = DB::table('tb_ongkir')->where('ongkir_id', $uri_one)->first();
+        $tblOngkir = DB::table('tb_kecamatan')->where('kecamatan_id', $uri_one)->first();
 
         $data = [
             'menu'              =>  'ongkir',
@@ -425,29 +424,38 @@ class Pegawai extends Controller
     }
 
     public function pesanan(Request $request)
+
     {
         $session_role = $request->session()->get('role');
         if ($session_role == 1) {
             return redirect()->to('/admin');
         } elseif ($session_role == 3) {
             return redirect()->to('/pemilik');
-        } elseif ($session_role == 4) {
-            return redirect()->to('/');
-        } elseif ($session_role == '') {
+        } elseif ($session_role == 4 || $session_role == '') {
             return redirect()->to('/');
         }
 
-        $tblTransaksi = DB::table('tb_transaksi')
-            ->join('tb_user', 'tb_transaksi.id_user_transaksi', '=', 'tb_user.id_user')
-            ->join('tb_status', 'tb_transaksi.status_transaksi', '=', 'tb_status.status_id')
+
+            $pesen = DB::table('tb_transaksi')->join('tb_user', 'tb_transaksi.id_user_transaksi', '=', 'tb_user.id_user')
+            ->join('tb_status', 'tb_transaksi.id_transaksi', '=', 'tb_status.status_id')
             ->get();
-        $data = [
-            'menu'          =>  'pesanan',
-            'submenu'       =>  'pegawai',
-            'tblTransaksi'  =>  $tblTransaksi,
-        ];
-        return view('pegawai/pesanan', $data);
-    }
+
+                // ->join('tb_user', 'tb_transaksi.id_user_transaksi', '=', 'tb_user.id_user')
+                // ->join('tb_status', 'tb_transaksi.status_transaksi', '=', 'tb_status.status_id')
+                // ->select('tb_transaksi.*', 'tb_user.nama_user', 'tb_status.status_name')
+
+            // Debug data
+            // dd($pesen);
+
+            $data = [
+                'menu'          =>  'pesanan',
+                'submenu'       =>  'pegawai',
+                'pesen'  =>  $pesen,
+            ];
+
+            return view('pegawai.pesanan', $data);
+        }
+
 
     public function pesanan_sudahbayar(Request $request)
     {
@@ -465,6 +473,8 @@ class Pegawai extends Controller
         ]);
         return redirect()->to('/pegawai/pesanan');
     }
+
+
 
     public function pesanan_sudahdikirim(Request $request)
     {
@@ -516,10 +526,13 @@ class Pegawai extends Controller
             return redirect()->to('/');
         }
 
-        $tblTransaksi = DB::table('tb_transaksi')
-            ->join('tb_user', 'tb_transaksi.id_user_transaksi', '=', 'tb_user.id_user')
-            ->join('tb_status', 'tb_transaksi.status_transaksi', '=', 'tb_status.status_id')
+        $tblTransaksi = DB::table('tb_transaksi_borong')
+        ->join('tb_user', 'tb_transaksi_borong.id_user_transaksi', '=', 'tb_user.id_user')
+        ->join('tb_produkborong', 'tb_transaksi_borong.nama_bibit', '=', 'tb_produkborong.id')
             ->get();
+
+            // dd($tblTransaksi);
+
         $data = [
             'menu'                  =>  'monitoringbibit',
             'submenu'               =>  'pegawai',
@@ -529,7 +542,7 @@ class Pegawai extends Controller
         return view('pegawai/monitoringbibit', $data);
     }
 
-    public function monitoringbibit_detail(Request $request)
+    public function monitoringbibit_detail(Request $request, $id)
     {
         date_default_timezone_set('Asia/Jakarta');
 
@@ -538,85 +551,101 @@ class Pegawai extends Controller
             return redirect()->to('/admin');
         } elseif ($session_role == 3) {
             return redirect()->to('/pemilik');
-        } elseif ($session_role == 4) {
-            return redirect()->to('/');
-        } elseif ($session_role == '') {
+        } elseif ($session_role == 4 || $session_role == '') {
             return redirect()->to('/');
         }
-        $uri_one = request()->segment(4);
 
-        $tblTransaksi = DB::table('tb_transaksi')
-            ->join('tb_user', 'tb_transaksi.id_user_transaksi', '=', 'tb_user.id_user')
-            ->join('tb_status', 'tb_transaksi.status_transaksi', '=', 'tb_status.status_id')
-            ->where('id_transaksi', $uri_one)
-            ->first();
+        // Tampilkan nilai-nilai dari $request tanpa validasi
+        // dd($request->all());
 
-        $tblPerkembangan = DB::table('tb_perkembangan')
-        ->where('perkembangan_kode_transaksi', $tblTransaksi->kode_transaksi)
-        ->get();
+        if ($request->hasFile('perkembangan_gambar')) {
+            $file = $request->file('perkembangan_gambar');
+            $filename = time().'.'.$file->getClientOriginalExtension();
+            $file->move(public_path('image'), $filename);
+
+            DB::table('tb_perkembangan')->insert([
+                'perkembangan_kode_transaksi' => $id,
+                'perkembangan_gambar' => $filename,
+                'perkembangan_tanggal' => $request->input('perkembangan_tanggal'),
+                'perkembangan_umur' => $request->input('perkembangan_umur'),
+                'perkembangan_tinggi' => $request->input('perkembangan_tinggi'),
+                'perkembangan_deskripsi' => $request->input('perkembangan_deskripsi'),
+                'perkembangan_created' => now(),
+                'perkembangan_updated' => now(),
+            ]);
+
+            return redirect()->to('/pegawai/monitoringbibit')->with('success', 'Data berhasil ditambahkan');
+        }
+
+        $tblTransaksi = DB::table('tb_perkembangan')
+            ->where('perkembangan_kode_transaksi', $id)
+            ->get();
+
         $data = [
-            'menu'          =>  'monitoringbibit',
-            'submenu'       =>  'pegawai',
-            'tblTransaksi'  =>  $tblTransaksi,
-            'tblPerkembangan'   => $tblPerkembangan
-
+            'menu' => 'monitoringbibit',
+            'submenu' => 'pegawai',
+            'id' => $id,
+            'tblTransaksi' => $tblTransaksi,
         ];
 
+        // Load view dengan data yang telah disiapkan
         return view('pegawai/monitoringbibit_detail', $data);
     }
 
-    public function monitoringbibit_tambah(Request $request)
-    {
-        date_default_timezone_set('Asia/Jakarta');
 
-        $session_role = $request->session()->get('role');
-        if ($session_role == 1) {
-            return redirect()->to('/admin');
-        } elseif ($session_role == 3) {
-            return redirect()->to('/pemilik');
-        } elseif ($session_role == 4) {
-            return redirect()->to('/');
-        } elseif ($session_role == '') {
-            return redirect()->to('/');
-        }
-        $uri_one = request()->segment(4);
 
-        $tblTransaksi = DB::table('tb_transaksi')
-            ->join('tb_user', 'tb_transaksi.id_user_transaksi', '=', 'tb_user.id_user')
-            ->join('tb_status', 'tb_transaksi.status_transaksi', '=', 'tb_status.status_id')
-            ->where('id_transaksi', $uri_one)
-            ->first();
+    // public function monitoringbibit_tambah(Request $request)
+    // {
+    //     date_default_timezone_set('Asia/Jakarta');
 
-        $data = [
-            'menu'          =>  'monitoringbibit',
-            'submenu'       =>  'pegawai',
-            'tblTransaksi'  =>  $tblTransaksi,
-        ];
+    //     $session_role = $request->session()->get('role');
+    //     if ($session_role == 1) {
+    //         return redirect()->to('/admin');
+    //     } elseif ($session_role == 3) {
+    //         return redirect()->to('/pemilik');
+    //     } elseif ($session_role == 4) {
+    //         return redirect()->to('/');
+    //     } elseif ($session_role == '') {
+    //         return redirect()->to('/');
+    //     }
+    //     $uri_one = request()->segment(4);
 
-        return view('pegawai/monitoringbibit_tambah', $data);
-    }
+    //     $tblTransaksi = DB::table('tb_transaksi_borong')
+    //         ->join('tb_user', 'tb_transaksi_borong.id_user_transaksi', '=', 'tb_user.id_user')
+    //         ->join('tb_status', 'tb_transaksi_borong.status_transaksi', '=', 'tb_status.status_id')
+    //         ->where('id_transaksi', $uri_one)
+    //         ->first();
 
-    public function monitoringbibit_create(Request $request)
-    {
-        date_default_timezone_set('Asia/Jakarta');
-        $uri_one = request()->segment(4);
+    //     $data = [
+    //         'menu'          =>  'monitoringbibit',
+    //         'submenu'       =>  'pegawai',
+    //         'tblTransaksi'  =>  $tblTransaksi,
+    //     ];
 
-        $imageName = rand(1000, 9999) . time() . '.' . $request->image1->extension();
-        $request->image1->move(public_path('images'), $imageName);
-        $getTblTransaksi = DB::table('tb_transaksi')->where('id_transaksi', $uri_one)->first();
-        if ($request->image1) {
-            DB::table('tb_perkembangan')->insert([
-                'perkembangan_kode_transaksi'    => $getTblTransaksi->kode_transaksi,
-                'perkembangan_gambar'        => $imageName,
-                'perkembangan_umur'        => $request->umur,
-                'perkembangan_tinggi'      => $request->tinggi,
-                'perkembangan_deskripsi'       => $request->keterangan,
-                'perkembangan_created'    => date('Y-m-d H:i:s'),
-                'perkembangan_updated'    => date('Y-m-d H:i:s'),
-            ]);
-            return redirect()->to('/pegawai/monitoringbibit/detail/' . $uri_one);
-        }
-    }
+    //     return view('pegawai/monitoringbibit_tambah', $data);
+    // }
+
+    // public function monitoringbibit_create(Request $request)
+    // {
+    //     date_default_timezone_set('Asia/Jakarta');
+    //     $uri_one = request()->segment(4);
+
+    //     $imageName = rand(1000, 9999) . time() . '.' . $request->image1->extension();
+    //     $request->image1->move(public_path('images'), $imageName);
+    //     $getTblTransaksi = DB::table('tb_transaksi')->where('id_transaksi', $uri_one)->first();
+    //     if ($request->image1) {
+    //         DB::table('tb_perkembangan')->insert([
+    //             'perkembangan_kode_transaksi'    => $getTblTransaksi->kode_transaksi,
+    //             'perkembangan_gambar'        => $imageName,
+    //             'perkembangan_umur'        => $request->umur,
+    //             'perkembangan_tinggi'      => $request->tinggi,
+    //             'perkembangan_deskripsi'       => $request->keterangan,
+    //             'perkembangan_created'    => date('Y-m-d H:i:s'),
+    //             'perkembangan_updated'    => date('Y-m-d H:i:s'),
+    //         ]);
+    //         return redirect()->to('/pegawai/monitoringbibit/detail/');
+    //     }
+    // }
 
     public function monitoringbibit_delete(Request $request)
     {

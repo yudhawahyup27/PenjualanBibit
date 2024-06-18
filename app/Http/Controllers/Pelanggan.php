@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -368,24 +369,20 @@ class Pelanggan extends Controller
             return redirect()->back()->with('error', 'Jumlah barang yang diminta melebihi stok yang tersedia.');
         }
     }
-
     public function bayar_cart_borongan(Request $request)
     {
-        // Validasi data yang diterima dari form
-        $request->validate([
-            'produkborong_select' => 'required',
-            'tanggal_tanam' => 'required|date',
-            'lahan_select' => 'required',
-            'jumlah_perbatang' => 'required|numeric',
-            'bukti_pembayaran' => 'required|file|mimes:jpeg,png,pdf|max:2048',
-            'pengiriman' => 'required',
-            'metodepembayaran' => 'required',
-        ]);
-
-    // ;
-    //     dd($request->all());
-
         try {
+            // Validasi data yang diterima dari form
+            $request->validate([
+                'produkborong_select' => 'required',
+                'tanggal_tanam' => 'required|date',
+                'lahan_select' => 'required',
+                'jumlah_perbatang' => 'required|numeric',
+                'bukti_pembayaran' => 'required|file|mimes:jpeg,png,pdf|max:2048',
+                'pengiriman' => 'required',
+                'metodepembayaran' => 'required',
+            ]);
+
             // Mengambil sesi ID pengguna yang sedang login
             $getSesionId = $request->session()->get('id');
             if (!$getSesionId) {
@@ -395,38 +392,36 @@ class Pelanggan extends Controller
             // Generate kode transaksi unik
             $getKodeBarang = 'TRX_' . uniqid();
 
-            // Menyimpan bukti pembayaran ke storage
-            $buktiPembayaranPath = $request->file('bukti_pembayaran')->store('public/bukti_pembayaran');
-            if (!$buktiPembayaranPath) {
-                throw new \Exception('Failed to store bukti pembayaran');
-            }
+            // Mengambil file bukti pembayaran
+            if ($request->hasFile('bukti_pembayaran')) {
+                $buktiPembayaran = $request->file('bukti_pembayaran');
+                $buktiPembayaranPath = $buktiPembayaran->store('public/bukti_pembayaran');
 
-            $totalTransaksi = $request->input('total');
-            if (is_null($totalTransaksi)) {
-                throw new \Exception('Total transaksi tidak boleh null.');
-            }
-            // Menyimpan data ke database
-            DB::table('tb_transaksi_borong')->insert([
-                'id_user_transaksi' => $getSesionId,
-                'kode_transaksi' => $getKodeBarang,
-                'nama_bibit' => $request->input('produkborong_select'),
-                'tanggal_tanam' => $request->input('tanggal_tanam'),
-                'luas_lahan' => $request->input('lahan_select'),
-                'kuantitas_bibit' => $request->input('jumlah_perbatang'),
-                'total_transaksi' => $request->input('total'),
-                'bukti_pembayaran' => $buktiPembayaranPath,
-                'pengiriman' => $request->input('pengiriman'),
-                'metodepembayaran' => $request->input('metodepembayaran'),
-                'status_transaksi' => '1',
-                'created_at' => now(),
-            ]);
+                // Menyimpan data ke database
+                $tanggalHariIni = now();
+                $tanggalTanam = $tanggalHariIni->addDays(15)->toDateString();
 
-            // Redirect ke halaman status transaksi
-            return redirect('/pelanggan/statustransaksi')->with('success', 'Transaksi berhasil dilakukan');
+                DB::table('tb_transaksi_borong')->insert([
+                    'id_user_transaksi' => $getSesionId,
+                    'kode_transaksi' => $getKodeBarang,
+                    'nama_bibit' => $request->input('produkborong_select'),
+                    'tanggal_tanam' => $tanggalTanam ,
+                    'luas_lahan' => $request->input('lahan_select'),
+                    'kuantitas_bibit' => $request->input('jumlah_perbatang'),
+                    'total_transaksi' => $request->input('total'),
+                    'bukti_pembayaran' => $buktiPembayaranPath,
+                    'pengiriman' => $request->input('pengiriman'),
+                    'metodepembayaran' => $request->input('metodepembayaran'),
+                    'status_transaksi' => '1',
+                    'created_at' => $tanggalHariIni,
+                ]);
+
+                // Redirect ke halaman status transaksi
+                return redirect('/pelanggan/statustransaksi')->with('success', 'Transaksi berhasil dilakukan');
+            } else {
+                throw new \Exception('Bukti pembayaran tidak terkirim atau tidak valid.');
+            }
         } catch (\Exception $e) {
-            // Log error untuk debugging
-
-
             // Redirect kembali dengan pesan error
             return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat melakukan transaksi: ' . $e->getMessage()]);
         }
@@ -446,6 +441,10 @@ class Pelanggan extends Controller
 
         // Ensure $metodepembayaran is properly fetched and assigned
 
+        $tanggalHariIni =  Carbon::now();
+
+        $tanggalTanam = $tanggalHariIni->addDays(15)->toDateString();
+
         // Pass data to the view
         $data = [
             'menu' => 'home',
@@ -454,6 +453,7 @@ class Pelanggan extends Controller
             'produkborong' => $produkborong,
             'lahan' => $lahan,
             'nama' => $users->nama_user,
+            'tanggalTanam'=> $tanggalTanam,
             'metodepembayaran' => $metodepembayaran  // Ensure this variable is passed
         ];
 
@@ -681,4 +681,72 @@ class Pelanggan extends Controller
             return redirect()->to('/');
         }
     }
+
+    public function monitoring(Request $request, $id)
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $getSesionId = $request->session()->get('id');
+        $users = DB::table('tb_user')->where('id_user', $getSesionId)->first();
+
+        // Ambil data transaksi berdasarkan id transaksi
+        $transaksi = DB::table('tb_transaksi_borong')
+                        ->where('kode_transaksi', $id)
+                        ->first();
+
+        if ($transaksi) {
+            // Ambil data produk berdasarkan kode transaksi dari transaksi
+            $produk = DB::table('tb_transaksi_borong')
+                        ->where('kode_transaksi', $id)
+                        ->join('tb_produkborong', 'tb_transaksi_borong.nama_bibit', '=', 'tb_produkborong.id')
+                        ->first();
+
+            // Ambil data perkembangan berdasarkan id transaksi
+            $monitor = DB::table('tb_perkembangan')
+                         ->where('perkembangan_kode_transaksi', $id)
+                         ->get();
+
+            $data = [
+                'menu'      => 'home',
+                'submenu'   => 'pelanggan',
+                'nama'      => $users->nama_user,
+                'produk'    => $produk,
+                'transaksi' => $transaksi,
+                'monitor'   => $monitor,
+            ];
+
+            return view('pelanggan.monitoringBibit', $data);
+        } else {
+            // Handle jika tidak ada transaksi ditemukan
+            return redirect()->back()->with('error', 'Tidak ada transaksi yang ditemukan.');
+        }
+    }
+
+
+    public function monitoringbibittable(Request $request)
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $getSesionId = $request->session()->get('id');
+        $users = DB::table('tb_user')->where('id_user', $getSesionId)->limit(1)->first();
+
+        $tblTransaksi = DB::table('tb_transaksi_borong')
+            ->join('tb_user', 'tb_transaksi_borong.id_user_transaksi', '=', 'tb_user.id_user')
+            ->join('tb_produkborong', 'tb_transaksi_borong.nama_bibit', '=', 'tb_produkborong.id')
+            // ->select('tb_transaksi_borong.*', 'tb_user.nama_user', 'tb_produkborong.name')
+            ->get();
+
+        $data = [
+            'menu' => 'tablemonitoring',
+            'submenu' => 'pelanggan',
+            'nama' => $users ->nama_user,
+            'tblTransaksi' => $tblTransaksi,
+        ];
+
+        return view('pelanggan/tablemonitoring', $data);
+    }
+
+
+
 }
+
+
+// mmonitoring bibit

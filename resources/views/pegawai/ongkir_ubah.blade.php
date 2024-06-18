@@ -13,19 +13,19 @@
             Ubah Data Ongkos Kirim
         </div>
         <div class="card-body">
-            <form method="post" action="<?= url('/') ?>/pegawai/ongkir/ubah/{{$dataongkir->ongkir_id}}">
+            <form method="post" action="<?= url('/') ?>/pegawai/ongkir/ubah/{{$dataongkir->kecamatan_id}}">
                 {{@csrf_field()}}
                 <div class="mb-3">
                     <label>Dikirim Dari</label>
-                    <input class="form-control" type="text" name="dari" value="{{$dataongkir->ongkir_fromlocation}}" placeholder="Isikan Dikirim Dari" required disabled />
+                    <input class="form-control" type="text" name="dari" value="kerosono" placeholder="Isikan Dikirim Dari" required disabled />
                 </div>
                 <div class="mb-3">
                     <label>Dikirim Ke</label>
-                    <input class="form-control" type="text" name="ke" value="{{$dataongkir->ongkir_tolocation}}" placeholder="Isikan Dikirim Ke" required />
+                    <input class="form-control" type="text" name="ke" value="{{$dataongkir->kecamatan_name}}" placeholder="Isikan Dikirim Ke" required />
                 </div>
                 <div class="mb-3">
                     <label>Harga</label>
-                    <input class="form-control" type="text" name="harga" value="{{$dataongkir->ongkir_price}}" placeholder="Isikan Harga" required />
+                    <input class="form-control" type="text" name="harga" value="{{$dataongkir->ongkir}}" placeholder="Isikan Harga" required />
                 </div>
                 <div class="form-floating mb-3">
                     <button class="btn btn-primary" type="submit"><i class="fa-solid fa-plus"></i> Ubah Data</button>

@@ -74,8 +74,8 @@
 
                     <button type="submit" name="action" value="cart" class="btn btn-primary">Tambah Ke Keranjang</button>
 
-                    <button id="showPopupBtn" class="btn btn-primary" type="button" style="display: none;">Beli Sekarang</button>
-                    <a href="<?= url('/') ?>/pelanggan/keranjang/bayar" class="btn_1">Beli Langsung</a>
+                    <a id="showPopupBtn" class="btn btn-primary" href="/pelanggan/bibitborongan" style="display: none;">Beli Dengan Luas Lahan</a>
+                    {{-- <a href="<?= url('/') ?>/pelanggan/keranjang/bayar" class="btn_1">Beli Langsung</a> --}}
                 </div>
                 </form>
                 <div class="col-2">

@@ -25,7 +25,7 @@
                                 </div>
                                 <div class="form-floating mb-3">
                                     <label for="inputNama">Nomor Telepon</label>
-                                    <input class="form-control" id="inputNomorTelepon" type="text" name="nomortelepon" placeholder="Isikan Nomor Telepon" />
+                                    <input class="form-control" id="inputNomorTelepon" type="number" name="nomortelepon" placeholder="Isikan Nomor Telepon" />
                                 </div>
                                 <div class="row mb-3">
                                     <div class="col-md-6">

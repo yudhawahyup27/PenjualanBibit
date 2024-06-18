@@ -45,6 +45,7 @@
                             <li><a class="dropdown-item" href="<?= url('/') ?>/pelanggan/statustransaksi">Status Transaksi</a></li>
                             <li><a class="dropdown-item" href="<?= url('/') ?>/profil">Profil</a></li>
                             <li><a class="dropdown-item" href="<?= url('/') ?>/alamat-pengiriman">Alamat Pengiriman</a></li>
+                            <li><a class="dropdown-item" href="<?= url('/') ?>/pelanggan/tablemonitoring">Monitor Bibit</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="<?= url('/') ?>/logout">Logout</a></li>
                         </ul>

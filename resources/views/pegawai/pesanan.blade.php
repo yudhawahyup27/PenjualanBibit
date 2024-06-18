@@ -1,4 +1,4 @@
-@extends('pegawai_core/core')
+@extends('pegawai_core.core')
 
 @section('content')
 <div class="container-fluid px-4">
@@ -37,21 +37,21 @@
                         </tr>
                     </tfoot>
                     <tbody>
-                        @foreach($tblTransaksi as $key)
+                        @foreach($pesen as $key)
                         <tr>
-                            <td>{{$key->created_transaksi}}</td>
-                            <td>{{$key->kode_transaksi}}</td>
-                            <td>{{$key->id_user_transaksi}}</td>
-                            <td>{{$key->nama_user}}</td>
-                            <td>Rp {{number_format((float)$key->total_transaksi, 0, ',','.')}}</td>
-                            <td>{{$key->status_name}}</td>
+                            <td>{{ $key->created_transaksi }}</td>
+                            <td>{{ $key->kode_transaksi }}</td>
+                            <td>{{ $key->id_user_transaksi }}</td>
+                            <td>{{ $key->nama_user }}</td>
+                            <td>Rp {{ number_format((float)$key->total_transaksi, 0, ',', '.') }}</td>
+                            <td>{{ $key->status_name }}</td>
                             <td>
                                 @if($key->status_transaksi == 1)
-                                <a class="btn btn-primary" href="<?= url('/') ?>/pegawai/pesanan/sudahbayar/{{$key->id_transaksi}}">Sudah Bayar</a>
+                                <a class="btn btn-primary" href="{{ url('/') }}/pegawai/pesanan/sudahbayar/{{ $key->id_transaksi }}">Sudah Bayar</a>
                                 @elseif($key->status_transaksi == 2)
-                                <a class="btn btn-primary" href="<?= url('/') ?>/pegawai/pesanan/sudahdikirim/{{$key->id_transaksi}}">Sudah Dikirim</a>
+                                <a class="btn btn-primary" href="{{ url('/') }}/pegawai/pesanan/sudahdikirim/{{ $key->id_transaksi }}">Sudah Dikirim</a>
                                 @elseif($key->status_transaksi == 3)
-                                <a class="btn btn-primary" href="<?= url('/') ?>/pegawai/pesanan/sudahditerima/{{$key->id_transaksi}}">Sudah Diterima</a>
+                                <a class="btn btn-primary" href="{{ url('/') }}/pegawai/pesanan/sudahditerima/{{ $key->id_transaksi }}">Sudah Diterima</a>
                                 @elseif($key->status_transaksi == 4)
                                 Sudah Diterima
                                 @endif
@@ -64,8 +64,6 @@
         </div>
     </div>
 </div>
-
-
 @endsection
 
 @section('js')

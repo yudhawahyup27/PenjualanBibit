@@ -82,9 +82,11 @@ Route::get('/pegawai/pesanan/sudahbayar/{id}', [Pegawai::class, 'pesanan_sudahba
 Route::get('/pegawai/pesanan/sudahdikirim/{id}', [Pegawai::class, 'pesanan_sudahdikirim']);
 Route::get('/pegawai/pesanan/sudahditerima/{id}', [Pegawai::class, 'pesanan_sudahditerima']);
 Route::get('/pegawai/monitoringbibit', [Pegawai::class, 'monitoringbibit']);
-Route::get('/pegawai/monitoringbibit/detail/{id}', [Pegawai::class, 'monitoringbibit_detail']);
-Route::get('/pegawai/monitoringbibit/detail/{id}/tambah', [Pegawai::class, 'monitoringbibit_tambah']);
-Route::post('/pegawai/monitoringbibit/detail/{id}/tambah', [Pegawai::class, 'monitoringbibit_create']);
+Route::get('/pegawai/monitoringbibit/detail/{id}', [Pegawai::class, 'monitoringbibit_detail'])->name('pegawai.monitoringbibit.detail');
+Route::post('/pegawai/monitoringbibit/detail/{id}', [Pegawai::class, 'monitoringbibit_detail']);
+
+// Route::get('/pegawai/monitoringbibit/detail/{id}/tambah', [Pegawai::class, 'monitoringbibit_tambah']);
+// Route::post('/pegawai/monitoringbibit/detail/{id}/tambah', [Pegawai::class, 'monitoringbibit_create']);
 Route::get('/pegawai/monitoringbibit/hapus/{id}', [Pegawai::class, 'monitoringbibit_delete']);
 
 Route::get('/pemilik', [Pemilik::class, 'redirectdashboard']);
@@ -102,7 +104,10 @@ Route::get('/pemilik/laporanpenjualan', [Pemilik::class, 'laporanpenjualan']);
 Route::get('/get-price/{id}', [Pelanggan::class, 'getPrice']);
 Route::get('/get-batang/{id}', [Pelanggan::class, 'getkuantitas']);
 Route::get('/pelanggan/bibitborongan', [Pelanggan::class,'bibitBorongan']);
+Route::get('/pelanggan/monitorbibit/{id}', [Pelanggan::class, 'monitoring'])->name('pelanggan.monitorbibit');
+Route::get('/pelanggan/tablemonitorbibit', [Pelanggan::class,'monitoring']);
 Route::post('/pelanggan/bibitborongan/checkout', [Pelanggan::class,'bayar_cart_borongan']);
 
+Route::get('/pelanggan/tablemonitoring', [Pelanggan::class, 'monitoringbibittable']);
 
 

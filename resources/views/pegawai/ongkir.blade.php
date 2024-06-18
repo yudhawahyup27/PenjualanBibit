@@ -39,13 +39,13 @@
                         @foreach($dataongkir as $key)
                         <tr>
                             <td>{{$loop->iteration}}</td>
-                            <td>{{$key->ongkir_fromlocation}}</td>
-                            <td>{{$key->ongkir_tolocation}}</td>
-                            <td>Rp {{$key->ongkir_price}}</td>
-                            <td>{{$key->ongkir_updated}}</td>
+                            <td>Kertosono</td>
+                            <td>{{$key->kecamatan_name}}</td>
+                            <td>Rp {{$key->ongkir}}</td>
+                            <td>{{$key->kecamatan_updated}}</td>
                             <td>
-                                <a href="<?= url('/') ?>/pegawai/ongkir/ubah/{{$key->ongkir_id}}" class="btn btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
-                                <a href="<?= url('/') ?>/pegawai/ongkir/hapus/{{$key->ongkir_id}}" class="btn btn-danger"><i class="fa-solid fa-trash"></i></a>
+                                <a href="<?= url('/') ?>/pegawai/ongkir/ubah/{{$key->kecamatan_id}}" class="btn btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
+                                <a href="<?= url('/') ?>/pegawai/ongkir/hapus/{{$key->kecamatan_id}}" class="btn btn-danger"><i class="fa-solid fa-trash"></i></a>
                             </td>
                         </tr>
                         @endforeach

@@ -81,7 +81,7 @@
                             <b>Rp {{ number_format($ongkir, 0, ',', '.') }}</b>
                         </h5>
                         <h5>Total Harga: <b>Rp {{ number_format($total, 0, ',', '.') }}</b></h5>
-                        <h5>Pengiriman Keranjang: <b>{{ $keranjang->pengiriman_keranjang }}</b></h5>
+                        {{-- <h5>Pengiriman Keranjang: <b>{{ $keranjang->pengiriman_keranjang }}</b></h5> --}}
                         @endif
                     </div>
                 </div>

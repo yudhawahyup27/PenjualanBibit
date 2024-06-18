@@ -17,7 +17,7 @@
                 {{@csrf_field()}}
                 <div class="mb-3">
                     <label>Umur</label>
-                    <input class="form-control" type="text" name="umur" placeholder="Isikan Umur" required />
+                    <input class="form-control" type="number" name="umur" placeholder="Isikan Umur" required />
                 </div>
                 <div class="mb-3">
                     <label>Tinggi</label>

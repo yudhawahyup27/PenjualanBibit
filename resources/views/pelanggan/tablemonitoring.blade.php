@@ -1,53 +1,54 @@
-@extends('pegawai_core/core')
+@extends('pelanggan_core/core_afterlogin')
+@section('css')
+<!-- SPECIFIC CSS -->
+<link href="css/product_page.css" rel="stylesheet">
+<!-- YOUR CUSTOM CSS -->
+<link href="css/custom.css" rel="stylesheet">
 
+@endSection
 @section('content')
 <div class="container-fluid px-4">
-    <h1 class="mt-4">Monitoring Bibit</h1>
+    <h1 class="mt-4">Produk Bibit</h1>
     <ol class="breadcrumb mb-4">
         <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
-        <li class="breadcrumb-item active">Monitoring Bibit</li>
+        <li class="breadcrumb-item active">Produk Bibit</li>
     </ol>
     <div class="card mb-4">
         <div class="card-header">
-            List Data Monitoring Bibit
+            List Data Stok Bibit
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table" id="datatablesSimple">
+                <table class="table table-responsive" id="datatablesSimple">
                     <thead>
                         <tr>
-                            <th>Ditambahkan</th>
-                            <th>Kode Transaksi</th>
-                            <th>Id User</th>
-                            <th>Nama Pelanggan</th>
-                            <th>Nama Bibit</th>
-                            <th>Status</th>
-                            <th>Aksi</th>
+                            <th>No</th>
+                            <th>Kode Barang</th>
+                          <th>Nama Bibit</th>
+                            <th>Stok </th>
+                            <th>Diupdate</th>
                         </tr>
                     </thead>
                     <tfoot>
                         <tr>
-                            <th>Ditambahkan</th>
-                            <th>Kode Transaksi</th>
-                            <th>Id User</th>
-                            <th>Nama Pelanggan</th>
+                            <th>No</th>
+                            <th>Kode Barang</th>
                             <th>Nama Bibit</th>
-                            <th>Status</th>
-                            <th>Aksi</th>
+                            <th>Stok </th>
+                            <th>Diupdate</th>
                         </tr>
                     </tfoot>
                     <tbody>
-                        @foreach($tblTransaksi as $key)
+                         @foreach($tblTransaksi as $key)
                         <tr>
                             <td>{{ $key->created_at }}</td>
                             <td>{{ $key->kode_transaksi }}</td>
-                            <td>{{ $key->id_user_transaksi }}</td>
-                            <td>{{ $key->nama_user }}</td>
                             <td>{{ $key->name }}</td>
                             <td>{{ $key->status_transaksi }}</td>
                             <td>
-                                <a class="btn btn-primary" href="{{ route('pegawai.monitoringbibit.detail', ['id' => $key->kode_transaksi]) }}">Tambah Data Monitoring</a>
+                                <a class="btn btn-primary" href="{{ route('pelanggan.monitorbibit', ['id' => $key->kode_transaksi]) }}">Lihat Data Monitoring</a>
                             </td>
+
                         </tr>
                         @endforeach
                     </tbody>
@@ -56,6 +57,8 @@
         </div>
     </div>
 </div>
+
+
 @endsection
 
 @section('js')
@@ -68,4 +71,4 @@
         });
     });
 </script>
-@endsection
+@endSection

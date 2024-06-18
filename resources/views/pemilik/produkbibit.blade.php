@@ -12,7 +12,7 @@
             List Data Produk Bibit
         </div>
         <div class="card-body">
-            <a class="btn btn-primary" href="<?= url('/') ?>/pemilik/produkbibit/tambah"><i class="fa-solid fa-plus"></i> Tambah Data</a>
+
             <div class="table-responsive">
             <table class="table table-striped table-bordered dataTable display" id="datatablesSimple" cellspacing="0" width="100%">
                     <thead>
@@ -24,8 +24,7 @@
                             <th>Harga </th>
                             <th>Gambar </th>
                             <th>Terjual </th>
-                            <th>Status </th>
-                            <th>#</th>
+
                         </tr>
                     </thead>
                     <tfoot>
@@ -37,8 +36,8 @@
                             <th>Harga </th>
                             <th>Gambar </th>
                             <th>Terjual </th>
-                            <th>Status </th>
-                            <th>#</th>
+
+
                         </tr>
                     </tfoot>
                     <tbody>
@@ -59,17 +58,8 @@
                                 {{ $key->terjual_bibit }}
                                 @endif
                             </td>
-                            <td>
-                                @if($key->status_bibit == 1)
-                                Aktif
-                                @else
-                                Tidak Aktif
-                                @endif
-                            </td>
-                            <td>
-                                <a href="<?= url('/') ?>/pemilik/produkbibit/ubah/{{$key->id_produk}}" class="btn btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
-                                <a href="<?= url('/') ?>/pemilik/produkbibit/hapus/{{$key->id_produk}}" class="btn btn-danger"><i class="fa-solid fa-trash"></i></a>
-                            </td>
+                          
+
                         </tr>
                         @endforeach
                     </tbody>

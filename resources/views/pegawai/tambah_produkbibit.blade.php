@@ -17,7 +17,7 @@
                 {{@csrf_field()}}
                 <div class="mb-3">
                     <label>Nama User</label>
-                    <select name="user" class="form-select">
+                    <select hidden name="user" class="form-select">
                         <option selected disabled>--- Pilih User ---</option>
                         @foreach($getuserpemilik as $key)
                         <option value="{{$key->id_user}}">{{$key->nama_user}}</option>
