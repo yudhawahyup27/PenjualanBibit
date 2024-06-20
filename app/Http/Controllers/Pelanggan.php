@@ -319,14 +319,11 @@ class Pelanggan extends Controller
         $request->session()->flush();
         return redirect('/');
     }
-
-    public function cart_create(Request $request)
+    public function cart_create(Request $request, $id_produk)
     {
         date_default_timezone_set('Asia/Jakarta');
-        $uri_one = request()->segment(3);
         $getSesionId = $request->session()->get('id');
-        $getProduk = DB::table('tb_produk')->where('id_produk', $uri_one)->first();
-
+        $getProduk = DB::table('tb_produk')->where('id_produk', $id_produk)->first();
 
         // Hitung total terjual dan total sisa stok
         $totalterjual = $getProduk->terjual_bibit + $request->qty;
@@ -346,7 +343,7 @@ class Pelanggan extends Controller
 
                 // Insert ke tabel keranjang
                 DB::table('tb_keranjang')->insert([
-                    'keranjang_id_produk' => $uri_one,
+                    'keranjang_id_produk' => $id_produk,
                     'keranjang_id_user' => $getSesionId,
                     'qty_keranjang' => $request->qty,
                     'pengiriman_keranjang' => $pengiriman,
@@ -356,13 +353,37 @@ class Pelanggan extends Controller
 
                 // Update total terjual dan sisa stok
                 DB::table('tb_produk')
-                    ->where('id_produk', $uri_one)
+                    ->where('id_produk', $id_produk)
                     ->update([
                         'terjual_bibit' => $totalterjual,
                         'stok_bibit' => $sisa_stok
                     ]);
 
                 return redirect()->to('/pelanggan/keranjang');
+            } elseif ($request->action == 'beli_langsung') {
+                // Handle direct purchase logic here
+                // You can insert the purchase directly into another table, or handle it as per your business logic
+                // For demonstration, we'll just insert into a hypothetical tb_pembelian table
+
+                $pengiriman = $request->pengiriman;
+                $ongkir = 0; // Set ongkir default
+
+                // Jika pengiriman kecamatan, ambil ongkir dari tabel kecamatan
+                if ($pengiriman != 0) {
+                    $kecamatan = DB::table('tb_kecamatan')->where('kecamatan_id', $pengiriman)->first();
+                    $ongkir = $kecamatan->ongkir;
+                }
+
+                DB::table('tb_keranjang')->insert([
+                    'keranjang_id_produk' => $id_produk,
+                    'keranjang_id_user' => $getSesionId,
+                    'qty_keranjang' => $request->qty,
+                    'pengiriman_keranjang' => $pengiriman,
+                    'price_keranjang' => $getProduk->harga_bibit * $request->qty + $ongkir, // Tambahkan ongkir ke harga total
+                    'created_keranjang'  => date('Y-m-d H:i:s'),
+                ]);
+                // Optionally, redirect to a success page or handle as needed
+                return redirect()->to('/pelanggan/keranjang/bayar'); // Example redirect to payment page
             }
         } else {
             // Pesanan melebihi stok yang tersedia, tangani kesalahan di sini
@@ -499,66 +520,78 @@ class Pelanggan extends Controller
     }
 
 
-    public function detail_cart_payment(Request $request)
-    {
-        date_default_timezone_set('Asia/Jakarta');
-        $uri_one = request()->segment(3);
-        $getSesionId = $request->session()->get('id');
-        $users = DB::table('tb_user')->where('id_user', $getSesionId)->first();
-        $product = DB::table('tb_produk')->where('id_produk', $uri_one)->first();
-        $produkborong = DB::table('tb_produkborong')->where('id', $uri_one)->first();
+  public function detail_cart_payment(Request $request)
+{
+    date_default_timezone_set('Asia/Jakarta');
+    $uri_one = $request->segment(3);
+    $getSesionId = $request->session()->get('id');
+    $users = DB::table('tb_user')->where('id_user', $getSesionId)->first();
+    $product = DB::table('tb_produk')->where('id_produk', $uri_one)->first();
+    $produkborong = DB::table('tb_produkborong')->where('id', $uri_one)->first();
 
-        // Ambil semua item keranjang dengan informasi tambahan
-        $cart = DB::table('tb_keranjang')
-                ->join('tb_produk', 'tb_keranjang.keranjang_id_produk', '=', 'tb_produk.id_produk')
+    // Ambil semua item keranjang dengan informasi tambahan
+    $cart = DB::table('tb_keranjang')
+            ->join('tb_produk', 'tb_keranjang.keranjang_id_produk', '=', 'tb_produk.id_produk')
+            ->leftJoin('tb_kecamatan', function($join) {
+                $join->on('tb_keranjang.pengiriman_keranjang', '=', 'tb_kecamatan.kecamatan_id')
+                     ->where('tb_keranjang.pengiriman_keranjang', '!=', 0); // Hanya ambil ongkir jika bukan ambil di toko
+            })
+            ->select('tb_keranjang.*', 'tb_produk.gambar_bibit', 'tb_produk.nama_bibit', 'tb_produk.harga_bibit', 'tb_kecamatan.kecamatan_name', 'tb_kecamatan.ongkir')
+            ->where('keranjang_id_user', $getSesionId)
+            ->get();
+
+    // Hitung jumlah total item dalam keranjang
+    $countCart = DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->count();
+
+    // Ambil semua metode pembayaran
+    $metodepembayaran = DB::table('tb_metodepembayaran')->get();
+
+    // Hitung total harga semua item dalam keranjang
+    $sumPrice = DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->sum('price_keranjang');
+
+    // Ambil detail pertama dari keranjang untuk informasi tambahan
+    $keranjang = DB::table('tb_keranjang')
                 ->leftJoin('tb_kecamatan', function($join) {
                     $join->on('tb_keranjang.pengiriman_keranjang', '=', 'tb_kecamatan.kecamatan_id')
                          ->where('tb_keranjang.pengiriman_keranjang', '!=', 0); // Hanya ambil ongkir jika bukan ambil di toko
                 })
-                ->select('tb_keranjang.*', 'tb_produk.gambar_bibit', 'tb_produk.nama_bibit', 'tb_produk.harga_bibit', 'tb_kecamatan.kecamatan_name', 'tb_kecamatan.ongkir')
+                ->select('tb_keranjang.*', 'tb_kecamatan.ongkir')
                 ->where('keranjang_id_user', $getSesionId)
-                ->get();
+                ->first();
 
-        // Hitung jumlah total item dalam keranjang
-        $countCart = DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->count();
-
-        // Ambil semua metode pembayaran
-        $metodepembayaran = DB::table('tb_metodepembayaran')->get();
-
-        // Hitung total harga semua item dalam keranjang
-        $sumPrice = DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->sum('price_keranjang');
-
-        // Ambil detail pertama dari keranjang untuk informasi tambahan
-        $keranjang = DB::table('tb_keranjang')
-                    ->leftJoin('tb_kecamatan', function($join) {
-                        $join->on('tb_keranjang.pengiriman_keranjang', '=', 'tb_kecamatan.kecamatan_id')
-                             ->where('tb_keranjang.pengiriman_keranjang', '!=', 0); // Hanya ambil ongkir jika bukan ambil di toko
-                    })
-                    ->select('tb_keranjang.*', 'tb_kecamatan.ongkir')
-                    ->where('keranjang_id_user', $getSesionId)
-                    ->first();
-
-        // Jika keranjang kosong, redirect ke halaman keranjang
-        if (!$keranjang) {
-            return redirect('/pengguna/keranjang');
-        }
-
-        // Siapkan data untuk dikirim ke view
-        $data = [
-            'menu' => 'home',
-            'submenu' => 'pelanggan',
-            'nama' => $users->nama_user,
-            'produk' => $product,
-            'cart' => $cart,
-            'produkborong' => $produkborong,
-            'countCart' => $countCart,
-            'metodepembayaran' => $metodepembayaran,
-            'sumPrice' => $sumPrice,
-            'keranjang' => $keranjang,
-        ];
-
-        return view('pelanggan/checkoutcart', $data);
+    // Jika keranjang kosong, redirect ke halaman keranjang
+    if (!$keranjang) {
+        return redirect('/pengguna/keranjang');
     }
+
+
+    // Siapkan data untuk dikirim ke view
+    $data = [
+        'menu' => 'home',
+        'submenu' => 'pelanggan',
+        'nama' => $users->nama_user,
+        'produk' => $product,
+        'cart' => $cart,
+        'produkborong' => $produkborong,
+        'countCart' => $countCart,
+        'metodepembayaran' => $metodepembayaran,
+        'sumPrice' => $sumPrice,
+        'keranjang' => $keranjang,
+    ];
+
+    // Handle aksi Beli Langsung
+    if ($request->action == 'direct') {
+        // Lakukan proses pembelian langsung di sini sesuai logika bisnis Anda
+        // Contoh: Panggil fungsi atau method yang sesuai untuk melakukan pembelian langsung
+        // Simpan ke database, lakukan validasi, dll.
+
+        // Redirect ke halaman status transaksi atau halaman konfirmasi pembelian
+        return redirect('/pelanggan/statustransaksi')->with('success', 'Pembelian berhasil dilakukan.');
+    }
+
+    // Jika bukan aksi Beli Langsung, kembalikan view checkoutcart
+    return view('pelanggan/checkoutcart', $data);
+}
 
 
 
@@ -661,37 +694,42 @@ class Pelanggan extends Controller
             date_default_timezone_set('Asia/Jakarta');
             $uri_one = request()->segment(4);
             $getSesionId = $request->session()->get('id');
-            $users = DB::table('tb_user')->where('id_user', $getSesionId)->limit(1)->first();
+            $users = DB::table('tb_user')->where('id_user', $getSesionId)->first();
 
             $cart = DB::table('tb_transaksi')->where('id_transaksi', $uri_one)->first();
 
-            $getStatusTransaksi_one = DB::table('tb_statuspengiriman')->join('tb_status', 'tb_statuspengiriman.statuspengiriman_id_status', '=', 'tb_status.status_id')->where('statuspengiriman_kodetransaksi', $cart->kode_transaksi)->where('statuspengiriman_id_status', '1')->first();
-            $getStatusTransaksi_two = DB::table('tb_statuspengiriman')->join('tb_status', 'tb_statuspengiriman.statuspengiriman_id_status', '=', 'tb_status.status_id')->where('statuspengiriman_kodetransaksi', $cart->kode_transaksi)->where('statuspengiriman_id_status', '2')->first();
-            $getStatusTransaksi_three = DB::table('tb_statuspengiriman')->join('tb_status', 'tb_statuspengiriman.statuspengiriman_id_status', '=', 'tb_status.status_id')->where('statuspengiriman_kodetransaksi', $cart->kode_transaksi)->where('statuspengiriman_id_status', '3')->first();
-            $getStatusTransaksi_four = DB::table('tb_statuspengiriman')->join('tb_status', 'tb_statuspengiriman.statuspengiriman_id_status', '=', 'tb_status.status_id')->where('statuspengiriman_kodetransaksi', $cart->kode_transaksi)->where('statuspengiriman_id_status', '4')->first();
+            // Ambil status dari tb_statuspengiriman untuk kode transaksi tertentu
+            $statusTransaksis = DB::table('tb_statuspengiriman')
+                ->select('tb_statuspengiriman.*', 'tb_status.status_name')
+                ->join('tb_status', 'tb_statuspengiriman.statuspengiriman_id_status', '=', 'tb_status.status_id')
+                ->where('statuspengiriman_kodetransaksi', $cart->kode_transaksi)
+                ->whereIn('statuspengiriman_id_status', [1, 2, 3, 4])
+                ->get();
 
-            $getTransaction   = DB::table('tb_transaksi_keranjang')
+                // dd($statusTransaksis);
+                // Ambil transaksi produk dari tb_transaksi_keranjang untuk kode transaksi tertentu
+                $getTransaction = DB::table('tb_transaksi_keranjang')
                 ->join('tb_produk', 'tb_transaksi_keranjang.keranjang_id_produk', '=', 'tb_produk.id_produk')
-                ->join('tb_kecamatan', 'tb_transaksi_keranjang.pengiriman_keranjang', '=', 'tb_kecamatan.kecamatan_id')
-                ->where('kode_transaksi_keranjang', $cart->kode_transaksi)->get();
+                // ->join('tb_kecamatan', 'tb_transaksi_keranjang.pengiriman_keranjang', '=', 'tb_kecamatan.kecamatan_id')
+                ->where('kode_transaksi_keranjang', $cart->kode_transaksi)
+                ->get();
+                // dd($getTransaction);
 
             $data = [
-                'menu'                  =>  'home',
-                'submenu'               =>  'pelanggan',
-                'nama'                  =>   $users->nama_user,
-                'cart'                  =>   $cart,
-                'getStatusTransaksi_one'    =>   $getStatusTransaksi_one,
-                'getStatusTransaksi_two'    =>   $getStatusTransaksi_two,
-                'getStatusTransaksi_three'  =>   $getStatusTransaksi_three,
-                'getStatusTransaksi_four'   =>   $getStatusTransaksi_four,
-                'getTransaction'            =>   $getTransaction,
+                'menu'                  => 'home',
+                'submenu'               => 'pelanggan',
+                'nama'                  => $users->nama_user,
+                'cart'                  => $cart,
+                'statusTransaksis'      => $statusTransaksis,
+                'getTransaction'        => $getTransaction,
             ];
 
             return view('pelanggan/statustransaksi_detail', $data);
-        }else {
+        } else {
             return redirect()->to('/');
         }
     }
+
 
     public function monitoring(Request $request, $id)
     {

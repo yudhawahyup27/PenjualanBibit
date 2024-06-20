@@ -96,84 +96,88 @@ class Pegawai extends Controller
         }
 
         // Validasi input
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'nama' => 'required|string|max:255',
-            'detail' => 'required|string',
+            'detail' => 'nullable|string',
             'harga' => 'required|numeric|min:0',
             'stok' => 'required|integer|min:0',
-            'image1' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Contoh validasi untuk file gambar
+            'image1' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Jika validasi gagal, kembalikan dengan pesan error
-        if ($validator->fails()) {
-            return redirect()
-                ->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
+        try {
+            // Generate kode bibit
+            $getProdukById = DB::table('tb_produk')->orderBy('id_produk', 'DESC')->limit(1)->first();
+            if ($getProdukById) {
+                $urutan = (int) substr($getProdukById->kode_bibit, 3, 3);
+                $urutan++;
+                $huruf = "A";
+                $kodeBarang = $huruf . sprintf("%03s", $urutan);
+            } else {
+                $kodeBarang = 'A001';
+            }
 
-        // Logika untuk pembuatan kode barang
-        $getProdukById = DB::table('tb_produk')->orderBy('id_produk', 'DESC')->limit(1)->first();
-        if ($getProdukById) {
-            $urutan = (int) substr($getProdukById->kode_bibit, 3, 3);
-            $urutan++;
-            $huruf = "A";
-            $kodeBarang = $huruf . sprintf("%03s", $urutan);
-        } else {
-            $kodeBarang = 'A001';
-        }
+            // Proses upload gambar jika ada
+            if ($request->hasFile('image1')) {
+                $imageName = rand(1000, 9999) . time() . '.' . $request->image1->extension();
+                $request->image1->move(public_path('images'), $imageName);
+            } else {
+                $imageName = null;
+            }
 
-        // Mengelola file gambar
-        if ($request->hasFile('image1')) {
-            $imageName = time() . '_' . $request->image1->getClientOriginalName();
-            $request->image1->move(public_path('images'), $imageName);
-        } else {
-            return redirect()->back()->with('error', 'Gambar tidak ditemukan');
-        }
+            // Cek apakah nama bibit sudah ada
+            $getCount_fromNama = DB::table('tb_produk')->where('nama_bibit', $request->nama)->count();
+            if ($getCount_fromNama < 1) {
+                // Insert data produk baru
+                DB::table('tb_produk')->insert([
+                    'kode_bibit' => $kodeBarang,
+                    'produk_id_user' => "23",
+                    'nama_bibit' => $request->nama,
+                    'detail_bibit' => $request->detail,
+                    'harga_bibit' => $request->harga,
+                    'stok_bibit' => $request->stok,
+                    'gambar_bibit' => $imageName,
+                    'status_bibit' => '1',
+                    'created_produk' => date('Y-m-d H:i:s'),
+                ]);
+                // Insert atau update stok
+                DB::table('tb_stok')->updateOrInsert(
+                    ['stok_kode_barang' => $kodeBarang],
+                    [
+                        'nama_bibit' => $request->nama,
+                        'stok_jumlah' => $request->stok,
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at' => date('Y-m-d H:i:s'),
+                    ]
+                );
+            } else {
+                // Jika nama bibit sudah ada, update stok
+                $getData_fromNama = DB::table('tb_produk')->where('nama_bibit', $request->nama)->first();
+                $getDataStok = DB::table('tb_stok')->where('stok_kode_barang', $getData_fromNama->kode_bibit)->first();
+                DB::table('tb_produk')->insert([
+                    'kode_bibit' => $getData_fromNama->kode_bibit,
+                    'produk_id_user' => "23",
+                    'nama_bibit' => $request->nama,
+                    'detail_bibit' => $request->detail,
+                    'harga_bibit' => $request->harga,
+                    'stok_bibit' => $request->stok,
+                    'gambar_bibit' => $imageName,
+                    'status_bibit' => '1',
+                    'created_produk' => date('Y-m-d H:i:s'),
+                ]);
+                DB::table('tb_stok')->where('stok_kode_barang', $getData_fromNama->kode_bibit)->update([
+                    'stok_jumlah' => $getDataStok->stok_jumlah + $request->stok,
+                    'nama_bibit' => $getDataStok->nama_bibit . ' ' . $request->nama,
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ]);
+            }
 
-        // Menyimpan data produk bibit ke dalam database
-        $getCount_fromNama = DB::table('tb_produk')->where('nama_bibit', $request->nama)->count();
-        if ($getCount_fromNama < 1) {
-            DB::table('tb_produk')->insert([
-                'kode_bibit' => $kodeBarang,
-                'produk_id_user' => "18",
-                'nama_bibit' => $request->nama,
-                'detail_bibit' => $request->detail,
-                'harga_bibit' => $request->harga,
-                'stok_bibit' => $request->stok,
-                'gambar_bibit' => $imageName,
-                'status_bibit' => '1',
-                'created_produk' => now(),
-            ]);
-            DB::table('tb_stok')->insert([
-                'stok_kode_barang' => $kodeBarang,
-                'nama_bibit' => $request->nama,
-                'stok_jumlah' => $request->stok,
-                'created_at' => now(),
-            ]);
-        } else {
-            $getData_fromNama = DB::table('tb_produk')->where('nama_bibit', $request->nama)->first();
-            $getDataStok = DB::table('tb_stok')->where('stok_kode_barang', $getData_fromNama->kode_bibit)->first();
-            DB::table('tb_produk')->insert([
-                'kode_bibit' => $getData_fromNama->kode_bibit,
-                'produk_id_user' => "18",
-                'nama_bibit' => $request->nama,
-                'detail_bibit' => $request->detail,
-                'harga_bibit' => $request->harga,
-                'stok_bibit' => $request->stok,
-                'gambar_bibit' => $imageName,
-                'status_bibit' => '1',
-                'created_produk' => now(),
-            ]);
-            DB::table('tb_stok')->where('stok_kode_barang', $getData_fromNama->kode_bibit)->update([
-                'stok_jumlah' => $getDataStok->stok_jumlah + $request->stok,
-                'nama_bibit' => $getDataStok->nama_bibit . " " . $request->nama,
-                'updated_at' => now(),
-            ]);
+            return redirect()->to('/pegawai/produkbibit');
+        } catch (\Exception $e) {
+            // Tangkap dan tampilkan error jika terjadi
+            dd($e->getMessage());
         }
-
-        return redirect()->to('/pegawai/produkbibit')->with('success', 'Produk berhasil ditambahkan');
     }
+
 
     public function delete_produkbibit(Request $request)
     {

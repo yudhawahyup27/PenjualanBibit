@@ -57,7 +57,7 @@
                                 <?= number_format((float)$key->harga_bibit, 0, ',', '.') ?>
                             </td>
                             <td>{{$key->stok_bibit}}</td>
-                            <td><img width="20%" src="<?= url('/') ?>/images/<?= $key->gambar_bibit ?>" alt=""></td>
+                            <td><img width="100" src="<?= url('/') ?>/images/<?= $key->gambar_bibit ?>" alt=""></td>
                             <td>
                                 @if($key->terjual_bibit == 0)
                                 0

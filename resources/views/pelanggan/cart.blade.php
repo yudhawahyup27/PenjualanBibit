@@ -57,23 +57,48 @@
                         </tbody>
                     </table>
                 </div>
-                <div><a href="{{ url('/pelanggan/keranjang/bayar') }}" class="btn_1">Buat Pesanan</a></div>
+                <div><a href="{{ url('/pelanggan/keranjang/bayar') }}" class="btn_1">Buat Pesanan</a>
+
+                </div>
                 @endif
             </div>
         </div>
     </div>
 </div>
+<div class="modal fade" id="quantityModal" tabindex="-1" role="dialog" aria-labelledby="quantityModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="quantityModalLabel">Peringatan</h5>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          Kuantitas Anda Sudah Lebih dari max kuantitas Eceran, <br>
+          Silakan Pesan Borongan
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 @endSection
 
 @section('scripts')
 <script>
     document.querySelectorAll('.qty-input').forEach(function(input) {
-        input.addEventListener('change', function() {
+        input.addEventListener('input', function() {
             var price = parseFloat(this.dataset.price);
             var qty = parseInt(this.value);
             var total = price * qty;
             var id = this.dataset.id;
             document.getElementById('total-' + id).innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
+
+            if (qty >= 350) {
+                $('#quantityModal').modal('show'); // Show the Bootstrap modal
+            }
         });
     });
 </script>

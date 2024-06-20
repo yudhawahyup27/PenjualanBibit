@@ -14,7 +14,7 @@
         <div class="card-body">
             <form action="{{ url('/pegawai/monitoringbibit/detail', ['id' => $id ]) }}" method="post" enctype="multipart/form-data">
                 @csrf
-                <input type="text" value="{{ $id }}">
+                <input hidden    type="text" value="{{ $id }}">
                 <div class="mb-3">
                     <label for="formFile" class="form-label">Masukan Gambar Bibit</label>
                     <input class="form-control" type="file" id="formFile" name="perkembangan_gambar" required>
@@ -29,7 +29,7 @@
                 </div>
                 <div class="mb-3">
                     <label for="exampleFormControlInput1" class="form-label">Tinggi</label>
-                    <input type="text" class="form-control" id="exampleFormControlInput1" name="perkembangan_tinggi" required>
+                    <input type="number" class="form-control" id="exampleFormControlInput1" name="perkembangan_tinggi" required>
                 </div>
                 <div class="mb-3">
                     <label for="exampleFormControlTextarea1" class="form-label">Keterangan</label>
@@ -71,8 +71,8 @@
                     {{-- <td>{{ $key->perkembangan_kode_transaksi }}</td> --}}
                     <td><img src="{{ asset('image/' . $key->perkembangan_gambar) }}" alt="Gambar Perkembangan" width="100"></td>
                     <td>{{ $key->perkembangan_tanggal }}</td>
-                    <td>{{ $key->perkembangan_umur }}</td>
-                    <td>{{ $key->perkembangan_tinggi }}</td>
+                    <td>{{ $key->perkembangan_umur }} Hari</td>
+                    <td>{{ $key->perkembangan_tinggi }} cm</td>
                     <td>{{ $key->perkembangan_deskripsi }}</td>
                     </tr>
                 @endforeach

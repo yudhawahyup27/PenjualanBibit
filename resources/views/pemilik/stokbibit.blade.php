@@ -18,7 +18,7 @@
                         <tr>
                             <th>No</th>
                             <th>Kode Barang</th>
-                            <!-- <th>Nama Bibit</th> -->
+                           <th>Nama Bibit</th>
                             <th>Stok </th>
                             <th>Diupdate</th>
                         </tr>
@@ -27,6 +27,7 @@
                         <tr>
                             <th>No</th>
                             <th>Kode Barang</th>
+                            <th>Nama Bibit</th>
                             <th>Stok </th>
                             <th>Diupdate</th>
                         </tr>
@@ -36,6 +37,7 @@
                         <tr>
                             <td>{{$loop->iteration}}</td>
                             <td>{{$key->stok_kode_barang}}</td>
+                            <td>{{ $key->nama_bibit? $key->nama_bibit : 'Belum ada data'}}</td>
                             <td>{{$key->stok_jumlah}}</td>
                             <td>{{$key->updated_at}}</td>
                         </tr>

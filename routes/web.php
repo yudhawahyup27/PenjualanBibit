@@ -28,12 +28,12 @@ Route::get('/logout', [Pelanggan::class, 'logout']);
 
 Route::get('/pelanggan', [Pelanggan::class, 'pelanggan']);
 Route::get('/pelanggan/detail/{id}', [Pelanggan::class, 'detail_product']);
-Route::post('/pelanggan/detail/{id}/beli', [Pelanggan::class, 'cart_create']);
+Route::post('/pelanggan/detail/{id_produk}/beli', [Pelanggan::class, 'cart_create'])->name('cart.create');
 Route::get('/pelanggan/pembayaran/{id}', [Pelanggan::class, 'payment_product']);
 Route::get('/pelanggan/keranjang/', [Pelanggan::class, 'detail_cart']);
 Route::get('/pelanggan/keranjang/{id}/hapus', [Pelanggan::class, 'delete_cart_product']);
 Route::get('/pelanggan/keranjang/bayar', [Pelanggan::class, 'detail_cart_payment']);
-Route::post('/pelanggan/bayarsekarang', [Pelanggan::class, 'detail_cart_payment_create']);
+Route::post('/pelanggan/bayarsekarang', [Pelanggan::class, 'detail_cart_payment_create'])->name('bayar.sekarang');
 Route::get('/pelanggan/statustransaksi', [Pelanggan::class, 'status_transaksi']);
 Route::get('/pelanggan/statustransaksi/detail/{id}', [Pelanggan::class, 'status_transaksi_detail']);
 

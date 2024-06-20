@@ -49,8 +49,8 @@
             <input name="harga_bibit" id="harga_bibit" class="form-control" type="text" placeholder="Harga" readonly>
         </div>
         <div class="mb-3">
-            <label for="tanggal_tanam" class="form-label">Tanggal Tanam</label>
-            <input name="tanggal_tanam" type="date" class="form-control" id="tanggal_tanam" value="{{ $tanggalTanam }}" required>
+            <label for="tanggal_tanam" class="form-label">Tanggal Penngiriman</label>
+            <input name="tanggal_tanam" type="date" class="form-control" id="tanggal_tanam" value="{{ $tanggalTanam }}" disabled required>
         </div>
         <div class="custom-select-container">
             <label for="lahan_select" class="form-label">Luas Lahan</label>
@@ -74,19 +74,13 @@
         </div>
         <div class="my-3">
             <label for="jumlah_perbatang" class="form-label">Kuantitas Bibit</label>
-            <input name="jumlah_perbatang" id="jumlah_perbatang" class="form-control" type="number" placeholder="Kuantitas Bibit" required>
+            <input name="jumlah_perbatang" id="jumlah_perbatang" class="form-control" type="number" placeholder="Kuantitas Bibit" required disabled>
         </div>
         <div class="my-3">
             <label for="total" class="form-label">Total Bayar</label>
             <input name="total" id="total" class="form-control" type="text" placeholder="Total Bayar" readonly>
         </div>
-        <div class="my-3">
-            <label for="bukti_pembayaran" class="form-label">Bukti Pembayaran</label>
-            <div class="custom-file">
-                <input name="bukti_pembayaran" type="file" class="custom-file-input" id="customFile" required>
-                <label class="custom-file-label" for="customFile">Choose file</label>
-            </div>
-        </div>
+
         <div class="my-3">
             <label for="pengiriman" class="form-label">Pilih Pengiriman</label>
             <select name="pengiriman" id="pengiriman" class="form-control" required>
@@ -108,6 +102,13 @@
                 @endforeach
             </select>
         </div>
+        <div class="my-3">
+            <label for="bukti_pembayaran" class="form-label">Bukti Pembayaran</label>
+            <div class="custom-file">
+                <input name="bukti_pembayaran" type="file" class="custom-file-input" id="customFile" required>
+                <label class="custom-file-label" for="customFile">Choose file</label>
+            </div>
+        </div>
         <button type="submit" class="btn btn-primary">Checkout</button>
     </div>
 </form>
@@ -119,7 +120,12 @@
         var ongkir = parseFloat(document.getElementById('pengiriman').value) || 0;
 
         var total = kuantitas * hargaSatuan + ongkir;
-        document.getElementById('total').value = isNaN(total) ? '0.00' : total.toFixed(2);
+        let totalrupiah = total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+        document.getElementById('total').value = isNaN(totalrupiah) ? '0' : totalrupiah;
+
+
+
     }
 
     document.addEventListener('DOMContentLoaded', function() {
