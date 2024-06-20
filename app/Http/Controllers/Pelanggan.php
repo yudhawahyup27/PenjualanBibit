@@ -701,7 +701,7 @@ class Pelanggan extends Controller
             // Ambil status dari tb_statuspengiriman untuk kode transaksi tertentu
             $statusTransaksis = DB::table('tb_statuspengiriman')
                 ->select('tb_statuspengiriman.*', 'tb_status.status_name')
-                ->join('tb_status', 'tb_statuspengiriman.statuspengiriman_id_status', '=', 'tb_status.status_id')
+                ->join('tb_status', 'tb_statuspengiriman.statuspengiriman_id_status', '=', 'tb_status.status_id'https://docs.google.com/spreadsheets/d/1ITsewUfN29kHMOfOQbDV3aA24MbTCRmT5u1lVR0plGo/edit?usp=sharing)
                 ->where('statuspengiriman_kodetransaksi', $cart->kode_transaksi)
                 ->whereIn('statuspengiriman_id_status', [1, 2, 3, 4])
                 ->get();
