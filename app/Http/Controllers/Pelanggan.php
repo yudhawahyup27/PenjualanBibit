@@ -160,9 +160,9 @@ class Pelanggan extends Controller
 
     public function getPrice($id)
     {
-        $product = DB::table('tb_produkborong')->find($id);
+        $product = DB::table('tb_produk')->find($id);
         if ($product) {
-            return response()->json(['harga' => $product->harga]);
+            return response()->json(['harga_borong' => $product->harga_borong]);
         } else {
             return response()->json(['error' => 'Produk tidak ditemukan'], 404);
         }
@@ -455,7 +455,7 @@ class Pelanggan extends Controller
     {
         $getSesionId = $request->session()->get('id');
         $users = DB::table('tb_user')->where('id_user', $getSesionId)->first();
-        $produkborong = DB::table('tb_produkborong')->get();
+        $produkborong = DB::table('tb_produk')->get();
         $lahan = DB::table('luas_tb')->get();
         $kecamatan = DB::table('tb_kecamatan')->get();
         $metodepembayaran = DB::table('tb_metodepembayaran')->get();
@@ -701,7 +701,7 @@ class Pelanggan extends Controller
             // Ambil status dari tb_statuspengiriman untuk kode transaksi tertentu
             $statusTransaksis = DB::table('tb_statuspengiriman')
                 ->select('tb_statuspengiriman.*', 'tb_status.status_name')
-                ->join('tb_status', 'tb_statuspengiriman.statuspengiriman_id_status', '=', 'tb_status.status_id'https://docs.google.com/spreadsheets/d/1ITsewUfN29kHMOfOQbDV3aA24MbTCRmT5u1lVR0plGo/edit?usp=sharing)
+                ->join('tb_status', 'tb_statuspengiriman.statuspengiriman_id_status', '=', 'tb_status.status_id')
                 ->where('statuspengiriman_kodetransaksi', $cart->kode_transaksi)
                 ->whereIn('statuspengiriman_id_status', [1, 2, 3, 4])
                 ->get();

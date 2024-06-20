@@ -21,17 +21,49 @@ class Pemilik extends Controller
             return redirect()->to('/admin');
         } elseif ($session_role == 2) {
             return redirect()->to('/pegawai');
-        } elseif ($session_role == 4) {
-            return redirect()->to('/');
-        } elseif ($session_role == '') {
+        } elseif ($session_role == 4 || $session_role == '') {
             return redirect()->to('/');
         }
 
+        // Mendapatkan nilai input dari request atau default ke tanggal saat ini
+        $selectedDay = $request->input('selectedDay', date('d'));
+        $selectedMonth = $request->input('selectedMonth', date('m'));
+        $selectedYear = $request->input('selectedYear', date('Y'));
+
+        // Query untuk jumlah transaksi per hari
+        $transactionsPerDay = DB::table('tb_transaksi_keranjang')
+            ->select(DB::raw('DAY(created_keranjang) as day'), DB::raw('SUM(price_keranjang) as total'))
+            ->whereRaw('MONTH(created_keranjang) = ?', [$selectedMonth])
+            ->whereRaw('YEAR(created_keranjang) = ?', [$selectedYear])
+            ->groupBy('day')
+            ->get();
+
+        // Query untuk jumlah transaksi per bulan
+        $transactionsPerMonth = DB::table('tb_transaksi_keranjang')
+            ->select(DB::raw('MONTH(created_keranjang) as month'), DB::raw('SUM(price_keranjang) as total'))
+            ->whereRaw('YEAR(created_keranjang) = ?', [$selectedYear])
+            ->groupBy('month')
+            ->get();
+
+        // Query untuk jumlah transaksi per tahun
+        $transactionsPerYear = DB::table('tb_transaksi_keranjang')
+            ->select(DB::raw('YEAR(created_keranjang) as year'), DB::raw('SUM(price_keranjang) as total'))
+            ->groupBy('year')
+            ->get();
+
         $data = [
-            'menu'      =>  'dashboard',
-            'submenu'   =>  'pemilik',
+            'menu' => 'dashboard',
+            'submenu' => 'pemilik',
+            'transactionsPerDay' => $transactionsPerDay,
+            'transactionsPerMonth' => $transactionsPerMonth,
+            'transactionsPerYear' => $transactionsPerYear,
+            'selectedDay' => $selectedDay,
+            'selectedMonth' => $selectedMonth,
+            'selectedYear' => $selectedYear,
         ];
-        return view('pemilik/dashboard', $data);
+
+        return view('pemilik.dashboard', $data);
+
     }
 
     public function produkbibit(Request $request)
@@ -301,8 +333,15 @@ class Pemilik extends Controller
         return view('pemilik/stokbibit', $data);
     }
 
-    public function laporanpenjualan()
+
+    public function laporanpenjualan(Request $request)
     {
+        // Ambil nilai filter dari request atau default ke tanggal saat ini
+        $selectedDay = $request->input('selectedDay', date('d'));
+        $selectedMonth = $request->input('selectedMonth', date('m'));
+        $selectedYear = $request->input('selectedYear', date('Y'));
+
+        // Query untuk data laporan penjualan dengan filter
         $laporanData = DB::table('tb_transaksi_keranjang as tk')
             ->select(
                 'tk.kode_transaksi_keranjang as kode_transaksi',
@@ -313,20 +352,25 @@ class Pemilik extends Controller
                 't.created_transaksi as tanggal_transaksi'
             )
             ->join('tb_produk as p', 'tk.keranjang_id_produk', '=', 'p.id_produk')
-
             ->join('tb_transaksi as t', 'tk.kode_transaksi_keranjang', '=', 't.kode_transaksi')
+            ->whereDay('t.created_transaksi', $selectedDay)
+            ->whereMonth('t.created_transaksi', $selectedMonth)
+            ->whereYear('t.created_transaksi', $selectedYear)
             ->paginate(10);
 
-        // Define the $menu variable
+        // Definisikan variabel menu untuk navigasi
         $menu = 'laporanpenjualan';
 
+        // Data yang akan dikirimkan ke view
         $data = [
             'menu' => $menu,
             'submenu' => 'pemilik',
             'data' => $laporanData,
+            'selectedDay' => $selectedDay,
+            'selectedMonth' => $selectedMonth,
+            'selectedYear' => $selectedYear,
         ];
 
         return view('pemilik.laporanpenjualan', $data);
     }
-
 }
