@@ -32,7 +32,7 @@
     </div>
 @endif
 
-<form action="{{ url('/pelanggan/bibitborongan/checkout') }}" method="post" enctype="multipart/form-data">
+<form action="{{ url('/pelanggan/bibitborongan') }}" method="post" enctype="multipart/form-data">
     @csrf
     <div class="mx-4 my-2">
         <div class="mb-3">
@@ -40,7 +40,7 @@
             <select name="produkborong_select" id="produkborong_select" class="form-select" required>
                 <option selected disabled>Select an option or type</option>
                 @foreach ($produkborong as $key)
-                    <option value="{{ $key->id }}">{{ $key->name }}</option>
+                    <option value="{{ $key->id_produk }}">{{ $key->nama_bibit }}</option>
                 @endforeach
             </select>
         </div>
@@ -49,43 +49,31 @@
             <input name="harga_bibit" id="harga_bibit" class="form-control" type="text" placeholder="Harga" readonly>
         </div>
         <div class="mb-3">
-            <label for="tanggal_tanam" class="form-label">Tanggal Penngiriman</label>
+            <label for="tanggal_tanam" class="form-label">Tanggal Pengiriman</label>
             <input name="tanggal_tanam" type="date" class="form-control" id="tanggal_tanam" value="{{ $tanggalTanam }}" disabled required>
         </div>
         <div class="custom-select-container">
-            <label for="lahan_select" class="form-label">Luas Lahan</label>
-            <select name="lahan_select" id="lahan_select" class="form-select" required>
-                <option selected disabled>Select an option or type</option>
-                <optgroup label="m2">
-                    @foreach ($lahan as $key)
-                        @if ($key->status == "m2")
-                            <option value="{{ $key->id }}">Luas Area : {{ $key->luas_area }} m2</option>
-                        @endif
-                    @endforeach
-                </optgroup>
-                <optgroup label="hektar">
-                    @foreach ($lahan as $key)
-                        @if ($key->status == "hektar")
-                            <option value="{{ $key->id }}">Luas Area : {{ $key->luas_area }} hektar</option>
-                        @endif
-                    @endforeach
-                </optgroup>
-            </select>
+            <label for="lahan" class="form-label">Luas Lahan</label>
+            <input name="lahan" id="lahan" class="form-control" type="text" placeholder="Lahan" required>
         </div>
         <div class="my-3">
             <label for="jumlah_perbatang" class="form-label">Kuantitas Bibit</label>
-            <input name="jumlah_perbatang" id="jumlah_perbatang" class="form-control" type="number" placeholder="Kuantitas Bibit" required disabled>
+            <input name="jumlah_perbatang" id="jumlah_perbatang" class="form-control" type="number" placeholder="Kuantitas Bibit" required>
         </div>
         <div class="my-3">
             <label for="total" class="form-label">Total Bayar</label>
             <input name="total" id="total" class="form-control" type="text" placeholder="Total Bayar" readonly>
         </div>
-
         <div class="my-3">
             <label for="pengiriman" class="form-label">Pilih Pengiriman</label>
             <select name="pengiriman" id="pengiriman" class="form-control" required>
                 <option selected disabled>-- PILIH PENGIRIMAN --</option>
                 <option value="0">Ambil di Toko</option>
+                @foreach($rumah as $key)
+                <option value="{{ $key->alamatpengiriman_id }}" data-alamat="{{ $key->alamatpengiriman_alamat }}" data-deskripsi="{{ $key->alamatpengiriman_deskripsi }}" data-kecamatan="{{ $key->kecamatan_name }}">
+                 rumah
+                </option>
+            @endforeach
                 <optgroup label="PILIH DAFTAR ALAMAT">
                     @foreach($kecamatan as $key)
                         <option value="{{$key->kecamatan_id}}">{{$key->kecamatan_name}}</option>
@@ -94,9 +82,13 @@
             </select>
         </div>
         <div class="my-3">
-            <label for="metodepembayaran" class="form-label">Metode pembayaran</label>
+            <label for="detail_rumah" class="form-label">Detail Rumah</label>
+            <textarea name="detail_rumah" id="detail_rumah" class="form-control" placeholder="Detail Rumah" ></textarea>
+        </div>
+        <div class="my-3">
+            <label for="metodepembayaran" class="form-label">Metode Pembayaran</label>
             <select name="metodepembayaran" class="form-control" required>
-                <option selected disabled>--PILIH METODE PEMBAYARAN--</option>
+                <option selected disabled>-- PILIH METODE PEMBAYARAN --</option>
                 @foreach($metodepembayaran as $mp)
                     <option value="{{ $mp->metodepembayaran_id }}">{{ $mp->metodepembayaran_bank }} - {{ $mp->metodepembayaran_name }} - {{ $mp->metodepembayaran_numberbank }}</option>
                 @endforeach
@@ -113,55 +105,46 @@
     </div>
 </form>
 
+
 <script>
-    function hitungTotal() {
-        var kuantitas = parseFloat(document.getElementById('jumlah_perbatang').value) || 0;
-        var hargaSatuan = parseFloat(document.getElementById('harga_bibit').value) || 0;
-        var ongkir = parseFloat(document.getElementById('pengiriman').value) || 0;
+    document.getElementById('lahan').addEventListener('input', function () {
+        var area = parseFloat(this.value) || 0;
+        var quantity = calculateQuantity(area);
+        document.getElementById('jumlah_perbatang').value = quantity;
+        hitungTotal();
+    });
 
-        var total = kuantitas * hargaSatuan + ongkir;
-        let totalrupiah = total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    document.getElementById('pengiriman').addEventListener('change', function() {
+    var selectedOption = this.options[this.selectedIndex];
+    var alamat = selectedOption.getAttribute('data-alamat');
+    var deskripsi = selectedOption.getAttribute('data-deskripsi');
+    var kecamatan = selectedOption.getAttribute('data-kecamatan');
 
-        document.getElementById('total').value = isNaN(totalrupiah) ? '0' : totalrupiah;
-
-
-
+    if (alamat && deskripsi) {  // Only if alamat and deskripsi are present
+        document.getElementById('detail_rumah').value = `Alamat: ${alamat}\nDeskripsi: ${deskripsi}\nKecamatan: ${kecamatan}`;
+    } else {
+        document.getElementById('detail_rumah').value = '';  // Clear the textarea if not a 'rumah' selection
     }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('jumlah_perbatang').addEventListener('input', hitungTotal);
-        document.getElementById('harga_bibit').addEventListener('input', hitungTotal);
-        document.getElementById('pengiriman').addEventListener('change', hitungTotal);
-    });
-
-    document.getElementById('lahan_select').addEventListener('change', function() {
-        var lahanId = this.value;
-        if (lahanId) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', '/get-batang/' + lahanId, true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    var response = JSON.parse(xhr.responseText);
-                    document.getElementById('jumlah_perbatang').value = response.jumlah_batang;
-                    hitungTotal();
-                } else if (xhr.readyState == 4) {
-                    console.error('Error fetching data');
-                    alert('Gagal mengambil data lahan');
-                }
-            };
-            xhr.send();
-        }
-    });
+    hitungTotal();
+});
 
     document.getElementById('produkborong_select').addEventListener('change', function() {
         var productId = this.value;
+        fetchProductPrice(productId);
+    });
+
+    document.getElementById('pengiriman').addEventListener('change', function() {
+        hitungTotal();
+    });
+
+    function fetchProductPrice(productId) {
         if (productId) {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', '/get-price/' + productId, true);
             xhr.onreadystatechange = function() {
                 if (xhr.readyState == 4 && xhr.status == 200) {
                     var response = JSON.parse(xhr.responseText);
-                    document.getElementById('harga_bibit').value = response.harga;
+                    document.getElementById('harga_bibit').value = response.harga_borong;
                     hitungTotal();
                 } else if (xhr.readyState == 4) {
                     console.error('Error fetching data');
@@ -170,6 +153,31 @@
             };
             xhr.send();
         }
+    }
+
+    function hitungTotal() {
+    var kuantitas = parseFloat(document.getElementById('jumlah_perbatang').value) || 0;
+    var hargaSatuan = parseFloat(document.getElementById('harga_bibit').value) || 0;
+    var ongkir = parseFloat(document.getElementById('pengiriman').value) || 0;
+
+    var total = kuantitas * hargaSatuan + ongkir;
+    document.getElementById('total').value = total.toFixed(2);  // Ensure the total is formatted as a decimal number
+}
+
+    document.querySelectorAll('.payment-method-card').forEach(card => {
+        card.addEventListener('click', function() {
+            document.querySelectorAll('.payment-method-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            document.getElementById('payment_method').value = card.getAttribute('data-method-code');
+        });
     });
+
+    function calculateQuantity(area) {
+        var total = area * 2; // Adjust the calculation logic as needed
+        if (area < 175) {
+            $('#quantityModal').modal('show'); // Show Bootstrap modal
+        }
+        return total;
+    }
 </script>
 @endsection

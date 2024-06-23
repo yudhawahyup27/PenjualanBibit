@@ -5,6 +5,8 @@ use App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Pegawai;
 use App\Http\Controllers\Pelanggan;
 use App\Http\Controllers\Pemilik;
+use App\Http\Controllers\BoronganController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -101,12 +103,18 @@ Route::get('/pemilik/stokbibit', [Pemilik::class, 'stokbibit']);
 
 Route::get('/pemilik/laporanpenjualan', [Pemilik::class, 'laporanpenjualan'])->name('laporanpenjualan');
 
+Route::get('/get-price/{id}', [BoronganController::class, 'getPrice']);
 Route::get('/get-price/{id}', [Pelanggan::class, 'getPrice']);
 Route::get('/get-batang/{id}', [Pelanggan::class, 'getkuantitas']);
-Route::get('/pelanggan/bibitborongan', [Pelanggan::class,'bibitBorongan']);
+Route::post('/pelanggan/bibitborongan/checkout', [PaymentController::class, 'processPayment'])->name('payment.process');
+Route::post('/midtrans/callback', [PaymentController::class, 'callback'])->name('midtrans.callback');;
+Route::get('/pelanggan/bibitborongan/checkout', [BoronganController::class, 'checkoutForm']);
+Route::get('/pelanggan/bibitborongan', [Pelanggan::class, 'bibitborongan']);
+Route::post('/pelanggan/bibitborongan', [Pelanggan::class, 'bayar_cart_borongan']);
+Route::post('/pelanggan/get_product_price', [BoronganController::class, 'getProductPrice']);
 Route::get('/pelanggan/monitorbibit/{id}', [Pelanggan::class, 'monitoring'])->name('pelanggan.monitorbibit');
 Route::get('/pelanggan/tablemonitorbibit', [Pelanggan::class,'monitoring']);
-Route::post('/pelanggan/bibitborongan/checkout', [Pelanggan::class,'bayar_cart_borongan']);
+
 
 Route::get('/pelanggan/tablemonitoring', [Pelanggan::class, 'monitoringbibittable']);
 // In your routes file

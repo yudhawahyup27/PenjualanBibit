@@ -128,45 +128,39 @@ class Pelanggan extends Controller
         $uri_one = $request->segment(3);
         $getSesionId = $request->session()->get('id');
 
-
-
         // Fetch the product details
         $product = DB::table('tb_produk')->where('id_produk', $uri_one)->first();
+
+        // Fetch rumah and kecamatan data
+        $rumah = DB::table('tb_alamatpengiriman')
+            ->where('alamatpengiriman_user_id', $getSesionId)
+            ->join('tb_kecamatan', 'tb_alamatpengiriman.alamatpengiriman_kecamatan_id', '=', 'tb_kecamatan.kecamatan_id')
+            ->select('tb_alamatpengiriman.*', 'tb_kecamatan.kecamatan_name')
+            ->get();
 
         // Initialize the data array with product details
         $data = [
             'menu'    => 'home',
             'submenu' => 'pelanggan',
             'produk'  => $product,
-
+            'rumah'   => $rumah
         ];
 
         if ($getSesionId) {
             $users = DB::table('tb_user')->where('id_user', $getSesionId)->limit(1)->first();
-            $kecamatan = DB::table('tb_alamatpengiriman')
-                ->where('alamatpengiriman_user_id', $getSesionId)
-                ->join('tb_kecamatan', 'tb_alamatpengiriman.alamatpengiriman_kecamatan_id', '=', 'tb_kecamatan.kecamatan_id')
-                ->get();
+            $kecamatan = DB::table('tb_kecamatan')->get();
             $data['nama'] = $users->nama_user;
             $data['kecamatan'] = $kecamatan;
         } else {
             $data['nama'] = null;
-            $data['kecamatan'] = collect();
+            $data['kecamatan'] = collect(); // Return an empty collection if no session ID
         }
 
         return view('pelanggan/detail_produk', $data);
-
     }
 
-    public function getPrice($id)
-    {
-        $product = DB::table('tb_produk')->find($id);
-        if ($product) {
-            return response()->json(['harga_borong' => $product->harga_borong]);
-        } else {
-            return response()->json(['error' => 'Produk tidak ditemukan'], 404);
-        }
-    }
+
+
     public function getkuantitas($id)
     {
         $product = DB::table('luas_tb')->find($id);
@@ -396,12 +390,12 @@ class Pelanggan extends Controller
             // Validasi data yang diterima dari form
             $request->validate([
                 'produkborong_select' => 'required',
-                'tanggal_tanam' => 'required|date',
-                'lahan_select' => 'required',
+                'tanggal_tanam' => '|date',
+                'lahan' => 'required|numeric|min:175',
                 'jumlah_perbatang' => 'required|numeric',
                 'bukti_pembayaran' => 'required|file|mimes:jpeg,png,pdf|max:2048',
                 'pengiriman' => 'required',
-                'metodepembayaran' => 'required',
+
             ]);
 
             // Mengambil sesi ID pengguna yang sedang login
@@ -426,19 +420,20 @@ class Pelanggan extends Controller
                     'id_user_transaksi' => $getSesionId,
                     'kode_transaksi' => $getKodeBarang,
                     'nama_bibit' => $request->input('produkborong_select'),
-                    'tanggal_tanam' => $tanggalTanam ,
-                    'luas_lahan' => $request->input('lahan_select'),
+                    'tanggal_tanam' => $tanggalTanam,
+                    'luas_lahan' => $request->input('lahan'),
                     'kuantitas_bibit' => $request->input('jumlah_perbatang'),
                     'total_transaksi' => $request->input('total'),
                     'bukti_pembayaran' => $buktiPembayaranPath,
                     'pengiriman' => $request->input('pengiriman'),
+                    'detail_rumah' => $request->input('detail_rumah'),
                     'metodepembayaran' => $request->input('metodepembayaran'),
                     'status_transaksi' => '1',
                     'created_at' => $tanggalHariIni,
                 ]);
 
                 // Redirect ke halaman status transaksi
-                return redirect('/pelanggan/statustransaksi')->with('success', 'Transaksi berhasil dilakukan');
+                return redirect('pelanggan/tablemonitoring')->with('success', 'Transaksi berhasil dilakukan');
             } else {
                 throw new \Exception('Bukti pembayaran tidak terkirim atau tidak valid.');
             }
@@ -451,6 +446,17 @@ class Pelanggan extends Controller
 
 
 
+    public function getPrice($id)
+    {
+        $product = DB::table('tb_produk')->where('id_produk', $id)->first();
+        if ($product) {
+            return response()->json(['harga_borong' => $product->harga_borong]);
+        } else {
+            return response()->json(['error' => 'Produk tidak ditemukan'], 404);
+        }
+    }
+
+
             public function bibitborongan(Request $request)
     {
         $getSesionId = $request->session()->get('id');
@@ -459,6 +465,12 @@ class Pelanggan extends Controller
         $lahan = DB::table('luas_tb')->get();
         $kecamatan = DB::table('tb_kecamatan')->get();
         $metodepembayaran = DB::table('tb_metodepembayaran')->get();
+        $rumah = DB::table('tb_alamatpengiriman')
+        ->where('alamatpengiriman_user_id', $getSesionId)
+        ->join('tb_kecamatan', 'tb_alamatpengiriman.alamatpengiriman_kecamatan_id', '=', 'tb_kecamatan.kecamatan_id')
+        ->select('tb_alamatpengiriman.*', 'tb_kecamatan.kecamatan_name')
+        ->get();
+
 
         // Ensure $metodepembayaran is properly fetched and assigned
 
@@ -471,6 +483,7 @@ class Pelanggan extends Controller
             'menu' => 'home',
             'submenu' => 'pelanggan',
             'kecamatan' => $kecamatan,
+            'rumah' =>$rumah,
             'produkborong' => $produkborong,
             'lahan' => $lahan,
             'nama' => $users->nama_user,
@@ -594,10 +607,7 @@ class Pelanggan extends Controller
 }
 
 
-
-
-
-    public function detail_cart_payment_create(Request $request)
+public function detail_cart_payment_create(Request $request)
     {
         date_default_timezone_set('Asia/Jakarta');
         $getSesionId = $request->session()->get('id');

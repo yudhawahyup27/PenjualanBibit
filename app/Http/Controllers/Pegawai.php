@@ -100,6 +100,7 @@ class Pegawai extends Controller
             'nama' => 'required|string|max:255',
             'detail' => 'nullable|string',
             'harga' => 'required|numeric|min:0',
+            'harga_borongan' => 'required|numeric|min:0',
             'stok' => 'required|integer|min:0',
             'image1' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
@@ -134,6 +135,7 @@ class Pegawai extends Controller
                     'nama_bibit' => $request->nama,
                     'detail_bibit' => $request->detail,
                     'harga_bibit' => $request->harga,
+                    'harga_borongan' => $request->harga_borongan,
                     'stok_bibit' => $request->stok,
                     'gambar_bibit' => $imageName,
                     'status_bibit' => '1',
@@ -517,6 +519,7 @@ class Pegawai extends Controller
         $tblTransaksi = DB::table('tb_transaksi_borong')
         ->join('tb_user', 'tb_transaksi_borong.id_user_transaksi', '=', 'tb_user.id_user')
         ->join('tb_produkborong', 'tb_transaksi_borong.nama_bibit', '=', 'tb_produkborong.id')
+        ->join('tb_status','tb_transaksi_borong.status_transaksi','=','tb_status.status_id')
             ->get();
 
             // dd($tblTransaksi);
@@ -529,6 +532,7 @@ class Pegawai extends Controller
 
         return view('pegawai/monitoringbibit', $data);
     }
+
 
     public function monitoringbibit_detail(Request $request, $id)
     {

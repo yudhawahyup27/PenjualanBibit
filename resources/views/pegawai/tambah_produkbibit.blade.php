@@ -46,6 +46,10 @@
                     <input class="form-control" type="text" name="harga" placeholder="Isikan Harga Bibit" required />
                 </div>
                 <div class="mb-3">
+                    <label>Harga Borongan</label>
+                    <input class="form-control" type="text" name="harga_borongan" placeholder="Isikan Harga Bibit borongan" required />
+                </div>
+                <div class="mb-3">
                     <label>Stok</label>
                     <input class="form-control" type="text" name="stok" placeholder="Isikan Stok Bibit" required />
                 </div>

@@ -55,7 +55,7 @@
             <div class="modal-body">
                 <P class="text-center fs-1">Pesan dengan luas Lahan</P>
                 <div class="d-flex justify-content-center p-4" style="gap-4 ">
-                   <a href="/pelanggan/bibitborongan" class="btn btn-secondary mx-4" >Ya</a>
+                   <a href="/pelanggan/bibitborongan/checkout" class="btn btn-secondary mx-4" >Ya</a>
 
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tidak</button>
                 </div>

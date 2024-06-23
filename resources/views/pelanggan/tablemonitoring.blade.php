@@ -24,9 +24,10 @@
                         <tr>
                             <th>No</th>
                             <th>Kode Barang</th>
-                          <th>Nama Bibit</th>
-                            <th>Stok </th>
-                            <th>Diupdate</th>
+                            <th>Nama Bibit</th>
+                            <th>Kuantitas Bibit </th>
+                            <th>Detail Monitoring</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                     <tfoot>
@@ -34,8 +35,9 @@
                             <th>No</th>
                             <th>Kode Barang</th>
                             <th>Nama Bibit</th>
-                            <th>Stok </th>
-                            <th>Diupdate</th>
+                            <th>Kuantitas bibit </th>
+                            <th>Detail Monitoring</th>
+                            <th>Status</th>
                         </tr>
                     </tfoot>
                     <tbody>
@@ -44,11 +46,11 @@
                             <td>{{ $key->created_at }}</td>
                             <td>{{ $key->kode_transaksi }}</td>
                             <td>{{ $key->name }}</td>
-                            <td>{{ $key->status_transaksi }}</td>
+                            <td>{{ $key->kuantitas_bibit }}</td>
                             <td>
                                 <a class="btn btn-primary" href="{{ route('pelanggan.monitorbibit', ['id' => $key->kode_transaksi]) }}">Lihat Data Monitoring</a>
                             </td>
-
+                            <td>{{ $key->status_transaksi }}</td>
                         </tr>
                         @endforeach
                     </tbody>

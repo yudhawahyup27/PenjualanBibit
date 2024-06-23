@@ -16,7 +16,6 @@
                 <table class="table" id="datatablesSimple">
                     <thead>
                         <tr>
-                            <th>Ditambahkan</th>
                             <th>Kode Transaksi</th>
                             <th>Id User</th>
                             <th>Nama Pelanggan</th>
@@ -27,7 +26,7 @@
                     </thead>
                     <tfoot>
                         <tr>
-                            <th>Ditambahkan</th>
+
                             <th>Kode Transaksi</th>
                             <th>Id User</th>
                             <th>Nama Pelanggan</th>
@@ -39,12 +38,11 @@
                     <tbody>
                         @foreach($tblTransaksi as $key)
                         <tr>
-                            <td>{{ $key->created_at }}</td>
                             <td>{{ $key->kode_transaksi }}</td>
                             <td>{{ $key->id_user_transaksi }}</td>
                             <td>{{ $key->nama_user }}</td>
                             <td>{{ $key->name }}</td>
-                            <td>{{ $key->status_transaksi }}</td>
+                            <td>{{ $key->status_name }}</td>
                             <td>
                                 <a class="btn btn-primary" href="{{ route('pegawai.monitoringbibit.detail', ['id' => $key->kode_transaksi]) }}">Tambah Data Monitoring</a>
                             </td>
