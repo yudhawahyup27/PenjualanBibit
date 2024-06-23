@@ -5,12 +5,20 @@
     <script type="text/javascript"
             src="https://app.sandbox.midtrans.com/snap/snap.js"
             data-client-key="{{ config('midtrans.client_key') }}"></script>
+            <style>
+.button{
+    background-color: blue;
+    color: white;
+    padding: 4px;
+    width: 100%;
+}
+            </style>
 </head>
 <body>
-    <button id="pay-button">Pay!</button>
+    <button id="pay-button" class="button">Pay!</button>
     <form action="{{ url('/payment/callback') }}" method="POST" id="submit_form">
         @csrf
-        <input type="hidden" name="json" id="json_callback">
+        <input type="hidden"  name="json" id="json_callback">
     </form>
 
     <script type="text/javascript">
@@ -32,3 +40,5 @@
     </script>
 </body>
 </html>
+
+

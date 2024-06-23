@@ -41,7 +41,7 @@
                             <th>Stok </th>
                             <th>Gambar </th>
                             <th>Terjual </th>
-                            <th>Status </th>
+                            <th>Harga Boronga </th>
                             <th>#</th>
                         </tr>
                     </tfoot>
@@ -66,11 +66,7 @@
                                 @endif
                             </td>
                             <td>
-                                @if($key->status_bibit == 1)
-                                Aktif
-                                @else
-                                Tidak Aktif
-                                @endif
+                                <?= number_format((float)$key->harga_borong, 0, ',', '.') ?>
                             </td>
                             <td>
                                 <a href="<?= url('/') ?>/pegawai/produkbibit/ubah/{{$key->id_produk}}" class="btn btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>

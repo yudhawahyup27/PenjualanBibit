@@ -8,6 +8,7 @@
         <li class="breadcrumb-item "><a href="/pegawai/produkbibit">Produk Bibit</a></li>
         <li class="breadcrumb-item active">Tambah Produk Bibit</li>
     </ol>
+
     @if ($errors->any())
     <div class="alert alert-danger">
         <ul>
@@ -17,6 +18,13 @@
         </ul>
     </div>
     @endif
+
+    @if (session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+    @endif
+
     <div class="card mb-4">
         <div class="card-header">
             Tambah Data Produk Bibit
@@ -35,23 +43,23 @@
                 </div>
                 <div class="mb-3">
                     <label>Nama Bibit</label>
-                    <input class="form-control" type="text" name="nama" placeholder="Isikan Nama Bibit" required />
+                    <input class="form-control" type="text" name="nama" placeholder="Isikan Nama Bibit" value="{{ old('nama') }}" required />
                 </div>
                 <div class="mb-3">
                     <label>Detail</label>
-                    <textarea class="form-control" type="text" name="detail" placeholder="Isikan Detail Bibit" required></textarea>
+                    <textarea class="form-control" type="text" name="detail" placeholder="Isikan Detail Bibit" required>{{ old('detail') }}</textarea>
                 </div>
                 <div class="mb-3">
                     <label>Harga</label>
-                    <input class="form-control" type="text" name="harga" placeholder="Isikan Harga Bibit" required />
+                    <input class="form-control" type="text" name="harga" placeholder="Isikan Harga Bibit" value="{{ old('harga') }}" required />
                 </div>
                 <div class="mb-3">
                     <label>Harga Borongan</label>
-                    <input class="form-control" type="text" name="harga_borongan" placeholder="Isikan Harga Bibit borongan" required />
+                    <input class="form-control" type="text" name="harga_borongan" placeholder="Isikan Harga Bibit borongan" value="{{ old('harga_borongan') }}" required />
                 </div>
                 <div class="mb-3">
                     <label>Stok</label>
-                    <input class="form-control" type="text" name="stok" placeholder="Isikan Stok Bibit" required />
+                    <input class="form-control" type="text" name="stok" placeholder="Isikan Stok Bibit" value="{{ old('stok') }}" required />
                 </div>
                 <div class="mb-3">
                     <label>Gambar</label>
@@ -66,7 +74,3 @@
 </div>
 
 @endsection
-
-@section('js')
-
-@endSection

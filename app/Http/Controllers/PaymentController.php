@@ -86,6 +86,6 @@ class PaymentController extends Controller
 
     public function callback(Request $request)
     {
-        // Handle the notification from Midtrans
+       
     }
 }
