@@ -91,7 +91,6 @@ class EceranController extends Controller
 
         return view('pelanggan.checkoutcartmidtrans', $data);
     }
-
     public function processPayment(Request $request)
     {
         $getSesionId = $request->session()->get('id');
@@ -103,11 +102,26 @@ class EceranController extends Controller
                 ->where('keranjang_id_user', $getSesionId)
                 ->get();
 
+        // Calculate total price including shipping
+        $sumTotalKeranjang = DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->sum('price_keranjang');
+        $totalOngkir = 0;
+
+        foreach ($cart as $item) {
+            if ($item->pengiriman_keranjang != 0) { // If not self-pickup
+                $kecamatan = DB::table('tb_kecamatan')->where('kecamatan_id', $item->pengiriman_keranjang)->first();
+                if ($kecamatan) {
+                    $totalOngkir += $kecamatan->ongkir;
+                }
+            }
+        }
+
+        $totalTransaksi = $sumTotalKeranjang + $totalOngkir;
+
         // Prepare transaction details
         $params = [
             'transaction_details' => [
                 'order_id' => uniqid(), // Generate unique order ID
-                'gross_amount' => $request->input('total'),
+                'gross_amount' => $totalTransaksi, // Set the correct gross amount
             ],
             'customer_details' => [
                 'first_name' => $user->nama_user,
@@ -117,7 +131,7 @@ class EceranController extends Controller
             'item_details' => $cart->map(function($item) {
                 return [
                     'id' => $item->keranjang_id_produk,
-                    'price' => $item->price_keranjang / $item->qty_keranjang,
+                    'price' => intval($item->price_keranjang / $item->qty_keranjang), // Ensure integer price without cents
                     'quantity' => $item->qty_keranjang,
                     'name' => 'Bibit ' . $item->nama_bibit,
                 ];
@@ -126,27 +140,6 @@ class EceranController extends Controller
 
         // Get Snap token from Midtrans
         $snapToken = Snap::getSnapToken($params);
-        $keranjang = DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->get();
-        $sumTotalKeranjang = DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->sum('price_keranjang');
-        $getMaxKeranjangId = DB::table('tb_transaksi')->max('id_transaksi');
-
-                    if ($getMaxKeranjangId == 0) {
-                        $getKodeBarang = 'T' . date('Ymd') . '1';
-                    } else {
-                        $getKodeBarang = 'T' . date('Ymd') . intval($getMaxKeranjangId) + 1;
-                    }
-
-                    $totalOngkir = 0;
-                    foreach ($keranjang as $key) {
-                        if ($key->pengiriman_keranjang != 0) { // Bukan ambil di toko
-                            $kecamatan = DB::table('tb_kecamatan')->where('kecamatan_id', $key->pengiriman_keranjang)->first();
-                            if ($kecamatan) {
-                                $totalOngkir += $kecamatan->ongkir;
-                            }
-                        }
-                    }
-
-                    $totalTransaksi = $sumTotalKeranjang + $totalOngkir;
 
         // Insert into tb_transaksi
         $getKodeBarang = uniqid(); // Generate unique transaction code for tb_transaksi
@@ -164,6 +157,7 @@ class EceranController extends Controller
         // Redirect to / after payment is completed
         return redirect('/pelanggan/statustransaksi');
     }
+
 
     public function handleMidtransCallback(Request $request)
     {
