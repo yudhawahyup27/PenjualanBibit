@@ -374,4 +374,43 @@ class Pemilik extends Controller
 
         return view('pemilik.laporanpenjualan', $data);
     }
+    public function laporanpenjualanborongan(Request $request)
+    {
+        // Ambil nilai filter dari request atau default ke tanggal saat ini
+        $selectedDay = $request->input('selectedDay', date('d'));
+        $selectedMonth = $request->input('selectedMonth', date('m'));
+        $selectedYear = $request->input('selectedYear', date('Y'));
+
+        // Query untuk data laporan penjualan dengan filter
+        $laporanData = DB::table('tb_transaksi_borong as tb')
+            ->select(
+                'tb.kode_transaksi as kode_transaksi',
+                'tb.nama_bibit as nama_bibit',
+                'tb.total_transaksi as harga_beli',
+                'tb.kuantitas_bibit as terjual',
+                'tb.created_at as tanggal_transaksi'
+            )
+            // ->join('tb_produk as p', 'tb.id', '=', 'p.id_produk')
+            ->whereDay('tb.created_at', $selectedDay)
+            ->whereMonth('tb.created_at', $selectedMonth)
+            ->whereYear('tb.created_at', $selectedYear)
+            ->paginate(10);
+
+        // Definisikan variabel menu untuk navigasi
+        $menu = 'laporanpenjualan';
+
+        // Data yang akan dikirimkan ke view
+        $data = [
+            'menu' => $menu,
+            'submenu' => 'pemilik',
+            'data' => $laporanData,
+            'selectedDay' => $selectedDay,
+            'selectedMonth' => $selectedMonth,
+            'selectedYear' => $selectedYear,
+        ];
+
+        return view('pemilik.laporanpenjualanborongan', $data);
+    }
+
+
 }

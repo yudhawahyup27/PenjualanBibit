@@ -114,6 +114,7 @@ Route::post('/pemilik/produkbibit/ubah/{id}', [Pemilik::class, 'update_produkbib
 Route::get('/pemilik/stokbibit', [Pemilik::class, 'stokbibit']);
 
 Route::get('/pemilik/laporanpenjualan', [Pemilik::class, 'laporanpenjualan'])->name('laporanpenjualan');
+Route::get('/pemilik/laporanpenjualanborongan', [Pemilik::class, 'laporanpenjualanborongan'])->name('laporanpenjualanborongan');
 
 Route::get('/get-price/{id}', [BoronganController::class, 'getPrice']);
 Route::get('/get-price/{id}', [Pelanggan::class, 'getPrice']);
