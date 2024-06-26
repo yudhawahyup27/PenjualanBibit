@@ -61,11 +61,11 @@
                 </div>
                 <div class="form-floating mb-3">
                     <button class="btn btn-primary" type="submit"><i class="fa-solid fa-pen-to-square"></i> Edit Data</button>
-                    @if($get_user->status_user == 1)
+                    {{-- @if($get_user->status_user == 1)
                     <a class="btn btn-warning" href="<?= url('/') ?>/admin/datauser/ubah-status/{{$get_user->id_user}}"><i class="fa-solid fa-user-slash"></i> NonAktifkan</a>
                     @elseif($get_user->status_user == 2)
                     <a class="btn btn-warning" href="<?= url('/') ?>/admin/datauser/ubah-status/{{$get_user->id_user}}"><i class="fa-solid fa-user"></i> Aktifkan</a>
-                    @endif
+                    @endif --}}
                 </div>
             </form>
         </div>
