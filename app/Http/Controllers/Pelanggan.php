@@ -417,7 +417,12 @@ class Pelanggan extends Controller
             // If delivery to a kecamatan, get the shipping cost from the kecamatan table
             if ($pengiriman != 0) {
                 $kecamatan = DB::table('tb_kecamatan')->where('kecamatan_id', $pengiriman)->first();
-                $shippingCost = $kecamatan->ongkir;
+                if ($kecamatan) {
+                    $shippingCost = $kecamatan->ongkir;
+                } else {
+                    // Handle the case when the kecamatan is not found
+                    return redirect()->back()->with('error', 'Kecamatan tidak ditemukan.');
+                }
             }
 
             // Insert into the cart table
@@ -426,7 +431,7 @@ class Pelanggan extends Controller
                 'keranjang_id_user' => $sessionUserId,
                 'qty_keranjang' => $request->qty,
                 'pengiriman_keranjang' => $pengiriman,
-                'detail_rumah' => $request->input('detail_rumah')  ,
+                'detail_rumah' => $request->input('detail_rumah'),
                 'price_keranjang' => $product->harga_bibit * $request->qty + $shippingCost,
                 'created_keranjang'  => now(),
             ]);
@@ -449,6 +454,7 @@ class Pelanggan extends Controller
             return redirect()->back()->with('error', 'Jumlah barang yang diminta melebihi stok yang tersedia.');
         }
     }
+
 
     public function bayar_cart_borongan(Request $request)
     {

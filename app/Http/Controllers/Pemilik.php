@@ -80,7 +80,8 @@ class Pemilik extends Controller
         }
 
 
-        $tblProduk = DB::table('tb_produk')->where('produk_id_user', $request->session()->get('id'))->get();
+        // $tblProduk = DB::table('tb_produk')->where('produk_id_user', $request->session()->get('id'))->get();
+        $tblProduk = DB::table('tb_produk')->get();
         $data = [
             'menu'          =>  'produkbibit',
             'submenu'       =>  'pemilik',
@@ -324,7 +325,7 @@ class Pemilik extends Controller
             return redirect()->to('/');
         }
 
-        $tblStok = DB::table('tb_stok')->get();
+        $tblStok = DB::table('tb_produk')->get();
         $data = [
             'menu'          =>  'stokbibit',
             'submenu'       =>  'pemilik',

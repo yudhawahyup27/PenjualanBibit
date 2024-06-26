@@ -66,7 +66,7 @@
                                         <option selected disabled>-- PILIH PENGIRIMAN --</option>
                                         <option value="0">Ambil di Toko</option>
                                         @foreach($rumah as $key)
-                                            <option value="{{ $key->alamatpengiriman_id }}" data-alamat="{{ $key->alamatpengiriman_alamat }}" data-deskripsi="{{ $key->alamatpengiriman_deskripsi }}" data-kecamatan="{{ $key->kecamatan_name }}">
+                                            <option value="{{ $key->kecamatan_id }}" data-alamat="{{ $key->alamatpengiriman_alamat }}" data-deskripsi="{{ $key->alamatpengiriman_deskripsi }}" data-kecamatan="{{ $key->kecamatan_name }}">
                                                 Rumah
                                             </option>
                                         @endforeach
@@ -178,3 +178,4 @@
     });
 </script>
 @endsection
+    

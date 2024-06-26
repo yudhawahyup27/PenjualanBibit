@@ -29,17 +29,17 @@
                             <th>Kode Barang</th>
                             <th>Nama Bibit</th>
                             <th>Stok </th>
-                            <th>Diupdate</th>
+                            <th>DiBuat</th>
                         </tr>
                     </tfoot>
                     <tbody>
                         @foreach($dataproduk as $key)
                         <tr>
                             <td>{{$loop->iteration}}</td>
-                            <td>{{$key->stok_kode_barang}}</td>
+                            <td>{{$key->kode_bibit}}</td>
                             <td>{{ $key->nama_bibit? $key->nama_bibit : 'Belum ada data'}}</td>
-                            <td>{{$key->stok_jumlah}}</td>
-                            <td>{{$key->updated_at}}</td>
+                            <td>{{$key->stok_bibit}}</td>
+                            <td>{{$key->created_produk}}</td>
                         </tr>
                         @endforeach
                     </tbody>
