@@ -38,9 +38,11 @@
             <div class="mb-3">
                 <label for="produkborong_select" class="form-label">Nama Bibit</label>
                 <select name="produkborong_select" id="produkborong_select" class="form-select" required>
-                    <option selected disabled>Select an option or type</option>
+                    <option value="" selected disabled>Select an option or type</option>
                     @foreach ($produkborong as $key)
-                        <option value="{{ $key->id_produk }}">{{ $key->nama_bibit }}</option>
+                        <option value="{{ $key->id_produk }}" {{ isset($selectedProductId) && $selectedProductId == $key->id_produk ? 'selected' : '' }}>
+                            {{ $key->nama_bibit }}
+                        </option>
                     @endforeach
                 </select>
             </div>
@@ -67,7 +69,7 @@
             <div class="my-3">
                 <label for="pengiriman" class="form-label">Pilih Pengiriman</label>
                 <select name="pengiriman" id="pengiriman" class="form-control" required>
-                    <option selected disabled>-- PILIH PENGIRIMAN --</option>
+                    <option value="" selected disabled>-- PILIH PENGIRIMAN --</option>
                     <option value="0">Ambil di Toko</option>
                     @foreach($rumah as $key)
                         <option value="{{ $key->alamatpengiriman_id }}" data-alamat="{{ $key->alamatpengiriman_alamat }}" data-deskripsi="{{ $key->alamatpengiriman_deskripsi }}" data-kecamatan="{{ $key->kecamatan_name }}">
@@ -90,6 +92,7 @@
             </div>
         </div>
     </form>
+
     <script>
         document.getElementById('lahan').addEventListener('input', function () {
             var area = parseFloat(this.value) || 0;
@@ -144,14 +147,6 @@
             document.getElementById('total').value = total.toFixed(2);
         }
 
-        document.querySelectorAll('.payment-method-card').forEach(card => {
-            card.addEventListener('click', function() {
-                document.querySelectorAll('.payment-method-card').forEach(c => c.classList.remove('selected'));
-                card.classList.add('selected');
-                document.getElementById('payment_method').value = card.getAttribute('data-method-code');
-            });
-        });
-
         function calculateQuantity(area) {
             var total = area * 2; // Adjust the calculation logic as needed
             if (area < 175) {
@@ -159,6 +154,22 @@
             }
             return total;
         }
+
+        // Initialize harga_bibit if there's a selected product
+        document.addEventListener('DOMContentLoaded', function() {
+    // Ambil nilai productId dari parameter URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('productId');
+
+    // Set nilai produkborong_select sesuai dengan productId
+    if (productId) {
+        document.getElementById('produkborong_select').value = productId;
+        fetchProductPrice(productId); // Fetch harga berdasarkan productId
+    }
+});
+
+        // Trigger change event initially to calculate total based on initial values
+        document.getElementById('produkborong_select').dispatchEvent(new Event('change'));
+        document.getElementById('pengiriman').dispatchEvent(new Event('change'));
     </script>
 @endsection
-

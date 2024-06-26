@@ -45,7 +45,17 @@
                             <td>{{ $key->status_name }}</td>
                             <td>
                                 <a class="btn btn-primary" href="{{ route('pegawai.monitoringbibit.detail', ['id' => $key->kode_transaksi]) }}">Tambah Data Monitoring</a>
+                                @if($key->status_transaksi == 1)
+                                <a class="btn btn-primary" href="{{ url('/') }}/pegawai/pesanan/sudahbayarborong/{{ $key->id }}">Sudah Bayar</a>
+                                @elseif($key->status_transaksi == 2)
+                                <a class="btn btn-primary" href="{{ url('/') }}/pegawai/pesanan/sudahdikirimborong/{{ $key->id }}">Sudah Dikirim</a>
+                                @elseif($key->status_transaksi == 3)
+                                <a class="btn btn-primary" href="{{ url('/') }}/pegawai/pesanan/sudahditerimaborong/{{ $key->id }}">Sudah Diterima</a>
+                                @elseif($key->status_transaksi == 4)
+                                Sudah Diterima
+                                @endif
                             </td>
+
                         </tr>
                         @endforeach
                     </tbody>

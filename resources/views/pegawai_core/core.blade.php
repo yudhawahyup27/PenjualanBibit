@@ -44,10 +44,10 @@
                     <div class="sb-sidenav-menu">
                         <div class="nav">
                             <div class="sb-sidenav-menu-heading">Pegawai</div>
-                            <a class="nav-link <?php if($menu == 'dashboard'){ echo 'active'; } ?>" href="<?= url('/') ?>/pegawai/dashboard">
+                            {{-- <a class="nav-link <?php if($menu == 'dashboard'){ echo 'active'; } ?>" href="<?= url('/') ?>/pegawai/dashboard">
                                 <div class="sb-nav-link-icon"><i class="fa-solid fa-gauge"></i></div>
                                 Dashboard
-                            </a>
+                            </a> --}}
                             <a class="nav-link <?php if($menu == 'produkbibit'){ echo 'active'; } ?>" href="<?= url('/') ?>/pegawai/produkbibit">
                                 <div class="sb-nav-link-icon"><i class="fa-solid fa-boxes-stacked"></i></i></div>
                                 Produk Bibit
@@ -68,11 +68,11 @@
                                 <div class="sb-nav-link-icon"><i class="fa-solid fa-truck"></i></div>
                                 Ongkir
                             </a>
-                        </div>  
+                        </div>
                     </div>
                     <div class="sb-sidenav-footer">
                         <div class="small"></div>
-                        
+
                     </div>
                 </nav>
             </div>

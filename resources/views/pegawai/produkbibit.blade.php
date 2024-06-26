@@ -26,7 +26,7 @@
                             <th>Stok </th>
                             <th>Gambar </th>
                             <th>Terjual </th>
-                            <th>Status </th>
+                            <th>Harga Borong </th>
                             <th>#</th>
                         </tr>
                     </thead>
@@ -41,7 +41,7 @@
                             <th>Stok </th>
                             <th>Gambar </th>
                             <th>Terjual </th>
-                            <th>Harga Boronga </th>
+                            <th>Harga Borong </th>
                             <th>#</th>
                         </tr>
                     </tfoot>

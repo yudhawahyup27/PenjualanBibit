@@ -1,4 +1,4 @@
-@extends('pelanggan_core/core_afterlogin')
+@extends('pelanggan_core.core_afterlogin')
 
 @section('css')
     <!-- SPECIFIC CSS -->
@@ -8,7 +8,11 @@
 @endsection
 
 @section('content')
-
+@if(session('error'))
+<div class="alert alert-danger">
+    {{ session('error') }}
+</div>
+@endif
 <div class="container">
     <div class="row mt-5 mb-5">
         <div class="col-md-6">
@@ -84,7 +88,7 @@
                                 <td colspan="3">
                                     <button type="submit" name="action" value="cart" class="btn btn-primary">Tambah Ke Keranjang</button>
                                     <button type="submit" name="action" value="beli_langsung" class="btn btn-primary">Beli Langsung</button>
-                                    <a id="showPopupBtn" class="btn btn-primary" href="#" style="display: none;">Beli Dengan Luas Lahan</a>
+                                    <a id="showPopupBtn" class="btn btn-success" href="{{ route('borongan.checkout', ['productId' => $produk->id_produk]) }}" style="display: none;">Beli Dengan Luas Lahan</a>
                                 </td>
                             </tr>
                         </form>
@@ -120,48 +124,57 @@
 </div>
 
 <script>
-document.getElementById('pengiriman').addEventListener('change', function() {
-    var selectedOption = this.options[this.selectedIndex];
-    var alamat = selectedOption.getAttribute('data-alamat');
-    var deskripsi = selectedOption.getAttribute('data-deskripsi');
-    var kecamatan = selectedOption.getAttribute('data-kecamatan');
+    document.getElementById('pengiriman').addEventListener('change', function() {
+        var selectedOption = this.options[this.selectedIndex];
+        var alamat = selectedOption.getAttribute('data-alamat');
+        var deskripsi = selectedOption.getAttribute('data-deskripsi');
+        var kecamatan = selectedOption.getAttribute('data-kecamatan');
 
-    if (alamat && deskripsi) {  // Only if alamat and deskripsi are present
-        document.getElementById('detail_rumah').value = `Alamat: ${alamat}\nDeskripsi: ${deskripsi}\nKecamatan: ${kecamatan}`;
-    } else {
-        document.getElementById('detail_rumah').value = '';  // Clear the textarea if not a 'rumah' selection
-    }
-    hitungTotal();
-});
+        if (alamat && deskripsi) {
+            document.getElementById('detail_rumah').value = `Alamat: ${alamat}\nDeskripsi: ${deskripsi}\nKecamatan: ${kecamatan}`;
+        } else {
+            document.getElementById('detail_rumah').value = '';
+        }
+        hitungTotal();
+    });
 
-document.getElementById('quantityInput').addEventListener('input', function() {
-    var quantity = document.getElementById('quantityInput').value;
-    var showPopupBtn = document.getElementById('showPopupBtn');
-    var productId = document.getElementById('productId').value;
+    document.getElementById('quantityInput').addEventListener('input', function() {
+        var quantity = document.getElementById('quantityInput').value;
+        var showPopupBtn = document.getElementById('showPopupBtn');
+        var productId = document.getElementById('productId').value;
 
-    if (quantity >= 350) {
-        $('#quantityModal').modal('show'); // Show the Bootstrap modal
-        showPopupBtn.style.display = 'block'; // Show the "Beli Dengan Luas Lahan" button
-        showPopupBtn.href = "/pelanggan/bibitborongan?productId=" + productId;
-    } else {
-        showPopupBtn.style.display = 'none'; // Hide the "Beli Dengan Luas Lahan" button if quantity is less than 350
-    }
-});
+        if (quantity >= 350) {
+            $('#quantityModal').modal('show'); // Show the Bootstrap modal
+            showPopupBtn.style.display = 'block'; // Show the "Beli Dengan Luas Lahan" button
+            showPopupBtn.href = "{{ route('borongan.checkout', ['productId' => $produk->id_produk]) }}"; // Set the correct URL using Laravel route helper
+        } else {
+            showPopupBtn.style.display = 'none'; // Hide the "Beli Dengan Luas Lahan" button if quantity is less than 350
+        }
+    });
 
-document.getElementById('showPopupBtn').addEventListener('click', function() {
-    $('#lahanmodal').modal('show');
-});
+    document.getElementById('showPopupBtn').addEventListener('click', function() {
+        // No event.preventDefault() needed here
+        $('#lahanmodal').modal('show'); // Show the modal when "Beli Dengan Luas Lahan" button is clicked
+    });
 
-document.getElementById('orderForm').addEventListener('submit', function(e) {
-    var quantity = document.getElementById('quantityInput').value;
-    if (quantity >= 350) {
-        e.preventDefault();
-        $('#quantityModal').modal('show');
-    }
-    if (!this.checkValidity()) {
-        e.preventDefault(); // Prevent form submission if form is not valid
-        alert('Please fill out all required fields.'); // Show alert for missing fields
-    }
-});
+    document.getElementById('orderForm').addEventListener('submit', function(e) {
+        var quantity = document.getElementById('quantityInput').value;
+        var pengiriman = document.getElementById('pengiriman').value;
+
+        if (pengiriman === '-- PILIH PENGIRIMAN --') {
+            e.preventDefault();
+            alert('Please select a valid pengiriman option.');
+        }
+
+        if (quantity >= 350) {
+            e.preventDefault();
+            $('#quantityModal').modal('show');
+        }
+
+        if (!this.checkValidity()) {
+            e.preventDefault(); // Prevent form submission if form is not valid
+            alert('Please fill out all required fields.'); // Show alert for missing fields
+        }
+    });
 </script>
 @endsection

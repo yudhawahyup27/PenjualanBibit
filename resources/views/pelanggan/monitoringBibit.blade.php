@@ -14,9 +14,9 @@
 </div>
 @endif
 <div class="row">
-    <div class="col mx-4"><img src="{{ asset('images/' . $produk->gambar) }}" width="200" alt="" srcset=""></div>
+    <div class="col mx-4"><img src="{{ asset('images/' . $produk->gambar_bibit) }}" width="200" alt="" srcset=""></div>
     <div class="col">
-        <h1>{{ $produk->name }}</h1>
+        <h1>{{ $produk->nama_bibit }}</h1>
         <p>Tanggal semai: {{ $transaksi->created_at }}</p>
         <p>Tanggal tanam: {{ $transaksi->tanggal_tanam }}</p>
     </div>

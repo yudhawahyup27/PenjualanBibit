@@ -39,6 +39,21 @@
                                         Rp {{number_format((float)$key->total_transaksi,0,',','.')}}
                                     </td>
                                     <td><a href="<?= url('/') ?>/pelanggan/statustransaksi/detail/{{$key->id_transaksi}}" class="btn btn-primary">Cek Pesanan</a></td>
+                                    <td>
+                                        <a class="btn btn-success" href="{{ route('pelanggan.downloadStruk', ['id' => $key->id_transaksi]) }}">Download Struk</a>
+
+                                        @if (
+                                            $key->status_transaksi == 3
+                                        )
+                                            <a class="btn btn-primary" href="{{ url('/') }}/pegawai/pesanan/sudahditerima/{{ $key->id_transaksi }}">Sudah Diterima</a>
+
+
+                                        @else
+                                            <p>Gone</p>
+
+
+                                        @endif
+                                    </td>
                                 </tr>
                                 @endforeach
                             </tbody>

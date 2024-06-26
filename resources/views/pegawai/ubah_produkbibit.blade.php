@@ -15,16 +15,12 @@
         <div class="card-body">
             <form method="post" action="<?= url('/') ?>/pegawai/produkbibit/ubah/{{$get_produk->id_produk}}" enctype="multipart/form-data">
                 {{@csrf_field()}}
-                <div class="mb-3">
+                <div hidden class="mb-3">
                     <label>Nama User</label>
-                    <select name="user" class="form-select" disabled>
+                    <select hidden name="user" class="form-select">
                         <option selected disabled>--- Pilih User ---</option>
                         @foreach($getuserpemilik as $key)
-                        <option 
-                        <?php if ($key->id_user == $get_produk->produk_id_user) {
-                            echo 'selected';
-                        } ?>
-                        value="{{$key->id_user}}">{{$key->nama_user}}</option>
+                        <option value="{{$key->id_user}}">{{$key->nama_user}}</option>
                         @endforeach
                     </select>
                 </div>
@@ -43,6 +39,10 @@
                 <div class="mb-3">
                     <label>Stok</label>
                     <input class="form-control" type="number" name="stok" placeholder="Isikan Stok Bibit" value="{{$get_produk->stok_bibit}}" required />
+                </div>
+                <div class="mb-3">
+                    <label>Harga Borongan</label>
+                    <input class="form-control" type="text" name="harga_borongan" placeholder="Isikan Harga Bibit borongan" value="{{$get_produk->harga_borong}}" required />
                 </div>
                 <div class="mb-3">
                     <label>Gambar</label> <br>

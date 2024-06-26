@@ -11,28 +11,28 @@ class Pegawai extends Controller
     //
     public function redirectdashboard()
     {
-        return redirect()->to('/pegawai/dashboard');
+        return redirect()->to('/pegawai/produkbibit');
     }
 
-    public function dashboard(Request $request)
-    {
-        $session_role = $request->session()->get('role');
-        if ($session_role == 1) {
-            return redirect()->to('/admin');
-        } elseif ($session_role == 3) {
-            return redirect()->to('/pemilik');
-        } elseif ($session_role == 4) {
-            return redirect()->to('/');
-        } elseif ($session_role == '') {
-            return redirect()->to('/');
-        }
+    // public function dashboard(Request $request)
+    // {
+    //     $session_role = $request->session()->get('role');
+    //     if ($session_role == 1) {
+    //         return redirect()->to('/admin');
+    //     } elseif ($session_role == 3) {
+    //         return redirect()->to('/pemilik');
+    //     } elseif ($session_role == 4) {
+    //         return redirect()->to('/');
+    //     } elseif ($session_role == '') {
+    //         return redirect()->to('/');
+    //     }
 
-        $data = [
-            'menu'      =>  'dashboard',
-            'submenu'   =>  'pegawai',
-        ];
-        return view('pegawai/dashboard', $data);
-    }
+    //     $data = [
+    //         'menu'      =>  'dashboard',
+    //         'submenu'   =>  'pegawai',
+    //     ];
+    //     return view('pegawai/dashboard', $data);
+    // }
 
     public function produkbibit(Request $request)
     {
@@ -274,6 +274,7 @@ class Pegawai extends Controller
                 'detail_bibit'      => $request->detail,
                 'harga_bibit'       => $request->harga,
                 'stok_bibit'        => $request->stok,
+                'harga_borong'        => $request->harga_borongan,
                 'gambar_bibit'      => $imageName,
                 'status_bibit'      => '1',
                 'created_produk'    => date('Y-m-d H:i:s'),
@@ -283,6 +284,7 @@ class Pegawai extends Controller
                 'nama_bibit'        => $request->nama,
                 'detail_bibit'      => $request->detail,
                 'harga_bibit'       => $request->harga,
+                'harga_borong'        => $request->harga_borongan,
                 'stok_bibit'        => $request->stok,
                 'status_bibit'      => '1',
                 'created_produk'    => date('Y-m-d H:i:s'),
@@ -646,4 +648,63 @@ class Pegawai extends Controller
         DB::table('tb_perkembangan')->where('id_pbk', $uri_one)->delete();
 
     }
+
+
+    public function pesanan_sudahbayarborong(Request $request)
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $uri_one = request()->segment(4);
+        $tblTransaksi = DB::table('tb_transaksi_borong')->where('id', $uri_one)->first();
+
+        if ($tblTransaksi) {
+            DB::table('tb_transaksi_borong')->where('id', $uri_one)->update([
+                'status_transaksi' => '2',
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+            return redirect()->to('/pegawai/monitoringbibit');
+        } else {
+            // Handle the case when no record is found
+            return redirect()->to('/pegawai/monitoringbibit')->with('error', 'Transaction not found.');
+        }
+    }
+
+
+
+    public function pesanan_sudahdikirimborong(Request $request)
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $uri_one = request()->segment(4);
+        $tblTransaksi = DB::table('tb_transaksi_borong')->where('id', $uri_one)->first();
+
+        if ($tblTransaksi) {
+            DB::table('tb_transaksi_borong')->where('id', $uri_one)->update([
+                'status_transaksi' => '3',
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+            return redirect()->to('/pegawai/monitoringbibit');
+        } else {
+            // Handle the case when no record is found
+            return redirect()->to('/pegawai/monitoringbibit')->with('error', 'Transaction not found.');
+        }
+    }
+
+
+    public function pesanan_sudahditerimaborong(Request $request)
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $uri_one = request()->segment(4);
+        $tblTransaksi = DB::table('tb_transaksi_borong')->where('id', $uri_one)->first();
+
+        if ($tblTransaksi) {
+            DB::table('tb_transaksi_borong')->where('id', $uri_one)->update([
+                'status_transaksi' => '4',
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+            return redirect()->to('/pegawai/monitoringbibit');
+        } else {
+            // Handle the case when no record is found
+            return redirect()->to('/pegawai/monitoringbibit')->with('error', 'Transaction not found.');
+        }
+    }
+
 }
