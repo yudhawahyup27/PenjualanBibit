@@ -73,7 +73,7 @@
                     <option value="0">Ambil di Toko</option>
                     @foreach($rumah as $key)
                         <option value="{{ $key->alamatpengiriman_id }}" data-alamat="{{ $key->alamatpengiriman_alamat }}" data-deskripsi="{{ $key->alamatpengiriman_deskripsi }}" data-kecamatan="{{ $key->kecamatan_name }}">
-                            {{ $key->alamatpengiriman_alamat }} - {{ $key->kecamatan_name }}
+                          Rumah
                         </option>
                     @endforeach
                     <optgroup label="PILIH DAFTAR ALAMAT">
