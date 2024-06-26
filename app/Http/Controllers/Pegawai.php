@@ -306,7 +306,7 @@ class Pegawai extends Controller
             return redirect()->to('/');
         }
 
-        $tblProduk = DB::table('tb_stok')
+        $tblProduk = DB::table('tb_produk')
             // ->rightJoin('tb_produk', 'tb_stok.stok_kode_barang', '=', 'tb_produk.kode_bibit')
             ->get();
         $data = [
