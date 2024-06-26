@@ -41,7 +41,7 @@
                             <td>{{ $key->kode_transaksi }}</td>
                             <td>{{ $key->id_user_transaksi }}</td>
                             <td>{{ $key->nama_user }}</td>
-                            <td>{{ $key->name }}</td>
+                            <td>{{ $key->nama_bibit }}</td>
                             <td>{{ $key->status_name }}</td>
                             <td>
                                 <a class="btn btn-primary" href="{{ route('pegawai.monitoringbibit.detail', ['id' => $key->kode_transaksi]) }}">Tambah Data Monitoring</a>

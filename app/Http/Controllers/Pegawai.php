@@ -520,7 +520,7 @@ class Pegawai extends Controller
 
         $tblTransaksi = DB::table('tb_transaksi_borong')
         ->join('tb_user', 'tb_transaksi_borong.id_user_transaksi', '=', 'tb_user.id_user')
-        ->join('tb_produkborong', 'tb_transaksi_borong.nama_bibit', '=', 'tb_produkborong.id')
+        ->join('tb_produk', 'tb_transaksi_borong.nama_bibit', '=', 'tb_produk.id_produk')
         ->join('tb_status','tb_transaksi_borong.status_transaksi','=','tb_status.status_id')
             ->get();
 
