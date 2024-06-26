@@ -123,11 +123,9 @@ class Pelanggan extends Controller
         DB::table('tb_alamatpengiriman')->where('alamatpengiriman_id', request()->segment(3))->delete();
         return redirect()->to('/alamat-pengiriman');
     }
-
     public function detail_product(Request $request)
     {
         // Validate the incoming request
-
 
         // Retrieve the product ID from the URI
         $productId = $request->segment(3);
@@ -141,7 +139,7 @@ class Pelanggan extends Controller
         $rumah = DB::table('tb_alamatpengiriman')
             ->where('alamatpengiriman_user_id', $sessionUserId)
             ->join('tb_kecamatan', 'tb_alamatpengiriman.alamatpengiriman_kecamatan_id', '=', 'tb_kecamatan.kecamatan_id')
-            ->select('tb_alamatpengiriman.*', 'tb_kecamatan.kecamatan_name')
+            ->select('tb_alamatpengiriman.*', 'tb_kecamatan.kecamatan_name', 'tb_kecamatan.kecamatan_id')
             ->get();
 
         // Initialize the data array with product details
@@ -169,6 +167,7 @@ class Pelanggan extends Controller
         // Return the view with the prepared data
         return view('pelanggan/detail_produk', $data);
     }
+
 
 
 
