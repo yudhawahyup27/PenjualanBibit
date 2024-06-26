@@ -49,7 +49,7 @@
 
 
                                         @else
-                                            <p>Gone</p>
+                                            <p></p>
 
 
                                         @endif
