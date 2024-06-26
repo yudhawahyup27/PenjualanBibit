@@ -61,7 +61,7 @@ class BoronganController extends Controller
             'produkborong_select' => 'required|exists:tb_produk,id_produk',
             'harga_bibit' => 'required|numeric',
             'lahan' => 'required|numeric|min:175',
-            'jumlah_perbatang' => 'required|numeric',
+            // 'jumlah_perbatang' => 'required|numeric',
             'pengiriman' => 'required|numeric',
             // 'payment_method' => 'required',
             'total' => 'required',

@@ -60,7 +60,7 @@
             </div>
             <div class="my-3">
                 <label for="jumlah_perbatang" class="form-label">Kuantitas Bibit</label>
-                <input name="jumlah_perbatang" id="jumlah_perbatang" class="form-control" type="number" placeholder="Kuantitas Bibit" required disabled>
+                <input name="jumlah_perbatang" id="jumlah_perbatang" class="form-control" type="number" placeholder="Kuantitas Bibit" required>
             </div>
             <div class="my-3">
                 <label for="total" class="form-label">Total Bayar</label>
@@ -73,7 +73,7 @@
                     <option value="0">Ambil di Toko</option>
                     @foreach($rumah as $key)
                         <option value="{{ $key->alamatpengiriman_id }}" data-alamat="{{ $key->alamatpengiriman_alamat }}" data-deskripsi="{{ $key->alamatpengiriman_deskripsi }}" data-kecamatan="{{ $key->kecamatan_name }}">
-                           Rumah
+                            {{ $key->alamatpengiriman_alamat }} - {{ $key->kecamatan_name }}
                         </option>
                     @endforeach
                     <optgroup label="PILIH DAFTAR ALAMAT">
@@ -149,10 +149,12 @@
         }
 
         function calculateQuantity(area) {
-            var total = area * 2; // Adjust the calculation logic as needed
-             if (total < 175) {
-                alert('luas Lahan minimal 175 m');
+            var total = area * 2;
+            if (total < 175) {
+                alert('Total luas lahan minimal 175');
             }
+
+            // Adjust the calculation logic as needed
             return total;
         }
 
@@ -168,7 +170,7 @@
                 rupiah += separator + ribuan.join('.');
             }
 
-            return 'Rp ' + rupiah;
+            return   rupiah;
         }
 
         // Initialize harga_bibit if there's a selected product
