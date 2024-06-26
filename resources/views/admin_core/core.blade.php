@@ -52,11 +52,11 @@
                                 <div class="sb-nav-link-icon"><i class="fa-solid fa-user-group"></i></div>
                                 Data User
                             </a>
-                            <a class="nav-link <?php if($menu == 'metodepembayaran'){ echo 'active'; } ?>" href="<?= url('/') ?>/admin/metodepembayaran">
+                            {{-- <a class="nav-link <?php if($menu == 'metodepembayaran'){ echo 'active'; } ?>" href="<?= url('/') ?>/admin/metodepembayaran">
                                 <div class="sb-nav-link-icon"><i class="fa-solid fa-credit-card"></i></div>
                                 Metode Pembayaran
-                            </a>
-                        </div>  
+                            </a> --}}
+                        </div>
                     </div>
                     <div class="sb-sidenav-footer">
                         <div class="small">Logged in as:</div>
