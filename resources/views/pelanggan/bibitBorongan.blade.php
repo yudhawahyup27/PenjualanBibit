@@ -105,13 +105,18 @@
     </div>
 </form>
 
-
 <script>
     document.getElementById('lahan').addEventListener('input', function () {
         var area = parseFloat(this.value) || 0;
-        var quantity = calculateQuantity(area);
-        document.getElementById('jumlah_perbatang').value = quantity;
-        hitungTotal();
+        if (area < 175) {
+            alert('Luas lahan minimal 175');
+            this.value = '';
+            document.getElementById('jumlah_perbatang').value = '';
+        } else {
+            var quantity = calculateQuantity(area);
+            document.getElementById('jumlah_perbatang').value = quantity;
+            hitungTotal();
+        }
     });
 
     document.getElementById('pengiriman').addEventListener('change', function() {
@@ -161,7 +166,23 @@
     var ongkir = parseFloat(document.getElementById('pengiriman').value) || 0;
 
     var total = kuantitas * hargaSatuan + ongkir;
-    document.getElementById('total').value = total.toFixed(2);  // Ensure the total is formatted as a decimal number
+    document.getElementById('total').value = formatRupiah(total.toString());  // Format the total as rupiah
+}
+
+function formatRupiah(angka) {
+    var number_string = angka.replace(/[^,\d]/g, '').toString(),
+        split = number_string.split(','),
+        sisa = split[0].length % 3,
+        rupiah = split[0].substr(0, sisa),
+        ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+    if (ribuan) {
+        separator = sisa ? '.' : '';
+        rupiah += separator + ribuan.join('.');
+    }
+
+    rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+    return 'Rp ' + rupiah;
 }
 
     document.querySelectorAll('.payment-method-card').forEach(card => {
@@ -174,9 +195,6 @@
 
     function calculateQuantity(area) {
         var total = area * 2; // Adjust the calculation logic as needed
-        if (area < 175) {
-            $('#quantityModal').modal('show'); // Show Bootstrap modal
-        }
         return total;
     }
 </script>

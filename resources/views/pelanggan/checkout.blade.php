@@ -60,7 +60,7 @@
             </div>
             <div class="my-3">
                 <label for="jumlah_perbatang" class="form-label">Kuantitas Bibit</label>
-                <input name="jumlah_perbatang" id="jumlah_perbatang" class="form-control" type="number" placeholder="Kuantitas Bibit" required>
+                <input name="jumlah_perbatang" id="jumlah_perbatang" class="form-control" type="number" placeholder="Kuantitas Bibit" required disabled>
             </div>
             <div class="my-3">
                 <label for="total" class="form-label">Total Bayar</label>
@@ -73,7 +73,7 @@
                     <option value="0">Ambil di Toko</option>
                     @foreach($rumah as $key)
                         <option value="{{ $key->alamatpengiriman_id }}" data-alamat="{{ $key->alamatpengiriman_alamat }}" data-deskripsi="{{ $key->alamatpengiriman_deskripsi }}" data-kecamatan="{{ $key->kecamatan_name }}">
-                            {{ $key->alamatpengiriman_alamat }} - {{ $key->kecamatan_name }}
+                           Rumah
                         </option>
                     @endforeach
                     <optgroup label="PILIH DAFTAR ALAMAT">
@@ -144,31 +144,44 @@
             var ongkir = parseFloat(document.getElementById('pengiriman').value) || 0;
 
             var total = kuantitas * hargaSatuan + ongkir;
-            document.getElementById('total').value = total.toFixed(2);
+
+            document.getElementById('total').value = formatRupiah(total);
         }
 
         function calculateQuantity(area) {
             var total = area * 2; // Adjust the calculation logic as needed
-            if (area < 175) {
-                $('#quantityModal').modal('show'); // Show Bootstrap modal
+             if (total < 175) {
+                alert('luas Lahan minimal 175 m');
             }
             return total;
         }
 
+        function formatRupiah(number) {
+            var rupiah = '';
+            var numberString = number.toString();
+            var sisa = numberString.length % 3;
+            var rupiah = numberString.substr(0, sisa);
+            var ribuan = numberString.substr(sisa).match(/\d{3}/g);
+
+            if (ribuan) {
+                var separator = sisa ? '.' : '';
+                rupiah += separator + ribuan.join('.');
+            }
+
+            return 'Rp ' + rupiah;
+        }
+
         // Initialize harga_bibit if there's a selected product
         document.addEventListener('DOMContentLoaded', function() {
-    // Ambil nilai productId dari parameter URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get('productId');
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('productId');
 
-    // Set nilai produkborong_select sesuai dengan productId
-    if (productId) {
-        document.getElementById('produkborong_select').value = productId;
-        fetchProductPrice(productId); // Fetch harga berdasarkan productId
-    }
-});
+            if (productId) {
+                document.getElementById('produkborong_select').value = productId;
+                fetchProductPrice(productId);
+            }
+        });
 
-        // Trigger change event initially to calculate total based on initial values
         document.getElementById('produkborong_select').dispatchEvent(new Event('change'));
         document.getElementById('pengiriman').dispatchEvent(new Event('change'));
     </script>

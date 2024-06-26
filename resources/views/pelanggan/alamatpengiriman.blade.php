@@ -11,6 +11,7 @@
                     <div class="card shadow-lg border-0 rounded-lg mt-5">
                         <div class="card-header">
                             <h3 class="text-center my-4"><b>Alamat Pengiriman</b></h3>
+                            <a href="/" class="btn-primary p-2 rounded-md">Back To Website</a>
                         </div>
                         <div class="card-body">
                             @if($countAlamat == 0)

@@ -56,7 +56,8 @@
                         <tr>
                             <td>{{ $item->kuantitas_bibit }}</td>
                             <td>{{ $item->nama_bibit }}</td>
-                            <td>{{ $item->harga_borong }}</td>
+
+                            <td>      Rp. {{          number_format($item->harga_borong, 0,',','.') }}</td>
                         </tr>
                     @endforeach
                     <tr>
@@ -64,7 +65,7 @@
                             Total
                         </td>
                         <td>
-                            {{ $transaksi->total_transaksi }}
+                          Rp.  {{          number_format( $transaksi->total_transaksi , 0,',','.')}}
                         </td>
                     </tr>
                 </table>
