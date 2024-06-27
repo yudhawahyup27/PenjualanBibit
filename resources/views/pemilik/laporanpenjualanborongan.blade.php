@@ -3,13 +3,14 @@
 @section('content')
     <div class="container">
         <h1 class="mt-4">Laporan Penjualan</h1>
-        <a href="/pemilik/laporanpenjualan" class="btn-success btn p-1 float-end">Lihat Laporan Eceran</a>
+        <a href="/pemilik/laporanpenjualanborongan" class="btn-success btn p-1 float-end">Lihat Laporan Borongan</a>
         <div class="row mb-4">
             <form action="{{ route('laporanpenjualan') }}" method="GET">
                 <div class="row">
                     <div class="col-md-3">
                         <label for="selectedDay">Filter Hari:</label>
                         <select name="selectedDay" id="selectedDay" class="form-control">
+                            <option value="">All</option>
                             @for ($i = 1; $i <= 31; $i++)
                                 <option value="{{ $i }}" {{ $selectedDay == $i ? 'selected' : '' }}>{{ $i }}</option>
                             @endfor
@@ -18,6 +19,7 @@
                     <div class="col-md-3">
                         <label for="selectedMonth">Filter Bulan:</label>
                         <select name="selectedMonth" id="selectedMonth" class="form-control">
+                            <option value="">All</option>
                             @for ($i = 1; $i <= 12; $i++)
                                 <option value="{{ $i }}" {{ $selectedMonth == $i ? 'selected' : '' }}>{{ date('F', mktime(0, 0, 0, $i, 1)) }}</option>
                             @endfor
@@ -26,6 +28,7 @@
                     <div class="col-md-3">
                         <label for="selectedYear">Filter Tahun:</label>
                         <select name="selectedYear" id="selectedYear" class="form-control">
+                            <option value="">All</option>
                             @for ($i = date('Y'); $i >= date('Y') - 10; $i--)
                                 <option value="{{ $i }}" {{ $selectedYear == $i ? 'selected' : '' }}>{{ $i }}</option>
                             @endfor
@@ -47,7 +50,6 @@
                         <thead>
                             <tr>
                                 <th>Kode Transaksi</th>
-                                {{-- <th>Nama Bibit</th> --}}
                                 <th>Harga Beli</th>
                                 <th>Terjual</th>
                                 <th>Tanggal Transaksi</th>
@@ -57,7 +59,6 @@
                             @foreach($data as $laporan)
                                 <tr>
                                     <td>{{ $laporan->kode_transaksi }}</td>
-                                    {{-- <td>{{ $laporan->nama_bibit }}</td> --}}
                                     <td>{{ $laporan->harga_beli }}</td>
                                     <td>{{ $laporan->terjual }}</td>
                                     <td>{{ $laporan->tanggal_transaksi }}</td>

@@ -15,7 +15,8 @@
                 <div class="col">
                     <label for="filterYear" class="form-label">Select Year:</label>
                     <select class="form-select" id="filterYear">
-                        @foreach($transactionsPerYear as $yearData)
+                        <option value="">All</option>
+                        @foreach($transactionsPerYearEceran as $yearData)
                             <option value="{{ $yearData->year }}" {{ $selectedYear == $yearData->year ? 'selected' : '' }}>{{ $yearData->year }}</option>
                         @endforeach
                     </select>
@@ -23,6 +24,7 @@
                 <div class="col">
                     <label for="filterMonth" class="form-label">Select Month:</label>
                     <select class="form-select" id="filterMonth">
+                        <option value="">All</option>
                         @foreach(range(1, 12) as $month)
                             <option value="{{ $month }}" {{ $selectedMonth == $month ? 'selected' : '' }}>{{ date('F', mktime(0, 0, 0, $month, 1)) }}</option>
                         @endforeach
@@ -31,103 +33,155 @@
                 <div class="col">
                     <label for="filterDay" class="form-label">Select Day:</label>
                     <select class="form-select" id="filterDay">
-                        @foreach($transactionsPerDay as $dayData)
-                            <option value="{{ $dayData->day }}" {{ $selectedDay == $dayData->day ? 'selected' : '' }}>{{ $dayData->day }}</option>
+                        <option value="">All</option>
+                        @foreach(range(1, 31) as $day)
+                            <option value="{{ $day }}" {{ $selectedDay == $day ? 'selected' : '' }}>{{ $day }}</option>
                         @endforeach
                     </select>
                 </div>
             </div>
-            <canvas id="transactionChart"></canvas>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Eceran Transactions</h5>
+                    <canvas id="eceranChart"></canvas>
+                </div>
+                <div class="col-md-6">
+                    <h5>Borong Transactions</h5>
+                    <canvas id="borongChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 @endsection
 
 @section('js')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var ctx = document.getElementById('transactionChart').getContext('2d');
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var ctxEceran = document.getElementById('eceranChart').getContext('2d');
+        var ctxBorong = document.getElementById('borongChart').getContext('2d');
 
-            var transactionsPerDay = @json($transactionsPerDay);
-            var transactionsPerMonth = @json($transactionsPerMonth);
-            var transactionsPerYear = @json($transactionsPerYear);
+        var transactionsPerDayEceran = @json($transactionsPerDayEceran);
+        var transactionsPerMonthEceran = @json($transactionsPerMonthEceran);
+        var transactionsPerYearEceran = @json($transactionsPerYearEceran);
+        var transactionsPerDayBorong = @json($transactionsPerDayBorong);
+        var transactionsPerMonthBorong = @json($transactionsPerMonthBorong);
+        var transactionsPerYearBorong = @json($transactionsPerYearBorong);
 
-            var selectedDay = {{ $selectedDay }};
-            var selectedMonth = {{ $selectedMonth }};
-            var selectedYear = {{ $selectedYear }};
+        var selectedDay = {{ $selectedDay }};
+        var selectedMonth = {{ $selectedMonth }};
+        var selectedYear = {{ $selectedYear }};
 
-            var labels, data;
+        var labelsEceran, dataEceran, labelsBorong, dataBorong;
 
-            // Default to daily view
-            labels = transactionsPerDay.map(item => item.day);
-            data = transactionsPerDay.map(item => item.total);
+        // Default to daily view
+        labelsEceran = transactionsPerDayEceran.map(item => item.day);
+        dataEceran = transactionsPerDayEceran.map(item => item.total);
+        labelsBorong = transactionsPerDayBorong.map(item => item.day);
+        dataBorong = transactionsPerDayBorong.map(item => item.total);
 
-            var transactionChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Total Transactions',
-                        data: data,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
+        var eceranChart = new Chart(ctxEceran, {
+            type: 'bar',
+            data: {
+                labels: labelsEceran,
+                datasets: [{
+                    label: 'Total Transactions (Eceran)',
+                    data: dataEceran,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
                     }
                 }
-            });
+            }
+        });
 
-            // Function to update chart based on selected filters
-            function updateChart() {
-                var selectedYear = document.getElementById('filterYear').value;
-                var selectedMonth = document.getElementById('filterMonth').value;
-                var selectedDay = document.getElementById('filterDay').value;
-
-                // Filter data based on selected filters
-                var filteredData;
-                if (selectedDay) {
-                    filteredData = transactionsPerDay.filter(item => item.day == selectedDay);
-                    labels = filteredData.map(item => item.day);
-                    data = filteredData.map(item => item.total);
-                } else if (selectedMonth) {
-                    filteredData = transactionsPerMonth.filter(item => item.month == selectedMonth);
-                    labels = filteredData.map(item => item.month);
-                    data = filteredData.map(item => item.total);
-                } else {
-                    filteredData = transactionsPerYear;
-                    labels = filteredData.map(item => item.year);
-                    data = filteredData.map(item => item.total);
+        var borongChart = new Chart(ctxBorong, {
+            type: 'bar',
+            data: {
+                labels: labelsBorong,
+                datasets: [{
+                    label: 'Total Transactions (Borong)',
+                    data: dataBorong,
+                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
                 }
+            }
+        });
 
-                // Update chart data
-                transactionChart.data.labels = labels;
-                transactionChart.data.datasets[0].data = data;
-                transactionChart.update();
+        // Function to update chart based on selected filters
+        function updateCharts() {
+            var selectedYear = document.getElementById('filterYear').value;
+            var selectedMonth = document.getElementById('filterMonth').value;
+            var selectedDay = document.getElementById('filterDay').value;
+
+            // Filter data based on selected filters
+            var filteredDataEceran, filteredDataBorong;
+            if (selectedDay) {
+                filteredDataEceran = transactionsPerDayEceran.filter(item => item.day == selectedDay);
+                filteredDataBorong = transactionsPerDayBorong.filter(item => item.day == selectedDay);
+                labelsEceran = filteredDataEceran.map(item => item.day);
+                dataEceran = filteredDataEceran.map(item => item.total);
+                labelsBorong = filteredDataBorong.map(item => item.day);
+                dataBorong = filteredDataBorong.map(item => item.total);
+            } else if (selectedMonth) {
+                filteredDataEceran = transactionsPerMonthEceran.filter(item => item.month == selectedMonth);
+                filteredDataBorong = transactionsPerMonthBorong.filter(item => item.month == selectedMonth);
+                labelsEceran = filteredDataEceran.map(item => item.month);
+                dataEceran = filteredDataEceran.map(item => item.total);
+                labelsBorong = filteredDataBorong.map(item => item.month);
+                dataBorong = filteredDataBorong.map(item => item.total);
+            } else {
+                filteredDataEceran = transactionsPerYearEceran;
+                filteredDataBorong = transactionsPerYearBorong;
+                labelsEceran = filteredDataEceran.map(item => item.year);
+                dataEceran = filteredDataEceran.map(item => item.total);
+                labelsBorong = filteredDataBorong.map(item => item.year);
+                dataBorong = filteredDataBorong.map(item => item.total);
             }
 
-            // Event listeners for filter changes
-            document.getElementById('filterYear').addEventListener('change', function() {
-                updateChart();
-            });
+            // Update eceran chart data
+            eceranChart.data.labels = labelsEceran;
+            eceranChart.data.datasets[0].data = dataEceran;
+            eceranChart.update();
 
-            document.getElementById('filterMonth').addEventListener('change', function() {
-                updateChart();
-            });
+            // Update borong chart data
+            borongChart.data.labels = labelsBorong;
+            borongChart.data.datasets[0].data = dataBorong;
+            borongChart.update();
+        }
 
-            document.getElementById('filterDay').addEventListener('change', function() {
-                updateChart();
-            });
-
-            // Initial chart rendering
-            updateChart();
+        // Event listeners for filter changes
+        document.getElementById('filterYear').addEventListener('change', function() {
+            updateCharts();
         });
-    </script>
+
+        document.getElementById('filterMonth').addEventListener('change', function() {
+            updateCharts();
+        });
+
+        document.getElementById('filterDay').addEventListener('change', function() {
+            updateCharts();
+        });
+
+        // Initial chart rendering
+        updateCharts();
+    });
+</script>
 @endsection

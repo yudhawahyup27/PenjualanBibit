@@ -11,7 +11,7 @@ class Pemilik extends Controller
     //
     public function redirectdashboard()
     {
-        return redirect()->to('/pemilik/dashboard');
+        return redirect()->to('/pemilik/dashboard2');
     }
 
     public function dashboard(Request $request)
@@ -19,8 +19,8 @@ class Pemilik extends Controller
         $session_role = $request->session()->get('role');
         if ($session_role == 1) {
             return redirect()->to('/admin');
-        } elseif ($session_role == 2) {
-            return redirect()->to('/pegawai');
+        } elseif ($session_role == 3) {
+            return redirect()->to('/pemilik');
         } elseif ($session_role == 4 || $session_role == '') {
             return redirect()->to('/');
         }
@@ -30,49 +30,73 @@ class Pemilik extends Controller
         $selectedMonth = $request->input('selectedMonth', date('m'));
         $selectedYear = $request->input('selectedYear', date('Y'));
 
-        // Query untuk jumlah transaksi per hari
-        $transactionsPerDay = DB::table('tb_transaksi_keranjang')
+        // Query untuk jumlah transaksi per hari (Eceran)
+        $transactionsPerDayEceran = DB::table('tb_keranjang')
             ->select(DB::raw('DAY(created_keranjang) as day'), DB::raw('SUM(price_keranjang) as total'))
-            ->whereRaw('MONTH(created_keranjang) = ?', [$selectedMonth])
-            ->whereRaw('YEAR(created_keranjang) = ?', [$selectedYear])
+            ->whereMonth('created_keranjang', $selectedMonth)
+            ->whereYear('created_keranjang', $selectedYear)
             ->groupBy('day')
             ->get();
 
-        // Query untuk jumlah transaksi per bulan
-        $transactionsPerMonth = DB::table('tb_transaksi_keranjang')
+        // Query untuk jumlah transaksi per hari (Borong)
+        $transactionsPerDayBorong = DB::table('tb_transaksi_borong')
+            ->select(DB::raw('DAY(created_at) as day'), DB::raw('SUM(total_transaksi) as total'))
+            ->whereMonth('created_at', $selectedMonth)
+            ->whereYear('created_at', $selectedYear)
+            ->groupBy('day')
+            ->get();
+
+        // Query untuk jumlah transaksi per bulan (Eceran)
+        $transactionsPerMonthEceran = DB::table('tb_keranjang')
             ->select(DB::raw('MONTH(created_keranjang) as month'), DB::raw('SUM(price_keranjang) as total'))
-            ->whereRaw('YEAR(created_keranjang) = ?', [$selectedYear])
+            ->whereYear('created_keranjang', $selectedYear)
             ->groupBy('month')
             ->get();
 
-        // Query untuk jumlah transaksi per tahun
-        $transactionsPerYear = DB::table('tb_transaksi_keranjang')
+        // Query untuk jumlah transaksi per bulan (Borong)
+        $transactionsPerMonthBorong = DB::table('tb_transaksi_borong')
+            ->select(DB::raw('MONTH(created_at) as month'), DB::raw('SUM(total_transaksi) as total'))
+            ->whereYear('created_at', $selectedYear)
+            ->groupBy('month')
+            ->get();
+
+        // Query untuk jumlah transaksi per tahun (Eceran)
+        $transactionsPerYearEceran = DB::table('tb_keranjang')
             ->select(DB::raw('YEAR(created_keranjang) as year'), DB::raw('SUM(price_keranjang) as total'))
+            ->groupBy('year')
+            ->get();
+
+        // Query untuk jumlah transaksi per tahun (Borong)
+        $transactionsPerYearBorong = DB::table('tb_transaksi_borong')
+            ->select(DB::raw('YEAR(created_at) as year'), DB::raw('SUM(total_transaksi) as total'))
             ->groupBy('year')
             ->get();
 
         $data = [
             'menu' => 'dashboard',
             'submenu' => 'pemilik',
-            'transactionsPerDay' => $transactionsPerDay,
-            'transactionsPerMonth' => $transactionsPerMonth,
-            'transactionsPerYear' => $transactionsPerYear,
+            'transactionsPerDayEceran' => $transactionsPerDayEceran,
+            'transactionsPerMonthEceran' => $transactionsPerMonthEceran,
+            'transactionsPerYearEceran' => $transactionsPerYearEceran,
+            'transactionsPerDayBorong' => $transactionsPerDayBorong,
+            'transactionsPerMonthBorong' => $transactionsPerMonthBorong,
+            'transactionsPerYearBorong' => $transactionsPerYearBorong,
             'selectedDay' => $selectedDay,
             'selectedMonth' => $selectedMonth,
             'selectedYear' => $selectedYear,
         ];
 
         return view('pemilik.dashboard', $data);
-
     }
+
 
     public function produkbibit(Request $request)
     {
         $session_role = $request->session()->get('role');
         if ($session_role == 1) {
             return redirect()->to('/admin');
-        } elseif ($session_role == 2) {
-            return redirect()->to('/pegawai');
+        } elseif ($session_role == 3) {
+            return redirect()->to('/pemilik');
         } elseif ($session_role == 4) {
             return redirect()->to('/');
         } elseif ($session_role == '') {
@@ -337,27 +361,36 @@ class Pemilik extends Controller
 
     public function laporanpenjualan(Request $request)
     {
-        // Ambil nilai filter dari request atau default ke tanggal saat ini
-        $selectedDay = $request->input('selectedDay', date('d'));
-        $selectedMonth = $request->input('selectedMonth', date('m'));
-        $selectedYear = $request->input('selectedYear', date('Y'));
+        // Ambil nilai filter dari request atau default ke null
+        $selectedDay = $request->input('selectedDay', null);
+        $selectedMonth = $request->input('selectedMonth', null);
+        $selectedYear = $request->input('selectedYear', null);
 
         // Query untuk data laporan penjualan dengan filter
-        $laporanData = DB::table('tb_transaksi_keranjang as tk')
+        $query = DB::table('tb_keranjang as tk')
             ->select(
-                'tk.kode_transaksi_keranjang as kode_transaksi',
+                'tk.kode_transaksi as kode_transaksi',
                 'p.kode_bibit',
                 'p.nama_bibit',
                 'tk.price_keranjang as harga_beli',
                 'p.terjual_bibit as terjual',
-                't.created_transaksi as tanggal_transaksi'
+                'tk.created_keranjang as tanggal_transaksi'
             )
             ->join('tb_produk as p', 'tk.keranjang_id_produk', '=', 'p.id_produk')
-            ->join('tb_transaksi as t', 'tk.kode_transaksi_keranjang', '=', 't.kode_transaksi')
-            ->whereDay('t.created_transaksi', $selectedDay)
-            ->whereMonth('t.created_transaksi', $selectedMonth)
-            ->whereYear('t.created_transaksi', $selectedYear)
-            ->paginate(10);
+            ->join('tb_transaksi as t', 'tk.kode_transaksi', '=', 't.kode_transaksi');
+
+        // Apply filters based on the selected values
+        if ($selectedDay) {
+            $query->whereDay('tk.created_keranjang', $selectedDay);
+        }
+        if ($selectedMonth) {
+            $query->whereMonth('tk.created_keranjang', $selectedMonth);
+        }
+        if ($selectedYear) {
+            $query->whereYear('tk.created_keranjang', $selectedYear);
+        }
+
+        $laporanData = $query->paginate(10);
 
         // Definisikan variabel menu untuk navigasi
         $menu = 'laporanpenjualan';
@@ -371,30 +404,40 @@ class Pemilik extends Controller
             'selectedMonth' => $selectedMonth,
             'selectedYear' => $selectedYear,
         ];
-
+// dd($data);
         return view('pemilik.laporanpenjualan', $data);
     }
+
     public function laporanpenjualanborongan(Request $request)
     {
-        // Ambil nilai filter dari request atau default ke tanggal saat ini
-        $selectedDay = $request->input('selectedDay', date('d'));
-        $selectedMonth = $request->input('selectedMonth', date('m'));
-        $selectedYear = $request->input('selectedYear', date('Y'));
+        // Get filter values from request or set to null if not present
+        $selectedDay = $request->input('selectedDay', null);
+        $selectedMonth = $request->input('selectedMonth', null);
+        $selectedYear = $request->input('selectedYear', null);
 
-        // Query untuk data laporan penjualan dengan filter
-        $laporanData = DB::table('tb_transaksi_borong as tb')
+        // Start building the query
+        $query = DB::table('tb_transaksi_borong as tb')
             ->select(
                 'tb.kode_transaksi as kode_transaksi',
                 'tb.nama_bibit as nama_bibit',
                 'tb.total_transaksi as harga_beli',
                 'tb.kuantitas_bibit as terjual',
                 'tb.created_at as tanggal_transaksi'
-            )
-            // ->join('tb_produk as p', 'tb.id', '=', 'p.id_produk')
-            ->whereDay('tb.created_at', $selectedDay)
-            ->whereMonth('tb.created_at', $selectedMonth)
-            ->whereYear('tb.created_at', $selectedYear)
-            ->paginate(10);
+            );
+
+        // Apply filters if provided
+        if ($selectedDay) {
+            $query->whereDay('tb.created_at', $selectedDay);
+        }
+        if ($selectedMonth) {
+            $query->whereMonth('tb.created_at', $selectedMonth);
+        }
+        if ($selectedYear) {
+            $query->whereYear('tb.created_at', $selectedYear);
+        }
+
+        // Get the paginated result
+        $laporanData = $query->paginate(10);
 
         // Definisikan variabel menu untuk navigasi
         $menu = 'laporanpenjualan';
@@ -411,6 +454,7 @@ class Pemilik extends Controller
 
         return view('pemilik.laporanpenjualanborongan', $data);
     }
+
 
 
 }

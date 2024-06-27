@@ -1,10 +1,10 @@
-@extends('pelanggan_core/core_afterlogin')
+@extends('pelanggan_core.core_afterlogin')
 
 @section('css')
-<!-- SPECIFIC CSS -->
-<link href="css/product_page.css" rel="stylesheet">
-<!-- YOUR CUSTOM CSS -->
-<link href="css/custom.css" rel="stylesheet">
+    <!-- SPECIFIC CSS -->
+    <link href="{{ asset('css/product_page.css') }}" rel="stylesheet">
+    <!-- YOUR CUSTOM CSS -->
+    <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
 @endsection
 
 @section('content')
@@ -35,7 +35,7 @@
                 @if ($statusTransaksis->isEmpty())
                     <p>Belum ada status untuk transaksi ini.</p>
                 @else
-                   <h5>{{ $statusTransaksis->last()->status_name }}</h5>
+                    <h5>{{ $statusTransaksis->last()->status_name }}</h5>
                 @endif
             </div>
             <div class="mt-4">
@@ -49,20 +49,18 @@
                                 <th>Harga</th>
                                 <th>Qty</th>
                                 <th>Total</th>
-                                {{-- <th>Pengiriman</th> --}}
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($getTransaction as $key)
                             <tr>
                                 <td style="width: 10%;">
-                                    <img src="{{ url('/') }}/images/{{ $key->gambar_bibit }}" width="100%">
+                                    <img src="{{ asset('images/' . $key->gambar_bibit) }}" width="100%">
                                 </td>
                                 <td>{{ $key->nama_bibit }}</td>
                                 <td>Rp {{ number_format((float)$key->harga_bibit, 0, ',', '.') }}</td>
                                 <td>{{ $key->qty_keranjang }}</td>
-                                <td>Rp {{ number_format((float)$key->price_keranjang    , 0, ',', '.') }}</td>
-                                {{-- <td>{{ $key->kecamatan_name }}</td> --}}
+                                <td>Rp {{ number_format((float)$key->price_keranjang, 0, ',', '.') }}</td>
                             </tr>
                             @endforeach
                         </tbody>

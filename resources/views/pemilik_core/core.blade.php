@@ -45,7 +45,7 @@
                     <div class="sb-sidenav-menu">
                         <div class="nav">
                             <div class="sb-sidenav-menu-heading">Pemilik</div>
-                            <a class="nav-link <?php if($menu == 'dashboard'){ echo 'active'; } ?>" href="<?= url('/') ?>/pemilik/dashboard">
+                            <a class="nav-link <?php if($menu == 'dashboard2'){ echo 'active'; } ?>" href="<?= url('/') ?>/pemilik/dashboard2">
                                 <div class="sb-nav-link-icon"><i class="fa-solid fa-gauge"></i></div>
                                 Dashboard
                             </a>
@@ -53,7 +53,7 @@
                                 <div class="sb-nav-link-icon"><i class="fa-solid fa-boxes-stacked"></i></i></div>
                                 Produk Bibit
                             </a>
-                            <a class="nav-link <?php if($menu == 'stokbibit'){ echo 'active'; } ?>" href="<?= url('/') ?>/pemilik/stokbibit">
+                            <a class="nav-link <?php if($menu == 'produkbibit'){ echo 'active'; } ?>" href="<?= url('/') ?>/pemilik/produkbibit">
                                 <div class="sb-nav-link-icon"><i class="fa-solid fa-boxes-packing"></i></i></div>
                                 Stok
                             </a>
@@ -61,7 +61,7 @@
                                 <div class="sb-nav-link-icon"><i class="fa-solid fa-chart-column"></i></div>
                                 Laporan Penjualan
                             </a>
-                        </div>  
+                        </div>
                     </div>
                     <div class="sb-sidenav-footer">
                         <div class="small">Logged in as:</div>

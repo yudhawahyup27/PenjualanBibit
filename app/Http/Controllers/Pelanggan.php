@@ -273,7 +273,7 @@ class Pelanggan extends Controller
                 case 2:
                     return redirect('/pegawai/produkbibit');
                 case 3:
-                    return redirect('/pemilik/dashboard');
+                    return redirect('/pemilik/dashboard2');
                 case 4:
                     return redirect('/');
                 default:
@@ -404,55 +404,62 @@ class Pelanggan extends Controller
         $sessionUserId = $request->session()->get('id');
         $product = DB::table('tb_produk')->where('id_produk', $id_produk)->first();
 
+        if (!$product) {
+            return redirect()->back()->with('error', 'Produk tidak ditemukan.');
+        }
+
         // Calculate total sold and remaining stock
         $totalSold = $product->terjual_bibit + $request->qty;
         $remainingStock = $product->stok_bibit - $request->qty;
 
+        $kode_transaksi = "Ttx" . uniqid();
+
         // Validate if the requested quantity exceeds the available stock
-        if ($remainingStock >= 0) {
-            $pengiriman = $request->pengiriman;
-            $shippingCost = 0; // Default shipping cost
-
-            // If delivery to a kecamatan, get the shipping cost from the kecamatan table
-            if ($pengiriman != 0) {
-                $kecamatan = DB::table('tb_kecamatan')->where('kecamatan_id', $pengiriman)->first();
-                if ($kecamatan) {
-                    $shippingCost = $kecamatan->ongkir;
-                } else {
-                    // Handle the case when the kecamatan is not found
-                    return redirect()->back()->with('error', 'Kecamatan tidak ditemukan.');
-                }
-            }
-
-            // Insert into the cart table
-            DB::table('tb_keranjang')->insert([
-                'keranjang_id_produk' => $id_produk,
-                'keranjang_id_user' => $sessionUserId,
-                'qty_keranjang' => $request->qty,
-                'pengiriman_keranjang' => $pengiriman,
-                'detail_rumah' => $request->input('detail_rumah'),
-                'price_keranjang' => $product->harga_bibit * $request->qty + $shippingCost,
-                'created_keranjang'  => now(),
-            ]);
-
-            // Update total sold and remaining stock
-            DB::table('tb_produk')
-                ->where('id_produk', $id_produk)
-                ->update([
-                    'terjual_bibit' => $totalSold,
-                    'stok_bibit' => $remainingStock,
-                ]);
-
-            if ($request->action == 'cart') {
-                return redirect()->to('/pelanggan/keranjang');
-            } elseif ($request->action == 'beli_langsung') {
-                return redirect()->to('/pelanggan/detail_cart_payment');
-            }
-        } else {
-            // Handle order exceeding available stock
+        if ($remainingStock < 0) {
             return redirect()->back()->with('error', 'Jumlah barang yang diminta melebihi stok yang tersedia.');
         }
+
+        $pengiriman = $request->pengiriman;
+        $shippingCost = 0; // Default shipping cost
+
+        // If delivery to a kecamatan, get the shipping cost from the kecamatan table
+        if ($pengiriman != 0) {
+            $kecamatan = DB::table('tb_kecamatan')->where('kecamatan_id', $pengiriman)->first();
+            if (!$kecamatan) {
+                return redirect()->back()->with('error', 'Kecamatan tidak ditemukan.');
+            }
+            $shippingCost = $kecamatan->ongkir;
+        }
+
+        // Insert into the cart table
+        DB::table('tb_keranjang')->insert([
+            'keranjang_id_produk' => $id_produk,
+            'kode_transaksi' => $kode_transaksi,
+            'keranjang_id_user' => $sessionUserId,
+            'qty_keranjang' => $request->qty,
+            'pengiriman_keranjang' => $pengiriman,
+            'detail_rumah' => $request->input('detail_rumah'),
+            'price_keranjang' => ($product->harga_bibit * $request->qty) + $shippingCost,
+            'created_keranjang' => now(),
+        ]);
+
+        // Update total sold and remaining stock
+        DB::table('tb_produk')
+            ->where('id_produk', $id_produk)
+            ->update([
+                'terjual_bibit' => $totalSold,
+                'stok_bibit' => $remainingStock,
+            ]);
+
+        if ($request->action == 'cart') {
+            return redirect()->to('/pelanggan/keranjang');
+        } elseif ($request->action == 'beli_langsung') {
+            return redirect()->to('/pelanggan/detail_cart_payment');
+        }
+
+        return redirect()->back()->with('error', 'Terjadi kesalahan.');
     }
+
 
 
     public function bayar_cart_borongan(Request $request)
@@ -766,49 +773,49 @@ public function detail_cart_payment_create(Request $request)
 
         return view('pelanggan/statustransaksi', $data);
     }
-
     public function status_transaksi_detail(Request $request)
     {
         if ($request->session()->get('login')) {
 
             date_default_timezone_set('Asia/Jakarta');
-            $uri_one = request()->segment(4);
+            $uri_one = $request->segment(4);
             $getSesionId = $request->session()->get('id');
             $users = DB::table('tb_user')->where('id_user', $getSesionId)->first();
 
+            // Fetch transaction details from tb_transaksi based on $uri_one
             $cart = DB::table('tb_transaksi')->where('id_transaksi', $uri_one)->first();
 
-            // Ambil status dari tb_statuspengiriman untuk kode transaksi tertentu
+            // Fetch status updates from tb_statuspengiriman for the specific transaction
             $statusTransaksis = DB::table('tb_statuspengiriman')
-                ->select('tb_statuspengiriman.*', 'tb_status.status_name')
-                ->join('tb_status', 'tb_statuspengiriman.statuspengiriman_id_status', '=', 'tb_status.status_id')
-                ->where('statuspengiriman_kodetransaksi', $cart->kode_transaksi)
-                ->whereIn('statuspengiriman_id_status', [1, 2, 3, 4])
-                ->get();
+                                ->select('tb_statuspengiriman.*', 'tb_status.status_name')
+                                ->join('tb_status', 'tb_statuspengiriman.statuspengiriman_id_status', '=', 'tb_status.status_id')
+                                ->where('statuspengiriman_kodetransaksi', $cart->kode_transaksi)
+                                ->whereIn('statuspengiriman_id_status', [1, 2, 3, 4])
+                                ->get();
 
-                // dd($statusTransaksis);
-                // Ambil transaksi produk dari tb_transaksi_keranjang untuk kode transaksi tertentu
-                $getTransaction = DB::table('tb_transaksi_keranjang')
-                ->join('tb_produk', 'tb_transaksi_keranjang.keranjang_id_produk', '=', 'tb_produk.id_produk')
-                // ->join('tb_kecamatan', 'tb_transaksi_keranjang.pengiriman_keranjang', '=', 'tb_kecamatan.kecamatan_id')
-                ->where('kode_transaksi_keranjang', $cart->kode_transaksi)
-                ->get();
-                // dd($getTransaction);
-
+            // Fetch product details from tb_keranjang based on $uri_one
+            $getTransaction = DB::table('tb_keranjang')
+                                ->join('tb_produk', 'tb_keranjang.keranjang_id_produk', '=', 'tb_produk.id_produk')
+                                ->select('tb_keranjang.*', 'tb_produk.nama_bibit', 'tb_produk.harga_bibit', 'tb_produk.gambar_bibit')
+                                // ->where('keranjang_id_user', $getSesionId)
+                                ->where('kode_transaksi', $cart->kode_transaksi)
+                                ->get();
+// dd($getTransaction);
             $data = [
-                'menu'                  => 'home',
-                'submenu'               => 'pelanggan',
-                'nama'                  => $users->nama_user,
-                'cart'                  => $cart,
-                'statusTransaksis'      => $statusTransaksis,
-                'getTransaction'        => $getTransaction,
+                'menu'              => 'home',
+                'submenu'           => 'pelanggan',
+                'nama'              => $users->nama_user,
+                'cart'              => $cart,
+                'statusTransaksis'  => $statusTransaksis,
+                'getTransaction'    => $getTransaction,
             ];
 
-            return view('pelanggan/statustransaksi_detail', $data);
+            return view('pelanggan.statustransaksi_detail', $data);
         } else {
             return redirect()->to('/');
         }
     }
+
 
 
     public function monitoring(Request $request, $id)

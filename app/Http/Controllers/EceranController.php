@@ -91,14 +91,16 @@ class EceranController extends Controller
 
         return view('pelanggan.checkoutcartmidtrans', $data);
     }
+
     public function processPayment(Request $request)
     {
         $getSesionId = $request->session()->get('id');
         $user = DB::table('tb_user')->where('id_user', $getSesionId)->first();
 
+        // Retrieve cart items and kode_transaksi from tb_keranjang
         $cart = DB::table('tb_keranjang')
                 ->join('tb_produk', 'tb_keranjang.keranjang_id_produk', '=', 'tb_produk.id_produk')
-                ->select('tb_keranjang.*', 'tb_produk.nama_bibit')
+                ->select('tb_keranjang.*', 'tb_produk.nama_bibit', 'tb_keranjang.kode_transaksi')
                 ->where('keranjang_id_user', $getSesionId)
                 ->get();
 
@@ -117,6 +119,19 @@ class EceranController extends Controller
 
         $totalTransaksi = $sumTotalKeranjang + $totalOngkir;
 
+        // Prepare item_details
+        $itemDetails = [];
+        foreach ($cart as $item) {
+            $itemPrice = intval($item->price_keranjang / $item->qty_keranjang); // Ensure integer price without cents
+
+            $itemDetails[] = [
+                'id' => $item->keranjang_id_produk,
+                'price' => $itemPrice,
+                'quantity' => $item->qty_keranjang,
+                'name' => 'Bibit ' . $item->nama_bibit,
+            ];
+        }
+
         // Prepare transaction details
         $params = [
             'transaction_details' => [
@@ -128,14 +143,7 @@ class EceranController extends Controller
                 'email' => $user->email_user,
                 'phone' => $user->nomortelepon_user,
             ],
-            'item_details' => $cart->map(function($item) {
-                return [
-                    'id' => $item->keranjang_id_produk,
-                    'price' => intval($item->price_keranjang / $item->qty_keranjang), // Ensure integer price without cents
-                    'quantity' => $item->qty_keranjang,
-                    'name' => 'Bibit ' . $item->nama_bibit,
-                ];
-            })->toArray(),
+            'item_details' => $itemDetails,
         ];
 
         // Get Snap token from Midtrans
@@ -147,7 +155,7 @@ class EceranController extends Controller
 
         DB::table('tb_transaksi')->insert([
             'id_user_transaksi' => $getSesionId,
-            'kode_transaksi' => $getKodeBarang,
+            'kode_transaksi' => $cart[0]->kode_transaksi, // Assuming kode_transaksi is the same for all items in the cart
             'total_transaksi' => $totalTransaksi,
             'status_transaksi' => '1',
             'created_transaksi' => now(),
@@ -157,7 +165,6 @@ class EceranController extends Controller
         // Redirect to / after payment is completed
         return redirect('/pelanggan/statustransaksi');
     }
-
 
     public function handleMidtransCallback(Request $request)
     {
