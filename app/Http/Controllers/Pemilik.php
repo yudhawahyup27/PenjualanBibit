@@ -11,7 +11,7 @@ class Pemilik extends Controller
     //
     public function redirectdashboard()
     {
-        return redirect()->to('/pemilik/dashboard2');
+        return redirect()->to('/pemilik/dashboard22');
     }
 
     public function dashboard(Request $request)
@@ -19,8 +19,8 @@ class Pemilik extends Controller
         $session_role = $request->session()->get('role');
         if ($session_role == 1) {
             return redirect()->to('/admin');
-        } elseif ($session_role == 3) {
-            return redirect()->to('/pemilik');
+        } elseif ($session_role == 2) {
+            return redirect()->to('/pegawai');
         } elseif ($session_role == 4 || $session_role == '') {
             return redirect()->to('/');
         }
@@ -73,7 +73,7 @@ class Pemilik extends Controller
             ->get();
 
         $data = [
-            'menu' => 'dashboard',
+            'menu' => 'dashboard2',
             'submenu' => 'pemilik',
             'transactionsPerDayEceran' => $transactionsPerDayEceran,
             'transactionsPerMonthEceran' => $transactionsPerMonthEceran,

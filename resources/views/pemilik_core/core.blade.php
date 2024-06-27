@@ -45,7 +45,7 @@
                     <div class="sb-sidenav-menu">
                         <div class="nav">
                             <div class="sb-sidenav-menu-heading">Pemilik</div>
-                            <a class="nav-link <?php if($menu == 'dashboard2'){ echo 'active'; } ?>" href="<?= url('/') ?>/pemilik/dashboard2">
+                            <a class="nav-link <?php if($menu == 'dashboard2'){ echo 'active'; } ?>" href="<?= url('/') ?>/pemilik/dashboard22">
                                 <div class="sb-nav-link-icon"><i class="fa-solid fa-gauge"></i></div>
                                 Dashboard
                             </a>

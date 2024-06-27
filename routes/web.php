@@ -104,7 +104,7 @@ Route::post('/pegawai/monitoringbibit/detail/{id}', [Pegawai::class, 'monitoring
 Route::get('/pegawai/monitoringbibit/hapus/{id}', [Pegawai::class, 'monitoringbibit_delete']);
 
 Route::get('/pemilik', [Pemilik::class, 'redirectdashboard']);
-Route::get('/pemilik/dashboard2', [Pemilik::class, 'dashboard']);
+Route::get('/pemilik/dashboard22', [Pemilik::class, 'dashboard']);
 Route::get('/pemilik/produkbibit', [Pemilik::class, 'produkbibit']);
 Route::get('/pemilik/produkbibit/tambah', [Pemilik::class, 'add_produkbibit']);
 Route::post('/pemilik/produkbibit/tambah', [Pemilik::class, 'create_produkbibit']);
