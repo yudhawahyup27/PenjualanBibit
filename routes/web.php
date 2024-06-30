@@ -111,7 +111,7 @@ Route::post('/pemilik/produkbibit/tambah', [Pemilik::class, 'create_produkbibit'
 Route::get('/pemilik/produkbibit/hapus/{id}', [Pemilik::class, 'delete_produkbibit']);
 Route::get('/pemilik/produkbibit/ubah/{id}', [Pemilik::class, 'edit_produkbibit']);
 Route::post('/pemilik/produkbibit/ubah/{id}', [Pemilik::class, 'update_produkbibit']);
-Route::get('/pemilik/produkbibit', [Pemilik::class, 'stokbibit']);
+Route::get('/pemilik/stokbibit2', [Pemilik::class, 'stokbibit']);
 
 Route::get('/pemilik/laporanpenjualan', [Pemilik::class, 'laporanpenjualan'])->name('laporanpenjualan');
 Route::get('/pemilik/laporanpenjualanborongan', [Pemilik::class, 'laporanpenjualanborongan'])->name('laporanpenjualanborongan');

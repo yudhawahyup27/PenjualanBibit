@@ -367,33 +367,6 @@ class Pelanggan extends Controller
         return $pdf->download('invoice.pdf');
     }
 
-    public function downloadStruk(Request $request , $id)
-    {
-        // Logic to fetch data and generate the PDF
-        $transaksi = DB::table('tb_transaksi')
-        ->where('id_transaksi', $id)
-        ->first();
-        $getSesionId = $request->session()->get('id');
-         // Ambil semua item keranjang dengan informasi tambahan
-    $cart = DB::table('tb_keranjang')
-    ->join('tb_produk', 'tb_keranjang.keranjang_id_produk', '=', 'tb_produk.id_produk')
-    ->leftJoin('tb_kecamatan', function($join) {
-        $join->on('tb_keranjang.pengiriman_keranjang', '=', 'tb_kecamatan.kecamatan_id')
-             ->where('tb_keranjang.pengiriman_keranjang', '!=', 0); // Hanya ambil ongkir jika bukan ambil di toko
-    })
-    ->select('tb_keranjang.*', 'tb_produk.gambar_bibit', 'tb_produk.nama_bibit', 'tb_produk.harga_bibit', 'tb_kecamatan.kecamatan_name', 'tb_kecamatan.ongkir')
-    ->where('keranjang_id_user', $getSesionId)
-    ->get();
-
-        $data = [
-            'cart' => $cart,
-            'transaksi' => $transaksi,
-        ];
-
-        $pdf = PDF::loadView('pelanggan.struk', $data);
-
-        return $pdf->download('invoice.pdf');
-    }
     public function cart_create(Request $request, $id_produk)
     {
         $request->validate([
@@ -412,7 +385,7 @@ class Pelanggan extends Controller
         $totalSold = $product->terjual_bibit + $request->qty;
         $remainingStock = $product->stok_bibit - $request->qty;
 
-        $kode_transaksi = "Ttx" . uniqid();
+        $kode_transaksi = "Ttx2" . uniqid();
 
         // Validate if the requested quantity exceeds the available stock
         if ($remainingStock < 0) {
@@ -421,6 +394,7 @@ class Pelanggan extends Controller
 
         $pengiriman = $request->pengiriman;
         $shippingCost = 0; // Default shipping cost
+        $detailRumah = '';
 
         // If delivery to a kecamatan, get the shipping cost from the kecamatan table
         if ($pengiriman != 0) {
@@ -429,97 +403,64 @@ class Pelanggan extends Controller
                 return redirect()->back()->with('error', 'Kecamatan tidak ditemukan.');
             }
             $shippingCost = $kecamatan->ongkir;
+            $detailRumah = $request->input('detail_rumah');
+        } else {
+            // Ambil di Toko
+            $detailRumah = 'Kertosono - Jawa Timur';
         }
 
-        // Insert into the cart table
-        DB::table('tb_keranjang')->insert([
-            'keranjang_id_produk' => $id_produk,
-            'kode_transaksi' => $kode_transaksi,
-            'keranjang_id_user' => $sessionUserId,
-            'qty_keranjang' => $request->qty,
-            'pengiriman_keranjang' => $pengiriman,
-            'detail_rumah' => $request->input('detail_rumah'),
-            'price_keranjang' => ($product->harga_bibit * $request->qty) + $shippingCost,
-            'created_keranjang' => now(),
-        ]);
+        // Check if the product already exists in the cart
+        $existingCartItem = DB::table('tb_keranjang')
+            ->where('keranjang_id_produk', $id_produk)
+            ->where('keranjang_id_user', $sessionUserId)
+            ->where('pengiriman_keranjang', $pengiriman)
+            ->first();
 
-        // Update total sold and remaining stock
-        DB::table('tb_produk')
-            ->where('id_produk', $id_produk)
-            ->update([
-                'terjual_bibit' => $totalSold,
-                'stok_bibit' => $remainingStock,
-            ]);
+        if ($existingCartItem) {
+            // Update qty_keranjang
+            $newQty = $existingCartItem->qty_keranjang + $request->qty;
 
-        if ($request->action == 'cart') {
-            return redirect()->to('/pelanggan/keranjang');
-        } elseif ($request->action == 'beli_langsung') {
-            return redirect()->to('/pelanggan/detail_cart_payment');
-        }
-
-        return redirect()->back()->with('error', 'Terjadi kesalahan.');
-    }
-
-
-
-    public function bayar_cart_borongan(Request $request)
-    {
-        try {
-            // Validasi data yang diterima dari form
-            $request->validate([
-                'produkborong_select' => 'required',
-                'tanggal_tanam' => '|date',
-                'lahan' => 'required|numeric|min:175',
-                'jumlah_perbatang' => 'required|numeric',
-                'bukti_pembayaran' => 'required|file|mimes:jpeg,png,pdf|max:2048',
-                'pengiriman' => 'required',
-
-            ]);
-
-            // Mengambil sesi ID pengguna yang sedang login
-            $getSesionId = $request->session()->get('id');
-            if (!$getSesionId) {
-                throw new \Exception('User not authenticated');
-            }
-
-            // Generate kode transaksi unik
-            $getKodeBarang = 'TRX_' . uniqid();
-
-            // Mengambil file bukti pembayaran
-            if ($request->hasFile('bukti_pembayaran')) {
-                $buktiPembayaran = $request->file('bukti_pembayaran');
-                $buktiPembayaranPath = $buktiPembayaran->store('public/bukti_pembayaran');
-
-                // Menyimpan data ke database
-                $tanggalHariIni = now();
-                $tanggalTanam = $tanggalHariIni->addDays(15)->toDateString();
-
-                DB::table('tb_transaksi_borong')->insert([
-                    'id_user_transaksi' => $getSesionId,
-                    'kode_transaksi' => $getKodeBarang,
-                    'nama_bibit' => $request->input('produkborong_select'),
-                    'tanggal_tanam' => $tanggalTanam,
-                    'luas_lahan' => $request->input('lahan'),
-                    'kuantitas_bibit' => $request->input('jumlah_perbatang'),
-                    'total_transaksi' => $request->input('total'),
-                    'bukti_pembayaran' => $buktiPembayaranPath,
-                    'pengiriman' => $request->input('pengiriman'),
-                    'detail_rumah' => $request->input('detail_rumah'),
-                    'metodepembayaran' => $request->input('metodepembayaran'),
-                    'status_transaksi' => '1',
-                    'created_at' => $tanggalHariIni,
+            // Update existing cart item
+            DB::table('tb_keranjang')
+                ->where('id_keranjang', $existingCartItem->id_keranjang)
+                ->update([
+                    'qty_keranjang' => $newQty,
+                    'price_keranjang' => ($product->harga_bibit * $newQty),
+                    // 'pengiriman'
                 ]);
-
-                // Redirect ke halaman status transaksi
-                return redirect('pelanggan/tablemonitoring')->with('success', 'Transaksi berhasil dilakukan');
-            } else {
-                throw new \Exception('Bukti pembayaran tidak terkirim atau tidak valid.');
+                if ($request->action == 'cart') {
+                    return redirect()->to('/pelanggan/keranjang');
+                } elseif ($request->action == 'beli_langsung') {
+                    return redirect()->to('/pelanggan/detail_cart_payment');
+                }
+            // Display updated cart item
+            $updatedCartItem = DB::table('tb_keranjang')->where('id_keranjang', $existingCartItem->id_keranjang)->first();
+            // dd($updatedCartItem);
+        } else {
+            // Insert new item into the cart table
+            DB::table('tb_keranjang')->insert([
+                'keranjang_id_produk' => $id_produk,
+                'kode_transaksi' => $kode_transaksi,
+                'keranjang_id_user' => $sessionUserId,
+                'qty_keranjang' => $request->qty,
+                'pengiriman_keranjang' => $pengiriman,
+                'detail_rumah' => $detailRumah,
+                'price_keranjang' => ($product->harga_bibit * $request->qty),
+                'created_keranjang' => now(),
+                'updated_keranjang' => now(),
+            ]);
+            if ($request->action == 'cart') {
+                return redirect()->to('/pelanggan/keranjang');
+            } elseif ($request->action == 'beli_langsung') {
+                return redirect()->to('/pelanggan/detail_cart_payment');
             }
-        } catch (\Exception $e) {
-            // Redirect kembali dengan pesan error
-            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat melakukan transaksi: ' . $e->getMessage()]);
+
+            // Display newly inserted cart item
+            $newCartItem = DB::table('tb_keranjang')->where('kode_transaksi', $kode_transaksi)->first();
+            // dd($newCartItem);
         }
     }
+
 
 
 
@@ -761,7 +702,10 @@ public function detail_cart_payment_create(Request $request)
 
         $cart = DB::table('tb_transaksi')->where('id_user_transaksi', $getSesionId)->get();
 
-        $getTransaksi = DB::table('tb_transaksi')->where('id_user_transaksi', $getSesionId)->get();
+        $getTransaksi = DB::table('tb_transaksi')
+        ->where('id_user_transaksi', $getSesionId)
+        ->orderBy('created_transaksi', 'desc')
+        ->get();
 
         $data = [
             'menu'          =>  'home',
@@ -865,6 +809,7 @@ public function detail_cart_payment_create(Request $request)
         $users = DB::table('tb_user')->where('id_user', $getSesionId)->first();
 
         $tblTransaksi = DB::table('tb_transaksi_borong')
+        ->orderBy('created_at', 'desc')
             ->join('tb_user', 'tb_transaksi_borong.id_user_transaksi', '=', 'tb_user.id_user')
             ->join('tb_produk', 'tb_transaksi_borong.nama_bibit', '=', 'tb_produk.id_produk')
             ->join('tb_status', 'tb_transaksi_borong.status_transaksi', '=', 'tb_status.status_id')

@@ -95,6 +95,8 @@ class Pemilik extends Controller
         $session_role = $request->session()->get('role');
         if ($session_role == 1) {
             return redirect()->to('/admin');
+        } elseif ($session_role == 2) {
+            return redirect()->to('/pegawai');
         } elseif ($session_role == 3) {
             return redirect()->to('/pemilik');
         } elseif ($session_role == 4) {
@@ -103,15 +105,15 @@ class Pemilik extends Controller
             return redirect()->to('/');
         }
 
-
-        // $tblProduk = DB::table('tb_produk')->where('produk_id_user', $request->session()->get('id'))->get();
+        // Retrieve data produk
         $tblProduk = DB::table('tb_produk')->get();
         $data = [
-            'menu'          =>  'produkbibit',
-            'submenu'       =>  'pemilik',
-            'dataproduk'    => $tblProduk,
+            'menu' => 'produkbibit',
+            'submenu' => 'pemilik',
+            'dataproduk' => $tblProduk,
         ];
-        return view('pemilik/produkbibit', $data);
+        // dd($data);
+        return view('pemilik.produk', $data);
     }
 
     public function add_produkbibit(Request $request)
@@ -131,7 +133,7 @@ class Pemilik extends Controller
             'menu'              =>  'produkbibit',
             'submenu'           =>  'pemilik',
         ];
-        return view('pemilik/tambah_produkbibit', $data);
+        return view('pemilik.tambah_produkbibit', $data);
     }
 
     public function create_produkbibit(Request $request)
@@ -351,13 +353,12 @@ class Pemilik extends Controller
 
         $tblStok = DB::table('tb_produk')->get();
         $data = [
-            'menu'          =>  'stokbibit',
+            'menu'          =>  'stokbibit2',
             'submenu'       =>  'pemilik',
             'dataproduk'    =>  $tblStok,
         ];
         return view('pemilik/stokbibit', $data);
     }
-
 
     public function laporanpenjualan(Request $request)
     {
@@ -366,20 +367,23 @@ class Pemilik extends Controller
         $selectedMonth = $request->input('selectedMonth', null);
         $selectedYear = $request->input('selectedYear', null);
 
-        // Query untuk data laporan penjualan dengan filter
+        // Query untuk data laporan penjualan tanpa filter
         $query = DB::table('tb_keranjang as tk')
             ->select(
                 'tk.kode_transaksi as kode_transaksi',
                 'p.kode_bibit',
                 'p.nama_bibit',
                 'tk.price_keranjang as harga_beli',
-                'p.terjual_bibit as terjual',
+                'tk.qty_keranjang as terjual',
                 'tk.created_keranjang as tanggal_transaksi'
             )
-            ->join('tb_produk as p', 'tk.keranjang_id_produk', '=', 'p.id_produk')
-            ->join('tb_transaksi as t', 'tk.kode_transaksi', '=', 't.kode_transaksi');
+            ->join('tb_produk as p', 'tk.keranjang_id_produk', '=', 'p.id_produk');
+            // ->join('tb_transaksi as t', 'tk.kode_transaksi', '=', 't.kode_transaksi');
 
-        // Apply filters based on the selected values
+        // Ambil semua data tanpa filter
+        $allData = $query->get();
+
+        // Terapkan filter jika ada input dari pengguna
         if ($selectedDay) {
             $query->whereDay('tk.created_keranjang', $selectedDay);
         }
@@ -392,6 +396,9 @@ class Pemilik extends Controller
 
         $laporanData = $query->paginate(10);
 
+        // Debug: cek hasil query
+        // dd($laporanData);
+
         // Definisikan variabel menu untuk navigasi
         $menu = 'laporanpenjualan';
 
@@ -400,13 +407,15 @@ class Pemilik extends Controller
             'menu' => $menu,
             'submenu' => 'pemilik',
             'data' => $laporanData,
+            'allData' => $allData,
             'selectedDay' => $selectedDay,
             'selectedMonth' => $selectedMonth,
             'selectedYear' => $selectedYear,
         ];
-// dd($data);
+
         return view('pemilik.laporanpenjualan', $data);
     }
+
 
     public function laporanpenjualanborongan(Request $request)
     {

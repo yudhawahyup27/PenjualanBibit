@@ -82,7 +82,7 @@
             </select>
         </div>
         <div class="my-3">
-            <label for="detail_rumah" class="form-label">Detail Rumah</label>
+            <label for="detail_rumah" class="form-label">Detail Rumah2</label>
             <textarea name="detail_rumah" id="detail_rumah" class="form-control" placeholder="Detail Rumah" ></textarea>
         </div>
         <div class="my-3">

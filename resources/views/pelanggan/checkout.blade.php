@@ -78,7 +78,7 @@
                     @endforeach
                     <optgroup label="PILIH DAFTAR ALAMAT">
                         @foreach($kecamatan as $key)
-                            <option value="{{ $key->kecamatan_id }}">{{ $key->kecamatan_name }}</option>
+                            <option value="{{ $key->ongkir}}">{{ $key->kecamatan_name }}</option>
                         @endforeach
                     </optgroup>
                 </select>
@@ -93,6 +93,53 @@
         </div>
     </form>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('paymentForm').addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent default form submission
+
+                // Perform client-side validation if necessary
+
+                // Submit form asynchronously
+                fetch('{{ route("payment.process") }}', {
+                    method: 'POST',
+                    body: new FormData(this)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.snapToken) {
+                        // Redirect to Midtrans payment page with snapToken
+                        snap.pay(data.snapToken, {
+                            onSuccess: function(result){
+                                if (result.finish_redirect_url) {
+                                    window.location.href = result.finish_redirect_url;
+                                }
+                            },
+                            onPending: function(result){
+                                if (result.finish_redirect_url) {
+                                    window.location.href = result.finish_redirect_url;
+                                }
+                            },
+                            onError: function(result){
+                                console.error('Error processing payment:', result);
+                                alert('Terjadi kesalahan saat pemrosesan pembayaran.');
+                            }
+                        });
+                    } else {
+                        console.error('Failed to get Snap token from server.');
+                        alert('Gagal mendapatkan token pembayaran dari server.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat mengirim permintaan pembayaran.');
+                });
+            });
+        });
+    </script>
+
     <script>
         document.getElementById('lahan').addEventListener('input', function () {
             var area = parseFloat(this.value) || 0;
@@ -100,20 +147,30 @@
             document.getElementById('jumlah_perbatang').value = quantity;
             hitungTotal();
         });
+        
+        document.addEventListener('DOMContentLoaded', function () {
+    var pengirimanSelect = document.getElementById('pengiriman');
+    var detailRumahTextarea = document.getElementById('detail_rumah');
 
-        document.getElementById('pengiriman').addEventListener('change', function() {
-            var selectedOption = this.options[this.selectedIndex];
-            var alamat = selectedOption.getAttribute('data-alamat');
-            var deskripsi = selectedOption.getAttribute('data-deskripsi');
-            var kecamatan = selectedOption.getAttribute('data-kecamatan');
+    pengirimanSelect.addEventListener('change', function () {
+        var selectedOption = this.options[this.selectedIndex];
+        var alamat = selectedOption.getAttribute('data-alamat');
+        var deskripsi = selectedOption.getAttribute('data-deskripsi');
+        var kecamatan = selectedOption.getAttribute('data-kecamatan');
 
+        if (this.value == "0") { // Ambil di Toko
+            detailRumahTextarea.value = 'Kertosono - Jawa Timur';
+            detailRumahTextarea.disabled = true;
+        } else {
+            detailRumahTextarea.disabled = false;
             if (alamat && deskripsi) {
-                document.getElementById('detail_rumah').value = `Alamat: ${alamat}\nDeskripsi: ${deskripsi}\nKecamatan: ${kecamatan}`;
+                detailRumahTextarea.value = `${alamat}\n${deskripsi}\n${kecamatan}`;
             } else {
-                document.getElementById('detail_rumah').value = '';
+                detailRumahTextarea.value = '';
             }
-            hitungTotal();
-        });
+        }
+    });
+});
 
         document.getElementById('produkborong_select').addEventListener('change', function() {
             var productId = this.value;
@@ -143,7 +200,8 @@
             var hargaSatuan = parseFloat(document.getElementById('harga_bibit').value) || 0;
             var ongkir = parseFloat(document.getElementById('pengiriman').value) || 0;
 
-            var total = kuantitas * hargaSatuan + ongkir;
+
+            var total = (kuantitas * hargaSatuan) + ongkir;
 
             document.getElementById('total').value = formatRupiah(total);
         }

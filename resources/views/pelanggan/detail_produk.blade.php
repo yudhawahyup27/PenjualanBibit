@@ -77,13 +77,17 @@
                                         </optgroup>
                                     </select>
                                 </td>
-                                <td>
-                                    <div class="my-3">
-                                        <label for="detail_rumah" class="form-label">Detail Rumah</label>
-                                        <textarea name="detail_rumah" id="detail_rumah" class="form-control" placeholder="Detail Rumah"></textarea>
-                                    </div>
-                                </td>
                             </tr>
+<tr>
+<td>
+    <label for="detail_rumah" class="form-label h5">Detail Rumah</label>
+</td>
+    <td>
+        <div class="my-3">
+            <textarea name="detail_rumah" id="detail_rumah" class="form-control " rows="3" placeholder="Detail Rumah"></textarea>
+        </div>
+    </td>
+</tr>
                             <tr>
                                 <td colspan="3">
                                     <button type="submit" name="action" value="cart" class="btn btn-primary">Tambah Ke Keranjang</button>
@@ -124,19 +128,29 @@
 </div>
 
 <script>
-    document.getElementById('pengiriman').addEventListener('change', function() {
+   document.addEventListener('DOMContentLoaded', function () {
+    var pengirimanSelect = document.getElementById('pengiriman');
+    var detailRumahTextarea = document.getElementById('detail_rumah');
+
+    pengirimanSelect.addEventListener('change', function () {
         var selectedOption = this.options[this.selectedIndex];
         var alamat = selectedOption.getAttribute('data-alamat');
         var deskripsi = selectedOption.getAttribute('data-deskripsi');
         var kecamatan = selectedOption.getAttribute('data-kecamatan');
 
-        if (alamat && deskripsi) {
-            document.getElementById('detail_rumah').value = `Alamat: ${alamat}\nDeskripsi: ${deskripsi}\nKecamatan: ${kecamatan}`;
+        if (this.value == "0") { // Ambil di Toko
+            detailRumahTextarea.value = 'Kertosono - Jawa Timur';
+            detailRumahTextarea.disabled = true;
         } else {
-            document.getElementById('detail_rumah').value = '';
+            detailRumahTextarea.disabled = false;
+            if (alamat && deskripsi) {
+                detailRumahTextarea.value = `${alamat}\n${deskripsi}\n${kecamatan}`;
+            } else {
+                detailRumahTextarea.value = '';
+            }
         }
-        hitungTotal();
     });
+});
 
     document.getElementById('quantityInput').addEventListener('input', function() {
         var quantity = document.getElementById('quantityInput').value;

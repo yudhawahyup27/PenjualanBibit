@@ -48,7 +48,6 @@
                         <option value="1">Admin</option>
                         <option value="2">Pegawai</option>
                         <option value="3">Pemilik</option>
-                        <option value="4">Pelanggan</option>
                     </select>
                 </div>
                 <div class="form-floating mb-3">

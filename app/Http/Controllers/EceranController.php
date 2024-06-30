@@ -51,6 +51,16 @@ class EceranController extends Controller
             return redirect('/pengguna/keranjang');
         }
 
+        // Calculate total shipping cost
+        $totalOngkir = 0;
+        foreach ($cart as $item) {
+            if ($item->pengiriman_keranjang != 0) { // If not self-pickup
+                $totalOngkir += $item->ongkir;
+            }
+        }
+
+        $totalPriceWithOngkir = $sumPrice + $totalOngkir;
+
         // Prepare data to pass to view
         $data = [
             'menu' => 'home',
@@ -59,6 +69,8 @@ class EceranController extends Controller
             'cart' => $cart,
             'countCart' => $countCart,
             'sumPrice' => $sumPrice,
+            'totalOngkir' => $totalOngkir,
+            'totalPriceWithOngkir' => $totalPriceWithOngkir,
             'keranjang' => $keranjang,
         ];
 
@@ -66,15 +78,23 @@ class EceranController extends Controller
         $params = [
             'transaction_details' => [
                 'order_id' => uniqid(), // Generate unique order ID
-                'gross_amount' => $sumPrice, // Or use 'total' from your cart calculation
+                'gross_amount' => $totalPriceWithOngkir, // Add shipping cost to the total amount
             ],
             'customer_details' => [
                 'first_name' => $users->nama_user,
                 'email' => $users->email_user,
                 'phone' => $users->nomortelepon_user,
             ],
-            // Add item_details, merchant_id, and other necessary parameters
             'merchant_id' => config('midtrans.merchant_id'),
+            // Add item_details including shipping cost as a separate item
+            'item_details' => [
+                [
+                    'id' => 'SHIPPING',
+                    'price' =>        $totalPriceWithOngkir,
+                    'quantity' => 1,
+                    'name' => 'Shipping Cost',
+                ]
+            ],
         ];
 
         // Set Midtrans configuration
@@ -91,6 +111,7 @@ class EceranController extends Controller
 
         return view('pelanggan.checkoutcartmidtrans', $data);
     }
+
 
     public function processPayment(Request $request)
     {
@@ -131,6 +152,14 @@ class EceranController extends Controller
                 'name' => 'Bibit ' . $item->nama_bibit,
             ];
         }
+
+        // Add shipping cost as a separate item
+        $itemDetails[] = [
+            'id' => 'SHIPPING',
+            'price' => $totalOngkir,
+            'quantity' => 1,
+            'name' => 'Shipping Cost',
+        ];
 
         // Prepare transaction details
         $params = [

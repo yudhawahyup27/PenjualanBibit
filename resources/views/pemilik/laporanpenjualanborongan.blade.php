@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
         <h1 class="mt-4">Laporan Penjualan</h1>
-        <a href="/pemilik/laporanpenjualanborongan" class="btn-success btn p-1 float-end">Lihat Laporan Borongan</a>
+        <a href="/pemilik/laporanpenjualan" class="btn-success btn p-1 float-end">Lihat Laporan Eceran</a>
         <div class="row mb-4">
             <form action="{{ route('laporanpenjualan') }}" method="GET">
                 <div class="row">
