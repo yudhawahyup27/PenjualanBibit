@@ -4,8 +4,8 @@
 <div class="container-fluid px-4">
     <h1 class="mt-4">Produk Bibit</h1>
     <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="/pegawai/bibit">Dashboard</a></li>
-        <li class="breadcrumb-item "><a href="/pegawai/bibit">Produk Bibit</a></li>
+        <li class="breadcrumb-item"><a href="//pegawai/produkbibit">Dashboard</a></li>
+        <li class="breadcrumb-item "><a href="//pegawai/produkbibit">Produk Bibit</a></li>
         <li class="breadcrumb-item active">Tambah Produk Bibit</li>
     </ol>
 
@@ -30,7 +30,7 @@
             Tambah Data Produk Bibit
         </div>
         <div class="card-body">
-            <form method="post" action="{{ url('/pegawai/bibit/tambah') }}" enctype="multipart/form-data">
+            <form method="post" action="{{ url('//pegawai/produkbibit/tambah') }}" enctype="multipart/form-data">
                 @csrf
                 <div hidden class="mb-3">
                     <label>Nama User</label>

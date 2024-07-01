@@ -271,7 +271,7 @@ class Pelanggan extends Controller
                 case 1:
                     return redirect('/admin/dashboard');
                 case 2:
-                    return redirect('/pegawai/bibit');
+                    return redirect('/pegawai/produkbibit');
                 case 3:
                     return redirect('/pemilik/dashboard22');
                 case 4:

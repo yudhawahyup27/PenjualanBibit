@@ -4,8 +4,8 @@
 <div class="container-fluid px-4">
     <h1 class="mt-4">Monitoring Bibit Transaksi {{$tblTransaksi->kode_transaksi}}</h1>
     <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="/pegawai/bibit">Dashboard</a></li>
-        <li class="breadcrumb-item "><a href="/pegawai/bibit">Monitoring Bibit Transaksi {{$tblTransaksi->kode_transaksi}}</a></li>
+        <li class="breadcrumb-item"><a href="//pegawai/produkbibit">Dashboard</a></li>
+        <li class="breadcrumb-item "><a href="//pegawai/produkbibit">Monitoring Bibit Transaksi {{$tblTransaksi->kode_transaksi}}</a></li>
         <li class="breadcrumb-item active">Tambah Monitoring Bibit Transaksi {{$tblTransaksi->kode_transaksi}}</li>
     </ol>
     <div class="card mb-4">
