@@ -16,25 +16,16 @@ class Pemilik extends Controller
 
     public function dashboard(Request $request)
     {
-        $session_role = $request->session()->get('role');
-        if ($session_role == 1) {
-            return redirect()->to('/admin');
-        } elseif ($session_role == 2) {
-            return redirect()->to('/pegawai');
-        } elseif ($session_role == 4 || $session_role == '') {
-            return redirect()->to('/');
-        }
-
         // Mendapatkan nilai input dari request atau default ke tanggal saat ini
         $selectedDay = $request->input('selectedDay', date('d'));
         $selectedMonth = $request->input('selectedMonth', date('m'));
         $selectedYear = $request->input('selectedYear', date('Y'));
 
         // Query untuk jumlah transaksi per hari (Eceran)
-        $transactionsPerDayEceran = DB::table('tb_keranjang')
-            ->select(DB::raw('DAY(created_keranjang) as day'), DB::raw('SUM(price_keranjang) as total'))
-            ->whereMonth('created_keranjang', $selectedMonth)
-            ->whereYear('created_keranjang', $selectedYear)
+        $transactionsPerDayEceran = DB::table('tb_transaksi')
+            ->select(DB::raw('DAY(created_transaksi) as day'), DB::raw('SUM(total_transaksi) as total'))
+            ->whereMonth('created_transaksi', $selectedMonth)
+            ->whereYear('created_transaksi', $selectedYear)
             ->groupBy('day')
             ->get();
 
@@ -47,9 +38,9 @@ class Pemilik extends Controller
             ->get();
 
         // Query untuk jumlah transaksi per bulan (Eceran)
-        $transactionsPerMonthEceran = DB::table('tb_keranjang')
-            ->select(DB::raw('MONTH(created_keranjang) as month'), DB::raw('SUM(price_keranjang) as total'))
-            ->whereYear('created_keranjang', $selectedYear)
+        $transactionsPerMonthEceran = DB::table('tb_transaksi')
+            ->select(DB::raw('MONTH(created_transaksi) as month'), DB::raw('SUM(total_transaksi) as total'))
+            ->whereYear('created_transaksi', $selectedYear)
             ->groupBy('month')
             ->get();
 
@@ -61,8 +52,8 @@ class Pemilik extends Controller
             ->get();
 
         // Query untuk jumlah transaksi per tahun (Eceran)
-        $transactionsPerYearEceran = DB::table('tb_keranjang')
-            ->select(DB::raw('YEAR(created_keranjang) as year'), DB::raw('SUM(price_keranjang) as total'))
+        $transactionsPerYearEceran = DB::table('tb_transaksi')
+            ->select(DB::raw('YEAR(created_transaksi) as year'), DB::raw('SUM(total_transaksi) as total'))
             ->groupBy('year')
             ->get();
 
@@ -71,6 +62,26 @@ class Pemilik extends Controller
             ->select(DB::raw('YEAR(created_at) as year'), DB::raw('SUM(total_transaksi) as total'))
             ->groupBy('year')
             ->get();
+
+        // Jika tidak ada transaksi per hari (Eceran), inisialisasi dengan nilai nol
+        if ($transactionsPerDayEceran->isEmpty()) {
+            $transactionsPerDayEceran = collect([
+                (object)['day' => $selectedDay, 'total' => 0]
+            ]);
+        }
+
+        // Jika tidak ada transaksi per hari (Borong), inisialisasi dengan nilai nol
+        if ($transactionsPerDayBorong->isEmpty()) {
+            $transactionsPerDayBorong = collect([
+                (object)['day' => $selectedDay, 'total' => 0]
+            ]);
+        }
+
+        // Mengisi bulan yang tidak memiliki transaksi untuk Eceran
+        $transactionsPerMonthEceran = $this->fillMissingMonths($transactionsPerMonthEceran);
+
+        // Mengisi bulan yang tidak memiliki transaksi untuk Borong
+        $transactionsPerMonthBorong = $this->fillMissingMonths($transactionsPerMonthBorong);
 
         $data = [
             'menu' => 'dashboard2',
@@ -86,37 +97,49 @@ class Pemilik extends Controller
             'selectedYear' => $selectedYear,
         ];
 
+
         return view('pemilik.dashboard', $data);
     }
+        private function fillMissingMonths($data)
+        {
+            $data = $data->keyBy('month')->all();
+            for ($i = 1; $i <= 12; $i++) {
+                if (!isset($data[$i])) {
+                    $data[$i] = (object)[
+                        'month' => $i,
+                        'total' => 0
+                    ];
+                }
+            }
+            ksort($data);
+            return collect($data);
+        }
 
-
-    public function produkbibit(Request $request)
+    public function bibit2(Request $request)
     {
+
         $session_role = $request->session()->get('role');
         if ($session_role == 1) {
             return redirect()->to('/admin');
         } elseif ($session_role == 2) {
             return redirect()->to('/pegawai');
-        } elseif ($session_role == 3) {
-            return redirect()->to('/pemilik');
         } elseif ($session_role == 4) {
             return redirect()->to('/');
         } elseif ($session_role == '') {
             return redirect()->to('/');
         }
-
         // Retrieve data produk
         $tblProduk = DB::table('tb_produk')->get();
+
         $data = [
-            'menu' => 'produkbibit',
+            'menu' => 'bibit',
             'submenu' => 'pemilik',
             'dataproduk' => $tblProduk,
         ];
-        // dd($data);
-        return view('pemilik.produk', $data);
-    }
 
-    public function add_produkbibit(Request $request)
+        return view('pemilik/produk', $data);
+    }
+    public function add_bibit(Request $request)
     {
         $session_role = $request->session()->get('role');
         if ($session_role == 1) {
@@ -130,13 +153,13 @@ class Pemilik extends Controller
         }
 
         $data = [
-            'menu'              =>  'produkbibit',
+            'menu'              =>  'bibit',
             'submenu'           =>  'pemilik',
         ];
-        return view('pemilik.tambah_produkbibit', $data);
+        return view('pemilik.tambah_bibit', $data);
     }
 
-    public function create_produkbibit(Request $request)
+    public function create_bibit(Request $request)
     {
         $session_role = $request->session()->get('role');
         if ($session_role == 1) {
@@ -236,10 +259,10 @@ class Pemilik extends Controller
                 ]);
             }
         }
-        return redirect()->to('/pemilik/produkbibit');
+        return redirect()->to('/pemilik/bibit');
     }
 
-    public function delete_produkbibit(Request $request)
+    public function delete_bibit(Request $request)
     {
         $session_role = $request->session()->get('role');
         if ($session_role == 1) {
@@ -267,10 +290,10 @@ class Pemilik extends Controller
                 'updated_at'            => date('Y-m-d H:i:s'),
             ]);
         }
-        return redirect()->to('/pemilik/produkbibit');
+        return redirect()->to('/pemilik/bibit');
     }
 
-    public function edit_produkbibit(Request $request)
+    public function edit_bibit(Request $request)
     {
         $session_role = $request->session()->get('role');
         if ($session_role == 1) {
@@ -288,15 +311,15 @@ class Pemilik extends Controller
         $getuserpemilik = DB::table('tb_user')->where('role_user', '3')->get();
 
         $data = [
-            'menu'              =>  'produkbibit',
+            'menu'              =>  'bibit',
             'submenu'           =>  'pemilik',
             'get_produk'        =>  $tblProduk,
             'getuserpemilik'    =>  $getuserpemilik,
         ];
-        return view('pegawai/ubah_produkbibit', $data);
+        return view('pegawai/ubah_bibit', $data);
     }
 
-    public function update_produkbibit(Request $request)
+    public function update_bibit(Request $request)
     {
         $session_role = $request->session()->get('role');
         if ($session_role == 1) {
@@ -335,7 +358,7 @@ class Pemilik extends Controller
                 'created_produk'    => date('Y-m-d H:i:s'),
             ]);
         }
-        return redirect()->to('/pemilik/produkbibit');
+        return redirect()->to('/pemilik/bibit');
     }
 
     public function stokbibit(Request $request)

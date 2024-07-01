@@ -36,25 +36,15 @@ class Pegawai extends Controller
 
     public function produkbibit(Request $request)
     {
-        $session_role = $request->session()->get('role');
-        if ($session_role == 1) {
-            return redirect()->to('/admin');
-        } elseif ($session_role == 3) {
-            return redirect()->to('/pemilik');
-        } elseif ($session_role == 4) {
-            return redirect()->to('/');
-        } elseif ($session_role == '') {
-            return redirect()->to('/');
-        }
-
         $tblProduk = DB::table('tb_produk')
             ->join('tb_user', 'tb_produk.produk_id_user', '=', 'tb_user.id_user')
             ->get();
         $data = [
             'menu'          =>  'produkbibit',
-            'submenu'       =>  'pemilik',
+            'submenu'       =>  'pegawai',
             'dataproduk'    =>  $tblProduk,
         ];
+
         return view('pegawai/produkbibit', $data);
     }
 
@@ -295,16 +285,6 @@ class Pegawai extends Controller
 
     public function stokbibit(Request $request)
     {
-        $session_role = $request->session()->get('role');
-        if ($session_role == 1) {
-            return redirect()->to('/admin');
-        } elseif ($session_role == 3) {
-            return redirect()->to('/pemilik');
-        } elseif ($session_role == 4) {
-            return redirect()->to('/');
-        } elseif ($session_role == '') {
-            return redirect()->to('/');
-        }
 
         $tblProduk = DB::table('tb_produk')
             // ->rightJoin('tb_produk', 'tb_stok.stok_kode_barang', '=', 'tb_produk.kode_bibit')
@@ -430,7 +410,9 @@ class Pegawai extends Controller
         }
 
 
-            $pesen = DB::table('tb_transaksi')->join('tb_user', 'tb_transaksi.id_user_transaksi', '=', 'tb_user.id_user')->get();
+            $pesen = DB::table('tb_transaksi')->join('tb_user', 'tb_transaksi.id_user_transaksi', '=', 'tb_user.id_user')
+            ->orderBy('created_transaksi','desc')
+            ->get();
 
                 // ->join('tb_user', 'tb_transaksi.id_user_transaksi', '=', 'tb_user.id_user')
                 // ->join('tb_status', 'tb_transaksi.status_transaksi', '=', 'tb_status.status_id')
@@ -522,6 +504,7 @@ class Pegawai extends Controller
         ->join('tb_user', 'tb_transaksi_borong.id_user_transaksi', '=', 'tb_user.id_user')
         ->join('tb_produk', 'tb_transaksi_borong.nama_bibit', '=', 'tb_produk.id_produk')
         ->join('tb_status','tb_transaksi_borong.status_transaksi','=','tb_status.status_id')
+        ->orderBy('created_at','desc')
             ->get();
 
             // dd($tblTransaksi);

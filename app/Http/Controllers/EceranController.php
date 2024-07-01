@@ -1,11 +1,13 @@
 <?php
 
+
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Midtrans\Config;
 use Midtrans\Snap;
+use Illuminate\Support\Facades\Session;
 
 class EceranController extends Controller
 {
@@ -112,7 +114,6 @@ class EceranController extends Controller
         return view('pelanggan.checkoutcartmidtrans', $data);
     }
 
-
     public function processPayment(Request $request)
     {
         $getSesionId = $request->session()->get('id');
@@ -191,8 +192,20 @@ class EceranController extends Controller
             'bukti_transfer' => $buktiTransferPath,
         ]);
 
+        // Hapus keranjang setelah pembayaran berhasil
+        $this->clearCart($getSesionId);
+
         // Redirect to / after payment is completed
         return redirect('/pelanggan/statustransaksi');
+    }
+
+    private function clearCart($userId)
+    {
+        // Hapus keranjang dari database
+        DB::table('tb_keranjang')->where('keranjang_id_user', $userId)->delete();
+
+        // Hapus keranjang dari sesi (jika ada)
+        Session::forget('cart');
     }
 
     public function handleMidtransCallback(Request $request)

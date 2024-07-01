@@ -49,15 +49,14 @@
                                 <div class="sb-nav-link-icon"><i class="fa-solid fa-gauge"></i></div>
                                 Dashboard
                             </a>
-                            <a class="nav-link<?php if($menu == 'produkbibit22'){ echo 'active'; } ?>"  href="<?= url('/') ?>/pemilik/produkbibit">
-                                <div class="sb-nav-link-icon">
-                                    <i class="fa-solid fa-boxes-stacked"></i>
-                                </div>
-                                Produk Bibit
-                            </a>
+
                             <a class="nav-link <?php if($menu == 'stokbibit2'){ echo 'active'; } ?>" href="<?= url('/') ?>/pemilik/stokbibit2">
                                 <div class="sb-nav-link-icon"><i class="fa-solid fa-boxes-packing"></i></i></div>
                                 Stok
+                            </a>
+                            <a class="nav-link <?php if($menu == 'bibit'){ echo 'active'; } ?>" href="<?= url('/') ?>/pemilik/bibit">
+                                <div class="sb-nav-link-icon"><i class="fa-solid fa-boxes-packing"></i></i></div>
+                                Bibit
                             </a>
                             <a class="nav-link <?php if($menu == 'laporanpenjualan'){ echo 'active'; } ?>" href="<?= url('/') ?>/pemilik/laporanpenjualan">
                                 <div class="sb-nav-link-icon"><i class="fa-solid fa-chart-column"></i></div>

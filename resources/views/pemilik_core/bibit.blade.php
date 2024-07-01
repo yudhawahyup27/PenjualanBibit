@@ -1,5 +1,4 @@
-@extends('pegawai_core/core')
-
+@extends('pemilik_core/core')
 
 @section('content')
 <div class="container-fluid px-4">

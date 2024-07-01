@@ -69,17 +69,49 @@
         var transactionsPerMonthBorong = @json($transactionsPerMonthBorong);
         var transactionsPerYearBorong = @json($transactionsPerYearBorong);
 
-        var selectedDay = {{ $selectedDay }};
-        var selectedMonth = {{ $selectedMonth }};
-        var selectedYear = {{ $selectedYear }};
+        var selectedDay = "{{ $selectedDay }}";
+        var selectedMonth = "{{ $selectedMonth }}";
+        var selectedYear = "{{ $selectedYear }}";
 
-        var labelsEceran, dataEceran, labelsBorong, dataBorong;
+        var labelsEceran = [];
+        var dataEceran = [];
+        var labelsBorong = [];
+        var dataBorong = [];
 
-        // Default to daily view
-        labelsEceran = transactionsPerDayEceran.map(item => item.day);
-        dataEceran = transactionsPerDayEceran.map(item => item.total);
-        labelsBorong = transactionsPerDayBorong.map(item => item.day);
-        dataBorong = transactionsPerDayBorong.map(item => item.total);
+        function updateChartData() {
+            var year = document.getElementById('filterYear').value;
+            var month = document.getElementById('filterMonth').value;
+            var day = document.getElementById('filterDay').value;
+
+            if (day) {
+                labelsEceran = transactionsPerDayEceran.map(item => item.day);
+                dataEceran = transactionsPerDayEceran.map(item => item.total);
+                labelsBorong = transactionsPerDayBorong.map(item => item.day);
+                dataBorong = transactionsPerDayBorong.map(item => item.total);
+            } else if (month) {
+                labelsEceran = transactionsPerMonthEceran.map(item => item.month);
+                dataEceran = transactionsPerMonthEceran.map(item => item.total);
+                labelsBorong = transactionsPerMonthBorong.map(item => item.month);
+                dataBorong = transactionsPerMonthBorong.map(item => item.total);
+            } else if (year) {
+                labelsEceran = transactionsPerYearEceran.map(item => item.year);
+                dataEceran = transactionsPerYearEceran.map(item => item.total);
+                labelsBorong = transactionsPerYearBorong.map(item => item.year);
+                dataBorong = transactionsPerYearBorong.map(item => item.total);
+            }
+
+            updateCharts();
+        }
+
+        function updateCharts() {
+            eceranChart.data.labels = labelsEceran;
+            eceranChart.data.datasets[0].data = dataEceran;
+            eceranChart.update();
+
+            borongChart.data.labels = labelsBorong;
+            borongChart.data.datasets[0].data = dataBorong;
+            borongChart.update();
+        }
 
         var eceranChart = new Chart(ctxEceran, {
             type: 'bar',
@@ -125,63 +157,11 @@
             }
         });
 
-        // Function to update chart based on selected filters
-        function updateCharts() {
-            var selectedYear = document.getElementById('filterYear').value;
-            var selectedMonth = document.getElementById('filterMonth').value;
-            var selectedDay = document.getElementById('filterDay').value;
+        document.getElementById('filterYear').addEventListener('change', updateChartData);
+        document.getElementById('filterMonth').addEventListener('change', updateChartData);
+        document.getElementById('filterDay').addEventListener('change', updateChartData);
 
-            // Filter data based on selected filters
-            var filteredDataEceran, filteredDataBorong;
-            if (selectedDay) {
-                filteredDataEceran = transactionsPerDayEceran.filter(item => item.day == selectedDay);
-                filteredDataBorong = transactionsPerDayBorong.filter(item => item.day == selectedDay);
-                labelsEceran = filteredDataEceran.map(item => item.day);
-                dataEceran = filteredDataEceran.map(item => item.total);
-                labelsBorong = filteredDataBorong.map(item => item.day);
-                dataBorong = filteredDataBorong.map(item => item.total);
-            } else if (selectedMonth) {
-                filteredDataEceran = transactionsPerMonthEceran.filter(item => item.month == selectedMonth);
-                filteredDataBorong = transactionsPerMonthBorong.filter(item => item.month == selectedMonth);
-                labelsEceran = filteredDataEceran.map(item => item.month);
-                dataEceran = filteredDataEceran.map(item => item.total);
-                labelsBorong = filteredDataBorong.map(item => item.month);
-                dataBorong = filteredDataBorong.map(item => item.total);
-            } else {
-                filteredDataEceran = transactionsPerYearEceran;
-                filteredDataBorong = transactionsPerYearBorong;
-                labelsEceran = filteredDataEceran.map(item => item.year);
-                dataEceran = filteredDataEceran.map(item => item.total);
-                labelsBorong = filteredDataBorong.map(item => item.year);
-                dataBorong = filteredDataBorong.map(item => item.total);
-            }
-
-            // Update eceran chart data
-            eceranChart.data.labels = labelsEceran;
-            eceranChart.data.datasets[0].data = dataEceran;
-            eceranChart.update();
-
-            // Update borong chart data
-            borongChart.data.labels = labelsBorong;
-            borongChart.data.datasets[0].data = dataBorong;
-            borongChart.update();
-        }
-
-        // Event listeners for filter changes
-        document.getElementById('filterYear').addEventListener('change', function() {
-            updateCharts();
-        });
-
-        document.getElementById('filterMonth').addEventListener('change', function() {
-            updateCharts();
-        });
-
-        document.getElementById('filterDay').addEventListener('change', function() {
-            updateCharts();
-        });
-
-        // Initial chart rendering
-        updateCharts();
+        updateChartData();
     });
 </script>
 @endsection

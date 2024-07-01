@@ -141,14 +141,14 @@
     </script>
 
     <script>
-        document.getElementById('lahan').addEventListener('input', function () {
-            var area = parseFloat(this.value) || 0;
-            var quantity = calculateQuantity(area);
-            document.getElementById('jumlah_perbatang').value = quantity;
-            hitungTotal();
-        });
-        
-        document.addEventListener('DOMContentLoaded', function () {
+   document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('lahan').addEventListener('input', function () {
+        var area = parseFloat(this.value) || 0;
+        var quantity = calculateQuantity(area);
+        document.getElementById('jumlah_perbatang').value = quantity;
+        hitungTotal();
+    });
+
     var pengirimanSelect = document.getElementById('pengiriman');
     var detailRumahTextarea = document.getElementById('detail_rumah');
 
@@ -169,80 +169,78 @@
                 detailRumahTextarea.value = '';
             }
         }
+
+        hitungTotal(); // Recalculate total when the shipping method changes
     });
+
+    document.getElementById('produkborong_select').addEventListener('change', function () {
+        var productId = this.value;
+        fetchProductPrice(productId);
+    });
+
+    function fetchProductPrice(productId) {
+        if (productId) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/get-price/' + productId, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    document.getElementById('harga_bibit').value = response.harga_borong;
+                    hitungTotal();
+                } else if (xhr.readyState == 4) {
+                    console.error('Error fetching data');
+                    alert('Gagal mengambil data harga bibit');
+                }
+            };
+            xhr.send();
+        }
+    }
+
+    function hitungTotal() {
+        var kuantitas = parseFloat(document.getElementById('jumlah_perbatang').value) || 0;
+        var hargaSatuan = parseFloat(document.getElementById('harga_bibit').value) || 0;
+        var ongkir = parseFloat(document.getElementById('pengiriman').value) || 0;
+
+        var total = (kuantitas * hargaSatuan) + ongkir;
+
+        document.getElementById('total').value = formatRupiah(total);
+    }
+
+    function calculateQuantity(area) {
+        var total = area * 2;
+        if (total < 175) {
+            alert('Total luas lahan minimal 175');
+        }
+        return total;
+    }
+
+    function formatRupiah(number) {
+        var rupiah = '';
+        var numberString = number.toString();
+        var sisa = numberString.length % 3;
+        var rupiah = numberString.substr(0, sisa);
+        var ribuan = numberString.substr(sisa).match(/\d{3}/g);
+
+        if (ribuan) {
+            var separator = sisa ? '.' : '';
+            rupiah += separator + ribuan.join('.');
+        }
+
+        return rupiah;
+    }
+
+    // Initialize harga_bibit if there's a selected product
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('productId');
+
+    if (productId) {
+        document.getElementById('produkborong_select').value = productId;
+        fetchProductPrice(productId);
+    }
+
+    document.getElementById('produkborong_select').dispatchEvent(new Event('change'));
+    document.getElementById('pengiriman').dispatchEvent(new Event('change'));
 });
 
-        document.getElementById('produkborong_select').addEventListener('change', function() {
-            var productId = this.value;
-            fetchProductPrice(productId);
-        });
-
-        function fetchProductPrice(productId) {
-            if (productId) {
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', '/get-price/' + productId, true);
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState == 4 && xhr.status == 200) {
-                        var response = JSON.parse(xhr.responseText);
-                        document.getElementById('harga_bibit').value = response.harga_borong;
-                        hitungTotal();
-                    } else if (xhr.readyState == 4) {
-                        console.error('Error fetching data');
-                        alert('Gagal mengambil data harga bibit');
-                    }
-                };
-                xhr.send();
-            }
-        }
-
-        function hitungTotal() {
-            var kuantitas = parseFloat(document.getElementById('jumlah_perbatang').value) || 0;
-            var hargaSatuan = parseFloat(document.getElementById('harga_bibit').value) || 0;
-            var ongkir = parseFloat(document.getElementById('pengiriman').value) || 0;
-
-
-            var total = (kuantitas * hargaSatuan) + ongkir;
-
-            document.getElementById('total').value = formatRupiah(total);
-        }
-
-        function calculateQuantity(area) {
-            var total = area * 2;
-            if (total < 175) {
-                alert('Total luas lahan minimal 175');
-            }
-
-            // Adjust the calculation logic as needed
-            return total;
-        }
-
-        function formatRupiah(number) {
-            var rupiah = '';
-            var numberString = number.toString();
-            var sisa = numberString.length % 3;
-            var rupiah = numberString.substr(0, sisa);
-            var ribuan = numberString.substr(sisa).match(/\d{3}/g);
-
-            if (ribuan) {
-                var separator = sisa ? '.' : '';
-                rupiah += separator + ribuan.join('.');
-            }
-
-            return   rupiah;
-        }
-
-        // Initialize harga_bibit if there's a selected product
-        document.addEventListener('DOMContentLoaded', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const productId = urlParams.get('productId');
-
-            if (productId) {
-                document.getElementById('produkborong_select').value = productId;
-                fetchProductPrice(productId);
-            }
-        });
-
-        document.getElementById('produkborong_select').dispatchEvent(new Event('change'));
-        document.getElementById('pengiriman').dispatchEvent(new Event('change'));
     </script>
 @endsection
