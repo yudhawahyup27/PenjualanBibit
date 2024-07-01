@@ -115,7 +115,7 @@ class Pemilik extends Controller
             return collect($data);
         }
 
-    public function bibit2(Request $request)
+    public function produkbibit2(Request $request)
     {
 
         $session_role = $request->session()->get('role');
