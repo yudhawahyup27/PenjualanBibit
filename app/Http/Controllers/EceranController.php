@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
@@ -25,45 +24,42 @@ class EceranController extends Controller
         $getSesionId = $request->session()->get('id');
         $users = DB::table('tb_user')->where('id_user', $getSesionId)->first();
 
-        // Ambil semua item keranjang dengan informasi tambahan
         $cart = DB::table('tb_keranjang')
-                ->join('tb_produk', 'tb_keranjang.keranjang_id_produk', '=', 'tb_produk.id_produk')
-                ->leftJoin('tb_kecamatan', function($join) {
-                    $join->on('tb_keranjang.pengiriman_keranjang', '=', 'tb_kecamatan.kecamatan_id')
-                         ->where('tb_keranjang.pengiriman_keranjang', '!=', 0);
-                })
-                ->select('tb_keranjang.*', 'tb_produk.gambar_bibit', 'tb_produk.nama_bibit', 'tb_produk.harga_bibit', 'tb_kecamatan.kecamatan_name', 'tb_kecamatan.ongkir')
-                ->where('keranjang_id_user', $getSesionId)
-                ->get();
+            ->join('tb_produk', 'tb_keranjang.keranjang_id_produk', '=', 'tb_produk.id_produk')
+            ->leftJoin('tb_kecamatan', function($join) {
+                $join->on('tb_keranjang.pengiriman_keranjang', '=', 'tb_kecamatan.kecamatan_id')
+                    ->where('tb_keranjang.pengiriman_keranjang', '!=', 0);
+            })
+            ->select('tb_keranjang.*', 'tb_produk.gambar_bibit', 'tb_produk.nama_bibit', 'tb_produk.harga_bibit', 'tb_kecamatan.kecamatan_name', 'tb_kecamatan.ongkir')
+            ->where('keranjang_id_user', $getSesionId)
+            ->get();
 
         $countCart = DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->count();
 
         $sumPrice = DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->sum('price_keranjang');
 
         $keranjang = DB::table('tb_keranjang')
-                    ->leftJoin('tb_kecamatan', function($join) {
-                        $join->on('tb_keranjang.pengiriman_keranjang', '=', 'tb_kecamatan.kecamatan_id')
-                             ->where('tb_keranjang.pengiriman_keranjang', '!=', 0);
-                    })
-                    ->select('tb_keranjang.*', 'tb_kecamatan.ongkir')
-                    ->where('keranjang_id_user', $getSesionId)
-                    ->first();
+            ->leftJoin('tb_kecamatan', function($join) {
+                $join->on('tb_keranjang.pengiriman_keranjang', '=', 'tb_kecamatan.kecamatan_id')
+                    ->where('tb_keranjang.pengiriman_keranjang', '!=', 0);
+            })
+            ->select('tb_keranjang.*', 'tb_kecamatan.ongkir')
+            ->where('keranjang_id_user', $getSesionId)
+            ->first();
 
         if (!$keranjang) {
             return redirect('/pengguna/keranjang');
         }
 
-        // Calculate total shipping cost
         $totalOngkir = 0;
         foreach ($cart as $item) {
-            if ($item->pengiriman_keranjang != 0) { // If not self-pickup
+            if ($item->pengiriman_keranjang != 0) {
                 $totalOngkir += $item->ongkir;
             }
         }
 
         $totalPriceWithOngkir = $sumPrice + $totalOngkir;
 
-        // Prepare data to pass to view
         $data = [
             'menu' => 'home',
             'submenu' => 'pelanggan',
@@ -76,11 +72,10 @@ class EceranController extends Controller
             'keranjang' => $keranjang,
         ];
 
-        // Prepare Midtrans Snap token
         $params = [
             'transaction_details' => [
-                'order_id' => uniqid(), // Generate unique order ID
-                'gross_amount' => $totalPriceWithOngkir, // Add shipping cost to the total amount
+                'order_id' => uniqid(),
+                'gross_amount' => $totalPriceWithOngkir,
             ],
             'customer_details' => [
                 'first_name' => $users->nama_user,
@@ -88,27 +83,23 @@ class EceranController extends Controller
                 'phone' => $users->nomortelepon_user,
             ],
             'merchant_id' => config('midtrans.merchant_id'),
-            // Add item_details including shipping cost as a separate item
             'item_details' => [
                 [
                     'id' => 'SHIPPING',
-                    'price' =>        $totalPriceWithOngkir,
+                    'price' => $totalPriceWithOngkir,
                     'quantity' => 1,
                     'name' => 'Shipping Cost',
                 ]
             ],
         ];
 
-        // Set Midtrans configuration
         Config::$serverKey = config('midtrans.server_key');
         Config::$isProduction = config('midtrans.is_production');
         Config::$isSanitized = true;
         Config::$is3ds = true;
 
-        // Get Snap token from Midtrans
         $snapToken = Snap::getSnapToken($params);
 
-        // Pass $snapToken to the view
         $data['snapToken'] = $snapToken;
 
         return view('pelanggan.checkoutcartmidtrans', $data);
@@ -119,19 +110,17 @@ class EceranController extends Controller
         $getSesionId = $request->session()->get('id');
         $user = DB::table('tb_user')->where('id_user', $getSesionId)->first();
 
-        // Retrieve cart items and kode_transaksi from tb_keranjang
         $cart = DB::table('tb_keranjang')
-                ->join('tb_produk', 'tb_keranjang.keranjang_id_produk', '=', 'tb_produk.id_produk')
-                ->select('tb_keranjang.*', 'tb_produk.nama_bibit', 'tb_keranjang.kode_transaksi')
-                ->where('keranjang_id_user', $getSesionId)
-                ->get();
+            ->join('tb_produk', 'tb_keranjang.keranjang_id_produk', '=', 'tb_produk.id_produk')
+            ->select('tb_keranjang.*', 'tb_produk.nama_bibit', 'tb_produk.stok_bibit', 'tb_keranjang.kode_transaksi')
+            ->where('keranjang_id_user', $getSesionId)
+            ->get();
 
-        // Calculate total price including shipping
         $sumTotalKeranjang = DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->sum('price_keranjang');
         $totalOngkir = 0;
 
         foreach ($cart as $item) {
-            if ($item->pengiriman_keranjang != 0) { // If not self-pickup
+            if ($item->pengiriman_keranjang != 0) {
                 $kecamatan = DB::table('tb_kecamatan')->where('kecamatan_id', $item->pengiriman_keranjang)->first();
                 if ($kecamatan) {
                     $totalOngkir += $kecamatan->ongkir;
@@ -141,10 +130,9 @@ class EceranController extends Controller
 
         $totalTransaksi = $sumTotalKeranjang + $totalOngkir;
 
-        // Prepare item_details
         $itemDetails = [];
         foreach ($cart as $item) {
-            $itemPrice = intval($item->price_keranjang / $item->qty_keranjang); // Ensure integer price without cents
+            $itemPrice = intval($item->price_keranjang / $item->qty_keranjang);
 
             $itemDetails[] = [
                 'id' => $item->keranjang_id_produk,
@@ -154,7 +142,6 @@ class EceranController extends Controller
             ];
         }
 
-        // Add shipping cost as a separate item
         $itemDetails[] = [
             'id' => 'SHIPPING',
             'price' => $totalOngkir,
@@ -162,11 +149,10 @@ class EceranController extends Controller
             'name' => 'Shipping Cost',
         ];
 
-        // Prepare transaction details
         $params = [
             'transaction_details' => [
-                'order_id' => uniqid(), // Generate unique order ID
-                'gross_amount' => $totalTransaksi, // Set the correct gross amount
+                'order_id' => uniqid(),
+                'gross_amount' => $totalTransaksi,
             ],
             'customer_details' => [
                 'first_name' => $user->nama_user,
@@ -176,43 +162,45 @@ class EceranController extends Controller
             'item_details' => $itemDetails,
         ];
 
-        // Get Snap token from Midtrans
         $snapToken = Snap::getSnapToken($params);
 
-        // Insert into tb_transaksi
-        $getKodeBarang = uniqid(); // Generate unique transaction code for tb_transaksi
-        $buktiTransferPath = '/path/to/bukti_transfer2'; // Adjust this based on your logic
+        $getKodeBarang = uniqid();
+        $buktiTransferPath = '/path/to/bukti_transfer2';
 
-        DB::table('tb_transaksi')->insert([
-            'id_user_transaksi' => $getSesionId,
-            'kode_transaksi' => $cart[0]->kode_transaksi, // Assuming kode_transaksi is the same for all items in the cart
-            'total_transaksi' => $totalTransaksi,
-            'status_transaksi' => '1',
-            'created_transaksi' => now(),
-            'bukti_transfer' => $buktiTransferPath,
-        ]);
+        foreach ($cart as $item) {
+            DB::table('tb_transaksi')->insert([
+                'id_user_transaksi' => $getSesionId,
+                'id_produk' => $item->keranjang_id_produk,
+                'detail_rumah'=> "Rumahku",
+                'kode_transaksi' => $item->kode_transaksi,
+                'total_transaksi' => $totalTransaksi,
+                'status_transaksi' => '1',
+                'created_transaksi' => now(),
+                'Qty_beli' => $item->qty_keranjang,
+                'bukti_transfer' => $buktiTransferPath,
+            ]);
 
-        // Hapus keranjang setelah pembayaran berhasil
+            // Reduce stock in the product table
+            DB::table('tb_produk')
+                ->where('id_produk', $item->keranjang_id_produk)
+                ->decrement('stok_bibit', $item->qty_keranjang);
+        }
+
         $this->clearCart($getSesionId);
 
-        // Redirect to / after payment is completed
         return redirect('/pelanggan/statustransaksi');
     }
 
     private function clearCart($userId)
     {
-        // Hapus keranjang dari database
         DB::table('tb_keranjang')->where('keranjang_id_user', $userId)->delete();
 
-        // Hapus keranjang dari sesi (jika ada)
         Session::forget('cart');
     }
 
     public function handleMidtransCallback(Request $request)
     {
         $json = json_decode($request->input('json'), true);
-
-        // Logika untuk memproses callback Midtrans
 
         return redirect()->to('/pelanggan/statustransaksi');
     }

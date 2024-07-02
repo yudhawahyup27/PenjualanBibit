@@ -717,7 +717,7 @@ public function detail_cart_payment_create(Request $request)
 
         return view('pelanggan/statustransaksi', $data);
     }
-    public function status_transaksi_detail(Request $request)
+    public function status_transaksi_detail(Request $request,$id_transaksi)
     {
         if ($request->session()->get('login')) {
 
@@ -737,14 +737,12 @@ public function detail_cart_payment_create(Request $request)
                                 ->whereIn('statuspengiriman_id_status', [1, 2, 3, 4])
                                 ->get();
 
-            // Fetch product details from tb_keranjang based on $uri_one
-            $getTransaction = DB::table('tb_keranjang')
-                                ->join('tb_produk', 'tb_keranjang.keranjang_id_produk', '=', 'tb_produk.id_produk')
-                                ->select('tb_keranjang.*', 'tb_produk.nama_bibit', 'tb_produk.harga_bibit', 'tb_produk.gambar_bibit')
-                                // ->where('keranjang_id_user', $getSesionId)
-                                ->where('kode_transaksi', $cart->kode_transaksi)
+                                $getTransaction = DB::table('tb_transaksi')
+                                ->join('tb_produk', 'tb_transaksi.id_produk', '=', 'tb_produk.id_produk')
+                                ->select('tb_transaksi.*', 'tb_produk.nama_bibit', 'tb_produk.gambar_bibit', 'tb_produk.harga_bibit')
+                                ->where('tb_transaksi.id_user_transaksi', $getSesionId)
+                                ->where('tb_transaksi.id_transaksi', $id_transaksi)
                                 ->get();
-// dd($getTransaction);
             $data = [
                 'menu'              => 'home',
                 'submenu'           => 'pelanggan',

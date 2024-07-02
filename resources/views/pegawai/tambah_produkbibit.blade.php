@@ -30,7 +30,7 @@
             Tambah Data Produk Bibit
         </div>
         <div class="card-body">
-            <form method="post" action="{{ url('//pegawai/produkbibit/tambah') }}" enctype="multipart/form-data">
+            <form method="post" action="{{ url('/pegawai/produkbibit/tambah') }}" enctype="multipart/form-data">
                 @csrf
                 <div hidden class="mb-3">
                     <label>Nama User</label>

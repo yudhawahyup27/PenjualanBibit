@@ -59,8 +59,8 @@
                                 </td>
                                 <td>{{ $key->nama_bibit }}</td>
                                 <td>Rp {{ number_format((float)$key->harga_bibit, 0, ',', '.') }}</td>
-                                <td>{{ $key->qty_keranjang }}</td>
-                                <td>Rp {{ number_format((float)$key->price_keranjang, 0, ',', '.') }}</td>
+                                <td>{{ $key->Qty_beli }}</td>
+                                <td>Rp {{ number_format((float) $key->Qty_beli*$key->harga_bibit, 0, ',', '.') }}</td>
                             </tr>
                             @endforeach
                         </tbody>
