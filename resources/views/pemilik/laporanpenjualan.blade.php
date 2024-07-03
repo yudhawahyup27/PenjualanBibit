@@ -63,7 +63,7 @@
                                     <td>{{ $laporan->kode_transaksi }}</td>
                                     <td>{{ $laporan->kode_bibit }}</td>
                                     <td>{{ $laporan->nama_bibit }}</td>
-                                    <td>{{ number_format($laporan->harga_beli, 0, ',', '.') }}</td>
+                                    <td>{{ 'Rp ' . number_format($laporan->harga_beli, 0, ',', '.') }}</td>
                                     <td>{{ $laporan->terjual }}</td>
                                     <td>{{ $laporan->tanggal_transaksi }}</td>
                                 </tr>

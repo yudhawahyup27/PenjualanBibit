@@ -13,75 +13,52 @@ class Pemilik extends Controller
     {
         return redirect()->to('/pemilik/dashboard22');
     }
-
     public function dashboard(Request $request)
     {
-        // Mendapatkan nilai input dari request atau default ke tanggal saat ini
-        $selectedDay = $request->input('selectedDay', date('d'));
-        $selectedMonth = $request->input('selectedMonth', date('m'));
-        $selectedYear = $request->input('selectedYear', date('Y'));
-
-        // Query untuk jumlah transaksi per hari (Eceran)
-        $transactionsPerDayEceran = DB::table('tb_transaksi')
-            ->select(DB::raw('DAY(created_transaksi) as day'), DB::raw('SUM(total_transaksi) as total'))
-            ->whereMonth('created_transaksi', $selectedMonth)
-            ->whereYear('created_transaksi', $selectedYear)
-            ->groupBy('day')
+        // Fetch all data without any filter
+        $allTransactionsEceran = DB::table('tb_transaksi')
+            ->select(DB::raw('DAY(created_transaksi) as day'), DB::raw('MONTH(created_transaksi) as month'), DB::raw('YEAR(created_transaksi) as year'), DB::raw('SUM(total_transaksi) as total'))
+            ->groupBy('day', 'month', 'year')
             ->get();
 
-        // Query untuk jumlah transaksi per hari (Borong)
-        $transactionsPerDayBorong = DB::table('tb_transaksi_borong')
-            ->select(DB::raw('DAY(created_at) as day'), DB::raw('SUM(total_transaksi) as total'))
-            ->whereMonth('created_at', $selectedMonth)
-            ->whereYear('created_at', $selectedYear)
-            ->groupBy('day')
+        $allTransactionsBorong = DB::table('tb_transaksi_borong')
+            ->select(DB::raw('DAY(created_at) as day'), DB::raw('MONTH(created_at) as month'), DB::raw('YEAR(created_at) as year'), DB::raw('SUM(total_transaksi) as total'))
+            ->groupBy('day', 'month', 'year')
             ->get();
 
-        // Query untuk jumlah transaksi per bulan (Eceran)
-        $transactionsPerMonthEceran = DB::table('tb_transaksi')
-            ->select(DB::raw('MONTH(created_transaksi) as month'), DB::raw('SUM(total_transaksi) as total'))
-            ->whereYear('created_transaksi', $selectedYear)
-            ->groupBy('month')
-            ->get();
+            
+        // Get filter inputs
+        $selectedDay = $request->input('selectedDay', 'all');
+        $selectedMonth = $request->input('selectedMonth', 'all');
+        $selectedYear = $request->input('selectedYear', 'all');
 
-        // Query untuk jumlah transaksi per bulan (Borong)
-        $transactionsPerMonthBorong = DB::table('tb_transaksi_borong')
-            ->select(DB::raw('MONTH(created_at) as month'), DB::raw('SUM(total_transaksi) as total'))
-            ->whereYear('created_at', $selectedYear)
-            ->groupBy('month')
-            ->get();
+        // Filter data based on selected inputs
+        $filteredTransactionsEceran = $allTransactionsEceran->filter(function ($transaction) use ($selectedDay, $selectedMonth, $selectedYear) {
+            return ($selectedYear === 'all' || $transaction->year == $selectedYear) &&
+                   ($selectedMonth === 'all' || $transaction->month == $selectedMonth) &&
+                   ($selectedDay === 'all' || $transaction->day == $selectedDay);
+        });
 
-        // Query untuk jumlah transaksi per tahun (Eceran)
-        $transactionsPerYearEceran = DB::table('tb_transaksi')
-            ->select(DB::raw('YEAR(created_transaksi) as year'), DB::raw('SUM(total_transaksi) as total'))
-            ->groupBy('year')
-            ->get();
+        $filteredTransactionsBorong = $allTransactionsBorong->filter(function ($transaction) use ($selectedDay, $selectedMonth, $selectedYear) {
+            return ($selectedYear === 'all' || $transaction->year == $selectedYear) &&
+                   ($selectedMonth === 'all' || $transaction->month == $selectedMonth) &&
+                   ($selectedDay === 'all' || $transaction->day == $selectedDay);
+        });
 
-        // Query untuk jumlah transaksi per tahun (Borong)
-        $transactionsPerYearBorong = DB::table('tb_transaksi_borong')
-            ->select(DB::raw('YEAR(created_at) as year'), DB::raw('SUM(total_transaksi) as total'))
-            ->groupBy('year')
-            ->get();
+        // Group filtered data by day, month, and year as needed
+        $transactionsPerDayEceran = $filteredTransactionsEceran->groupBy('day');
+        $transactionsPerMonthEceran = $filteredTransactionsEceran->groupBy('month');
+        $transactionsPerYearEceran = $filteredTransactionsEceran->groupBy('year');
 
-        // Jika tidak ada transaksi per hari (Eceran), inisialisasi dengan nilai nol
-        if ($transactionsPerDayEceran->isEmpty()) {
-            $transactionsPerDayEceran = collect([
-                (object)['day' => $selectedDay, 'total' => 0]
-            ]);
+        $transactionsPerDayBorong = $filteredTransactionsBorong->groupBy('day');
+        $transactionsPerMonthBorong = $filteredTransactionsBorong->groupBy('month');
+        $transactionsPerYearBorong = $filteredTransactionsBorong->groupBy('year');
+
+        // Fill missing months if selected year only
+        if ($selectedMonth === 'all' && $selectedDay === 'all') {
+            $transactionsPerMonthEceran = $this->fillMissingMonths($transactionsPerMonthEceran);
+            $transactionsPerMonthBorong = $this->fillMissingMonths($transactionsPerMonthBorong);
         }
-
-        // Jika tidak ada transaksi per hari (Borong), inisialisasi dengan nilai nol
-        if ($transactionsPerDayBorong->isEmpty()) {
-            $transactionsPerDayBorong = collect([
-                (object)['day' => $selectedDay, 'total' => 0]
-            ]);
-        }
-
-        // Mengisi bulan yang tidak memiliki transaksi untuk Eceran
-        $transactionsPerMonthEceran = $this->fillMissingMonths($transactionsPerMonthEceran);
-
-        // Mengisi bulan yang tidak memiliki transaksi untuk Borong
-        $transactionsPerMonthBorong = $this->fillMissingMonths($transactionsPerMonthBorong);
 
         $data = [
             'menu' => 'dashboard2',
@@ -97,23 +74,23 @@ class Pemilik extends Controller
             'selectedYear' => $selectedYear,
         ];
 
-
         return view('pemilik.dashboard', $data);
     }
-        private function fillMissingMonths($data)
-        {
-            $data = $data->keyBy('month')->all();
-            for ($i = 1; $i <= 12; $i++) {
-                if (!isset($data[$i])) {
-                    $data[$i] = (object)[
-                        'month' => $i,
-                        'total' => 0
-                    ];
-                }
+
+    private function fillMissingMonths($data)
+    {
+        $data = $data->keyBy('month')->all();
+        for ($i = 1; $i <= 12; $i++) {
+            if (!isset($data[$i])) {
+                $data[$i] = collect([(object)[
+                    'month' => $i,
+                    'total' => 0
+                ]]);
             }
-            ksort($data);
-            return collect($data);
         }
+        ksort($data);
+        return collect($data);
+    }
 
     public function produkbibit2(Request $request)
     {
@@ -391,16 +368,16 @@ class Pemilik extends Controller
         $selectedYear = $request->input('selectedYear', null);
 
         // Query untuk data laporan penjualan tanpa filter
-        $query = DB::table('tb_keranjang as tk')
+        $query = DB::table('tb_transaksi as tk')
             ->select(
                 'tk.kode_transaksi as kode_transaksi',
                 'p.kode_bibit',
                 'p.nama_bibit',
-                'tk.price_keranjang as harga_beli',
-                'tk.qty_keranjang as terjual',
-                'tk.created_keranjang as tanggal_transaksi'
+                'tk.total_transaksi as harga_beli',
+                'tk.Qty_beli as terjual',
+                'tk.created_transaksi as tanggal_transaksi'
             )
-            ->join('tb_produk as p', 'tk.keranjang_id_produk', '=', 'p.id_produk');
+            ->join('tb_produk as p', 'tk.id_produk', '=', 'p.id_produk');
             // ->join('tb_transaksi as t', 'tk.kode_transaksi', '=', 't.kode_transaksi');
 
         // Ambil semua data tanpa filter
@@ -408,13 +385,13 @@ class Pemilik extends Controller
 
         // Terapkan filter jika ada input dari pengguna
         if ($selectedDay) {
-            $query->whereDay('tk.created_keranjang', $selectedDay);
+            $query->whereDay('tk.created_transaksi', $selectedDay);
         }
         if ($selectedMonth) {
-            $query->whereMonth('tk.created_keranjang', $selectedMonth);
+            $query->whereMonth('tk.created_transaksi', $selectedMonth);
         }
         if ($selectedYear) {
-            $query->whereYear('tk.created_keranjang', $selectedYear);
+            $query->whereYear('tk.created_transaksi', $selectedYear);
         }
 
         $laporanData = $query->paginate(10);

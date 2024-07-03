@@ -5,7 +5,7 @@
         <h1 class="mt-4">Laporan Penjualan</h1>
         <a href="/pemilik/laporanpenjualan" class="btn-success btn p-1 float-end">Lihat Laporan Eceran</a>
         <div class="row mb-4">
-            <form action="{{ route('laporanpenjualan') }}" method="GET">
+            <form action="{{ route('laporanpenjualanborongan') }}" method="GET">
                 <div class="row">
                     <div class="col-md-3">
                         <label for="selectedDay">Filter Hari:</label>
@@ -59,7 +59,7 @@
                             @foreach($data as $laporan)
                                 <tr>
                                     <td>{{ $laporan->kode_transaksi }}</td>
-                                    <td>{{ $laporan->harga_beli }}</td>
+                                    <td>{{ 'Rp ' . number_format($laporan->harga_beli, 0, ',', '.') }}</td>
                                     <td>{{ $laporan->terjual }}</td>
                                     <td>{{ $laporan->tanggal_transaksi }}</td>
                                 </tr>

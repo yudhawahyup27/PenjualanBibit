@@ -1,3 +1,4 @@
+
 <?php
 
 use App\Http\Controllers\Admin;
@@ -134,6 +135,3 @@ Route::get('/pelanggan/tablemonitoring', [Pelanggan::class, 'monitoringbibittabl
 // In your routes file
 
 Route::post('/pelanggan/keranjang/update', [Pelanggan::class, 'updateCartQuantity']);
-
-
-

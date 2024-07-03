@@ -72,10 +72,10 @@
                     <option value="" selected disabled>-- PILIH PENGIRIMAN --</option>
                     <option value="0">Ambil di Toko</option>
                     @foreach($rumah as $key)
-                        <option value="{{ $key->alamatpengiriman_id }}" data-alamat="{{ $key->alamatpengiriman_alamat }}" data-deskripsi="{{ $key->alamatpengiriman_deskripsi }}" data-kecamatan="{{ $key->kecamatan_name }}">
-                          Rumah
-                        </option>
-                    @endforeach
+                    <option value="{{ $key->ongkir }}" data-alamat="{{ $key->alamatpengiriman_alamat }}" data-deskripsi="{{ $key->alamatpengiriman_deskripsi }}" data-kecamatan="{{ $key->kecamatan_name }}">
+                        Rumah
+                    </option>
+                @endforeach
                     <optgroup label="PILIH DAFTAR ALAMAT">
                         @foreach($kecamatan as $key)
                             <option value="{{ $key->ongkir}}">{{ $key->kecamatan_name }}</option>
@@ -202,12 +202,14 @@
         var ongkir = parseFloat(document.getElementById('pengiriman').value) || 0;
 
         var total = (kuantitas * hargaSatuan) + ongkir;
-
-        document.getElementById('total').value = formatRupiah(total);
+        // let rupiahFormat = total.toLocaleString()
+        document.getElementById('total').value = total;
     }
 
     function calculateQuantity(area) {
         var total = area * 2;
+
+        let rupiahFormat = total.toLocaleString()
         if (total < 175) {
             alert('Total luas lahan minimal 175');
         }

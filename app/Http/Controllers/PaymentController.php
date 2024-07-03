@@ -61,36 +61,36 @@ class PaymentController extends Controller
             'pengiriman' => $request->input('pengiriman'),
             'detail_rumah' => $request->input('detail_rumah'),
             'status_transaksi' => '1',
-            'created_at' => $tanggalHariIni,
-            'updated_at' => $tanggalHariIni,
+            'created_at' => now(),
+            'updated_at' => null,
         ]);
 
         if (!$inserted) {
             return redirect()->back()->withErrors(['error' => 'Failed to insert transaction data']);
         }
-
         // Retrieve the inserted transaction data
         $transaction = DB::table('tb_transaksi_borong')->where('id', $inserted)->first();
+        // $totalRupiah = number_format($transaction->total_transaksi, 0, ',', '.');
 
         // Setup parameters for Midtrans Snap API
         $params = [
             'transaction_details' => [
                 'order_id' => $orderId, // Use UUID for order_id
-                'gross_amount' => (int) $transaction->total_transaksi,
+                'gross_amount' => $transaction->total_transaksi,
             ],
             'customer_details' => [
                 'first_name' => $user->nama_user,
                 'email' => $user->email_user,
                 'phone' => $user->nomortelepon_user,
             ],
-            'item_details' => [
-                [
-                    'id' => $request->input('produkborong_select'),
-                    'price' => (int) $transaction->total_transaksi,
-                    'quantity' => $transaction->kuantitas_bibit,
-                    'name' => 'Bibit ' . $request->input('produkborong_select'),
-                ],
-            ],
+            // 'item_details' => [
+            //     [
+            //         'id' => $request->input('produkborong_select'),
+            //         'price' => $transaction->total_transaksi,
+            //         'quantity' => $transaction->kuantitas_bibit,
+            //         'name' => 'Bibit ' . $request->input('produkborong_select'),
+            //     ],
+            // ],
             'merchant_id' => config('midtrans.merchant_id'),
         ];
 
@@ -105,4 +105,3 @@ class PaymentController extends Controller
         return redirect()->to('/');
     }
 }
-  

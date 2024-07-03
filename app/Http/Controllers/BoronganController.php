@@ -25,14 +25,16 @@ class BoronganController extends Controller
         // Fetch customer data
         $getId = $request->session()->get('id');
 
-                $rumah = DB::table('tb_alamatpengiriman')
-                ->where('alamatpengiriman_user_id', $getId)
-                ->join('tb_kecamatan', 'tb_alamatpengiriman.alamatpengiriman_kecamatan_id', '=', 'tb_kecamatan.kecamatan_id')
-                ->select('tb_alamatpengiriman.*', 'tb_kecamatan.kecamatan_name')
-                ->get();
+                 // Fetch rumah and kecamatan data
+        $rumah = DB::table('tb_alamatpengiriman')
+        ->where('alamatpengiriman_user_id',  $getId)
+        ->join('tb_kecamatan', 'tb_alamatpengiriman.alamatpengiriman_kecamatan_id', '=', 'tb_kecamatan.kecamatan_id')
+        ->select('tb_alamatpengiriman.*', 'tb_kecamatan.kecamatan_name', 'tb_kecamatan.kecamatan_id', 'tb_kecamatan.ongkir')
+        ->get();
         $customer = DB::table('tb_user')->where('id_user', $getId)->first();
         $paymentMethodsResponse = $this->tripayService->getPaymentMethods();
         $paymentMethods = isset($paymentMethodsResponse['data']) ? $paymentMethodsResponse['data'] : [];
+
 
         $data = [
             'menu' => 'dashboard',
