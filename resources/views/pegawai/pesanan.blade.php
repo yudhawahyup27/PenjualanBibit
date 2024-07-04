@@ -57,10 +57,10 @@
                                 {{-- @if($key->status_transaksi == 1)
                                 <a class="btn btn-primary" href="{{ url('/') }}/pegawai/pesanan/sudahbayar/{{ $key->id_transaksi }}">Sudah Bayar</a> --}}
                                 @if($key->status_transaksi == 1)
-                                <a class="btn btn-primary" href="{{ url('/') }}/pegawai/pesanan/sudahproses/{{ $key->id_transaksi }}">Sudah Dikirim</a>
+                                <a class="btn btn-primary" href="{{ url('/') }}/pegawai/pesanan/sudahproses/{{ $key->id_transaksi }}">Sudah Di Proses</a>
 
                                 @elseif ($key->status_transaksi == 2)
-                                <a class="btn btn-primary" href="{{ url('/') }}/pegawai/pesanan/sudahdikirim/{{ $key->id_transaksi }}">Sudah Di Proses</a>
+                                <a class="btn btn-primary" href="{{ url('/') }}/pegawai/pesanan/sudahdikirim/{{ $key->id_transaksi }}">Sudah Di Kirim</a>
 
                                 @elseif($key->status_transaksi == 3)
                                 <a class="btn btn-primary" href="{{ url('/') }}/pegawai/pesanan/sudahditerima/{{ $key->id_transaksi }}">Sudah Diterima</a>
