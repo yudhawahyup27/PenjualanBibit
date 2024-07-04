@@ -32,8 +32,8 @@
                             <th>Id User</th>
                             <th>Nama User</th>
                             <th>Total</th>
-                            <th>Aksi/th>
-                            <th>#</th>
+                            <th>Aksi</th>
+                            {{-- <th>#</th> --}}
                         </tr>
                     </tfoot>
                     <tbody>
@@ -79,7 +79,7 @@
     $(document).ready(function() {
         $('#datatablesSimple').DataTable({
             "order": [
-                [0, "asc"]
+                [0, "desc"]
             ]
         });
     });

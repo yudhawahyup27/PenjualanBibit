@@ -74,7 +74,7 @@
     $(document).ready(function() {
         $('#datatablesSimple').DataTable({
             "order": [
-                [1, "desc"]
+                [, "desc"]
             ]
         });
     });
