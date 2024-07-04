@@ -90,6 +90,7 @@ Route::get('/pegawai/ongkir/hapus/{id}', [Pegawai::class, 'ongkoskirim_delete'])
 Route::get('/pegawai/ongkir/ubah/{id}', [Pegawai::class, 'ongkoskirim_ubah']);
 Route::post('/pegawai/ongkir/ubah/{id}', [Pegawai::class, 'ongkoskirim_update']);
 Route::get('/pegawai/pesanan/', [Pegawai::class, 'pesanan']);
+Route::get('/pegawai/pesanan/sudahproses/{id}', [Pegawai::class, 'pesanan_sudahdiproses']);
 Route::get('/pegawai/pesanan/sudahbayar/{id}', [Pegawai::class, 'pesanan_sudahbayar']);
 Route::get('/pegawai/pesanan/sudahdikirim/{id}', [Pegawai::class, 'pesanan_sudahdikirim']);
 Route::get('/pegawai/pesanan/sudahditerima/{id}', [Pegawai::class, 'pesanan_sudahditerima']);

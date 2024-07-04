@@ -481,6 +481,22 @@ class Pegawai extends Controller
         ]);
         return redirect()->to('/pegawai/pesanan');
     }
+    public function pesanan_sudahdiproses(Request $request)
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $uri_one = request()->segment(4);
+        $tblTransaksi = DB::table('tb_transaksi')->where('id_transaksi', $uri_one)->first();
+        DB::table('tb_transaksi')->where('id_transaksi', $uri_one)->update([
+            'status_transaksi'          => '2',
+            'created_transaksi'         => date('Y-m-d H:i:s'),
+        ]);
+        DB::table('tb_statuspengiriman')->insert([
+            'statuspengiriman_id_status'        => '2',
+            'statuspengiriman_kodetransaksi'    => $tblTransaksi->kode_transaksi,
+            'statuspengiriman_created'          => date('Y-m-d H:i:s'),
+        ]);
+        return redirect()->to('/pegawai/pesanan');
+    }
 
     public function monitoringbibit(Request $request)
     {
@@ -629,6 +645,7 @@ class Pegawai extends Controller
         DB::table('tb_perkembangan')->where('id_pbk', $uri_one)->delete();
 
     }
+
 
 
     public function pesanan_sudahbayarborong(Request $request)
