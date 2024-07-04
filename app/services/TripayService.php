@@ -17,14 +17,14 @@ class TripayService
         $this->merchantCode = env('TRIPAY_MERCHANT_CODE');
     }
 
-    public function getPaymentMethods()
-    {
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->apiKey
-        ])->get('https://tripay.co.id/api-sandbox/merchant/payment-channel');
+    // public function getPaymentMethods()
+    // {
+    //     $response = Http::withHeaders([
+    //         'Authorization' => 'Bearer ' . $this->apiKey
+    //     ])->get('https://tripay.co.id/api-sandbox/merchant/payment-channel');
 
-        return $response->json();
-    }
+    //     return $response->json();
+    // }
 
     public function createTransaction($data)
     {

@@ -32,15 +32,15 @@ class BoronganController extends Controller
         ->select('tb_alamatpengiriman.*', 'tb_kecamatan.kecamatan_name', 'tb_kecamatan.kecamatan_id', 'tb_kecamatan.ongkir')
         ->get();
         $customer = DB::table('tb_user')->where('id_user', $getId)->first();
-        $paymentMethodsResponse = $this->tripayService->getPaymentMethods();
-        $paymentMethods = isset($paymentMethodsResponse['data']) ? $paymentMethodsResponse['data'] : [];
+        // $paymentMethodsResponse = $this->tripayService->getPaymentMethods();
+        // $paymentMethods = isset($paymentMethodsResponse['data']) ? $paymentMethodsResponse['data'] : [];
 
 
         $data = [
             'menu' => 'dashboard',
             'submenu' => 'pegawai',
             'kecamatan' => $kecamatan,
-            'paymentMethods' => $paymentMethods,
+            // 'paymentMethods' => $paymentMethods,
             'customer' => $customer,
             'rumah' => $rumah,
             'nama' =>  $customer->nama_user ?? null,

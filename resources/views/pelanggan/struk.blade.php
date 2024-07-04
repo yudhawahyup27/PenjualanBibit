@@ -44,7 +44,7 @@
         </div>
         <div class="content">
             @if($transaksi)
-                <p><strong>Kode Transaksi:</strong> {{ $transaksi->id_transaksi }}</p>
+                <p><strong>Kode Transaksi:</strong> {{ $transaksi->kode_transaksi }}</p>
 
 
 
@@ -56,7 +56,7 @@
     </tr>
     @foreach ($cart as $item)
     <tr>
-      <td>{{ $item ->qty_keranjang }}</td>
+      <td>{{ $item ->Qty_beli }}</td>
       <td>{{ $item->nama_bibit }}s</td>
       <td>{{ $item->harga_bibit }}</td>
     </tr>

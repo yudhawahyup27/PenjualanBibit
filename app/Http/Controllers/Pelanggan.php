@@ -323,6 +323,34 @@ class Pelanggan extends Controller
         $request->session()->flush();
         return redirect('/');
     }
+
+    public function downloadStruk(Request $request , $id)
+    {
+        // Logic to fetch data and generate the PDF
+        $transaksi = DB::table('tb_transaksi')
+        ->where('id_transaksi', $id)
+        ->first();
+        $getSesionId = $request->session()->get('id');
+         // Ambil semua item keranjang dengan informasi tambahan
+    $cart = DB::table('tb_transaksi')
+    ->join('tb_produk', 'tb_transaksi.id_produk', '=', 'tb_produk.id_produk')
+    // ->leftJoin('tb_kecamatan', function($join) {
+    //     $join->on('tb_keranjang.pengiriman_keranjang', '=', 'tb_kecamatan.kecamatan_id')
+    //          ->where('tb_keranjang.pengiriman_keranjang', '!=', 0); // Hanya ambil ongkir jika bukan ambil di toko
+    // })
+    ->select('tb_transaksi.*', 'tb_produk.gambar_bibit', 'tb_produk.nama_bibit', 'tb_produk.harga_bibit')
+    ->where('id_transaksi', $id)
+    ->get();
+
+        $data = [
+            'cart' => $cart,
+            'transaksi' => $transaksi,
+        ];
+
+        $pdf = PDF::loadView('pelanggan.struk', $data);
+
+        return $pdf->download('invoice.pdf');
+    }
     public function downloadStrukborongan($id)
     {
         // Ambil data transaksi berdasarkan kode_transaksi
@@ -808,6 +836,7 @@ public function detail_cart_payment_create(Request $request)
 
         $tblTransaksi = DB::table('tb_transaksi_borong')
         ->orderBy('created_at', 'desc')
+        ->where('id_user_transaksi', $getSesionId)
             ->join('tb_user', 'tb_transaksi_borong.id_user_transaksi', '=', 'tb_user.id_user')
             ->join('tb_produk', 'tb_transaksi_borong.nama_bibit', '=', 'tb_produk.id_produk')
             ->join('tb_status', 'tb_transaksi_borong.status_transaksi', '=', 'tb_status.status_id')

@@ -82,7 +82,7 @@ Route::post('/pegawai/produkbibit/tambah', [Pegawai::class, 'create_produkbibit'
 Route::get('/pegawai/produkbibit/hapus/{id}', [Pegawai::class, 'delete_produkbibit']);
 Route::get('/pegawai/produkbibit/ubah/{id}', [Pegawai::class, 'edit_produkbibit']);
 Route::post('/pegawai/produkbibit/ubah/{id}', [Pegawai::class, 'update_produkbibit']);
-Route::get('/pegawai/stokbibit-pegawai', [Pegawai::class, 'stokbibit']);
+Route::get('/pegawai/stokbibit', [Pegawai::class, 'stokbibit']);
 Route::get('/pegawai/ongkir', [Pegawai::class, 'ongkoskirim']);
 Route::get('/pegawai/ongkir/tambah', [Pegawai::class, 'ongkoskirim_tambah']);
 Route::post('/pegawai/ongkir/tambah', [Pegawai::class, 'ongkoskirim_create']);
