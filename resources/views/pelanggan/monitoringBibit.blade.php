@@ -17,8 +17,8 @@
     <div class="col mx-4"><img src="{{ asset('images/' . $produk->gambar_bibit) }}" width="200" alt="" srcset=""></div>
     <div class="col">
         <h1>{{ $produk->nama_bibit }}</h1>
-        <p>Tanggal semai: {{ $transaksi->created_at }}</p>
-        <p>Tanggal tanam: {{ $transaksi->tanggal_tanam }}</p>
+        <p>Tanggal semai: {{ date('j \\ F Y', strtotime( $transaksi->created_at ))}}</p>
+        <p>Tanggal tanam: {{ date('j \\ F Y', strtotime( $transaksi->tanggal_tanam ))}} </p>
     </div>
 </div>
 
