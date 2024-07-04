@@ -758,11 +758,11 @@ public function detail_cart_payment_create(Request $request)
             $cart = DB::table('tb_transaksi')->where('id_transaksi', $uri_one)->first();
 
             // Fetch status updates from tb_statuspengiriman for the specific transaction
-            $statusTransaksis = DB::table('tb_statuspengiriman')
-                                ->select('tb_statuspengiriman.*', 'tb_status.status_name')
-                                ->join('tb_status', 'tb_statuspengiriman.statuspengiriman_id_status', '=', 'tb_status.status_id')
-                                ->where('statuspengiriman_kodetransaksi', $cart->kode_transaksi)
-                                ->whereIn('statuspengiriman_id_status', [1, 2, 3, 4])
+            $statusTransaksis = DB::table('tb_transaksi')
+                                ->select('tb_transaksi.*', 'tb_status.status_name')
+                                ->join('tb_status', 'tb_transaksi.status_transaksi', '=', 'tb_status.status_id')
+                                ->where('kode_transaksi', $cart->kode_transaksi)
+                                ->whereIn('status_transaksi', [1, 2, 3, 4])
                                 ->get();
 
                                 $getTransaction = DB::table('tb_transaksi')

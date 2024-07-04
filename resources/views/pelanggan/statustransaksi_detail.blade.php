@@ -32,11 +32,13 @@
             </div>
             <div class="mt-4">
                 <h5>Status Transaksi</h5>
+
+{{--
                 @if ($statusTransaksis->isEmpty())
                     <p>Belum ada status untuk transaksi ini.</p>
-                @else
+                @else --}}
                     <h5>{{ $statusTransaksis->last()->status_name }}</h5>
-                @endif
+                {{-- @endif --}}
             </div>
             <div class="mt-4">
                 <h5>List Pembelian Produk</h5>
