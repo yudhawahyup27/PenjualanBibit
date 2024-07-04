@@ -387,12 +387,10 @@ class Pegawai extends Controller
         date_default_timezone_set('Asia/Jakarta');
 
         $uri_one = request()->segment(4);
-        DB::table('tb_ongkir')->where('ongkir_id', $uri_one)->update([
-            'ongkir_fromlocation'   => 'Kertosono',
-            'ongkir_tolocation'     => $request->ke,
-            'ongkir_price'          => $request->harga,
-            'ongkir_created'        => date('Y-m-d H:i:s'),
-            'ongkir_updated'        => date('Y-m-d H:i:s'),
+        DB::table('tb_kecamatan')->where('kecamatan_id', $uri_one)->update([
+            // 'ongkir_fromlocation'   => 'Kertosono',
+            'Kecamatan_name'     => $request->ke,
+            'ongkir'          => $request->harga,
         ]);
         return redirect()->to('/pegawai/ongkir');
     }
