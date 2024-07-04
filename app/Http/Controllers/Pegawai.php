@@ -685,6 +685,23 @@ class Pegawai extends Controller
             return redirect()->to('/pegawai/monitoringbibit')->with('error', 'Transaction not found.');
         }
     }
+    public function pesanan_sudahdiprosesborong(Request $request)
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $uri_one = request()->segment(4);
+        $tblTransaksi = DB::table('tb_transaksi_borong')->where('id', $uri_one)->first();
+
+        if ($tblTransaksi) {
+            DB::table('tb_transaksi_borong')->where('id', $uri_one)->update([
+                'status_transaksi' => '2',
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+            return redirect()->to('/pegawai/monitoringbibit');
+        } else {
+            // Handle the case when no record is found
+            return redirect()->to('/pegawai/monitoringbibit')->with('error', 'Transaction not found.');
+        }
+    }
 
 
     public function pesanan_sudahditerimaborong(Request $request)

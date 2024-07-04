@@ -95,6 +95,7 @@ Route::get('/pegawai/pesanan/sudahbayar/{id}', [Pegawai::class, 'pesanan_sudahba
 Route::get('/pegawai/pesanan/sudahdikirim/{id}', [Pegawai::class, 'pesanan_sudahdikirim']);
 Route::get('/pegawai/pesanan/sudahditerima/{id}', [Pegawai::class, 'pesanan_sudahditerima']);
 Route::get('/pegawai/pesanan/sudahbayarborong/{id}', [Pegawai::class, 'pesanan_sudahbayarborong']);
+Route::get('/pegawai/pesanan/sudahprosesborong/{id}', [Pegawai::class, 'pesanan_sudahdiprosesborong']);
 Route::get('/pegawai/pesanan/sudahdikirimborong/{id}', [Pegawai::class, 'pesanan_sudahdikirimborong']);
 Route::get('/pegawai/pesanan/sudahditerimaborong/{id}', [Pegawai::class, 'pesanan_sudahditerimaborong']);
 Route::get('/pegawai/monitoringbibit', [Pegawai::class, 'monitoringbibit']);
