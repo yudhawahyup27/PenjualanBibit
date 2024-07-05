@@ -13,84 +13,127 @@ class Pemilik extends Controller
     {
         return redirect()->to('/pemilik/dashboard22');
     }
-    public function dashboard(Request $request)
-    {
-        // Fetch all data without any filter
-        $allTransactionsEceran = DB::table('tb_transaksi')
-            ->select(DB::raw('DAY(created_transaksi) as day'), DB::raw('MONTH(created_transaksi) as month'), DB::raw('YEAR(created_transaksi) as year'), DB::raw('SUM(total_transaksi) as total'))
-            ->groupBy('day', 'month', 'year')
-            ->get();
+   public function dashboard(Request $request)
+{
+    // Ambil semua data tanpa filter
+    $allTransactionsEceran = DB::table('tb_transaksi')
+        ->select(DB::raw('DAY(created_transaksi) as day'), DB::raw('MONTH(created_transaksi) as month'), DB::raw('YEAR(created_transaksi) as year'), DB::raw('SUM(total_transaksi) as total'))
+        ->groupBy('day', 'month', 'year')
+        ->get();
 
-        $allTransactionsBorong = DB::table('tb_transaksi_borong')
-            ->select(DB::raw('DAY(created_at) as day'), DB::raw('MONTH(created_at) as month'), DB::raw('YEAR(created_at) as year'), DB::raw('SUM(total_transaksi) as total'))
-            ->groupBy('day', 'month', 'year')
-            ->get();
+    // Ambil semua data borongan tanpa filter
+    $allTransactionsBorong = DB::table('tb_transaksi_borong')
+    ->select(DB::raw('DAY(created_at) as day'), DB::raw('MONTH(created_at) as month'), DB::raw('YEAR(created_at) as year'), DB::raw('SUM(total_transaksi) as total'))
+    ->groupBy('day', 'month', 'year')
+    ->get();
+    // Dapatkan input filter untuk eceran
+    $selectedDayEceran = $request->input('selectedDayEceran', 'all');
+    $selectedMonthEceran = $request->input('selectedMonthEceran', 'all');
+    $selectedYearEceran = $request->input('selectedYearEceran', 'all');
 
-            
-        // Get filter inputs
-        $selectedDay = $request->input('selectedDay', 'all');
-        $selectedMonth = $request->input('selectedMonth', 'all');
-        $selectedYear = $request->input('selectedYear', 'all');
+    // Dapatkan input filter untuk borong
+    $selectedDayBorong = $request->input('selectedDayBorong', 'all');
+    $selectedMonthBorong = $request->input('selectedMonthBorong', 'all');
+    $selectedYearBorong = $request->input('selectedYearBorong', 'all');
 
-        // Filter data based on selected inputs
-        $filteredTransactionsEceran = $allTransactionsEceran->filter(function ($transaction) use ($selectedDay, $selectedMonth, $selectedYear) {
-            return ($selectedYear === 'all' || $transaction->year == $selectedYear) &&
-                   ($selectedMonth === 'all' || $transaction->month == $selectedMonth) &&
-                   ($selectedDay === 'all' || $transaction->day == $selectedDay);
-        });
+    // Filter data berdasarkan input yang dipilih untuk eceran
+    $filteredTransactionsEceran = $this->filterTransactions($allTransactionsEceran, $selectedDayEceran, $selectedMonthEceran, $selectedYearEceran);
+    $filteredTransactionsBorong = $this->filterTransactions($allTransactionsBorong, $selectedDayBorong, $selectedMonthBorong, $selectedYearBorong);
 
-        $filteredTransactionsBorong = $allTransactionsBorong->filter(function ($transaction) use ($selectedDay, $selectedMonth, $selectedYear) {
-            return ($selectedYear === 'all' || $transaction->year == $selectedYear) &&
-                   ($selectedMonth === 'all' || $transaction->month == $selectedMonth) &&
-                   ($selectedDay === 'all' || $transaction->day == $selectedDay);
-        });
+    // Kelompokkan data yang difilter berdasarkan hari, bulan, dan tahun sesuai kebutuhan untuk eceran
+    $transactionsPerDayEceran = $filteredTransactionsEceran->groupBy('day');
+    $transactionsPerMonthEceran = $filteredTransactionsEceran->groupBy(function ($item) {
+        return $item->month . '-' . $item->year; // Kelompokkan berdasarkan kombinasi bulan-tahun
+    });
+    $transactionsPerYearEceran = $filteredTransactionsEceran->groupBy('year');
 
-        // Group filtered data by day, month, and year as needed
-        $transactionsPerDayEceran = $filteredTransactionsEceran->groupBy('day');
-        $transactionsPerMonthEceran = $filteredTransactionsEceran->groupBy('month');
-        $transactionsPerYearEceran = $filteredTransactionsEceran->groupBy('year');
+    // Kelompokkan data yang difilter berdasarkan hari, bulan, dan tahun sesuai kebutuhan untuk borong
+    $transactionsPerDayBorong = $filteredTransactionsBorong->groupBy('day');
+    $transactionsPerMonthBorong = $filteredTransactionsBorong->groupBy(function ($item) {
+        return $item->month . '-' . $item->year; // Kelompokkan berdasarkan kombinasi bulan-tahun
+    });
+    $transactionsPerYearBorong = $filteredTransactionsBorong->groupBy('year');
 
-        $transactionsPerDayBorong = $filteredTransactionsBorong->groupBy('day');
-        $transactionsPerMonthBorong = $filteredTransactionsBorong->groupBy('month');
-        $transactionsPerYearBorong = $filteredTransactionsBorong->groupBy('year');
-
-        // Fill missing months if selected year only
-        if ($selectedMonth === 'all' && $selectedDay === 'all') {
-            $transactionsPerMonthEceran = $this->fillMissingMonths($transactionsPerMonthEceran);
-            $transactionsPerMonthBorong = $this->fillMissingMonths($transactionsPerMonthBorong);
-        }
-
-        $data = [
-            'menu' => 'dashboard2',
-            'submenu' => 'pemilik',
-            'transactionsPerDayEceran' => $transactionsPerDayEceran,
-            'transactionsPerMonthEceran' => $transactionsPerMonthEceran,
-            'transactionsPerYearEceran' => $transactionsPerYearEceran,
-            'transactionsPerDayBorong' => $transactionsPerDayBorong,
-            'transactionsPerMonthBorong' => $transactionsPerMonthBorong,
-            'transactionsPerYearBorong' => $transactionsPerYearBorong,
-            'selectedDay' => $selectedDay,
-            'selectedMonth' => $selectedMonth,
-            'selectedYear' => $selectedYear,
-        ];
-
-        return view('pemilik.dashboard', $data);
+  // Isi bulan yang hilang jika hanya tahun yang dipilih untuk eceran
+    if ($selectedMonthEceran === 'all' && $selectedDayEceran === 'all') {
+        $transactionsPerMonthEceran = $this->fillMissingMonths($transactionsPerMonthEceran);
     }
 
-    private function fillMissingMonths($data)
-    {
-        $data = $data->keyBy('month')->all();
-        for ($i = 1; $i <= 12; $i++) {
-            if (!isset($data[$i])) {
-                $data[$i] = collect([(object)[
-                    'month' => $i,
-                    'total' => 0
-                ]]);
+    // Isi bulan yang hilang jika hanya tahun yang dipilih untuk borong
+    if ($selectedMonthBorong === 'all' && $selectedDayBorong === 'all') {
+        $transactionsPerMonthBorong = $this->fillMissingMonths($transactionsPerMonthBorong);
+    }
+
+    // Ubah data yang dikelompokkan ke format array yang cocok untuk JSON untuk eceran
+    $transactionsPerYearEceran = $transactionsPerYearEceran->map(function ($items, $key) {
+        return [
+            'year' => $key,
+            'total' => $items->sum('total'),
+        ];
+    })->values();
+
+    // Ubah data yang dikelompokkan ke format array yang cocok untuk JSON untuk borong
+    $transactionsPerYearBorong = $transactionsPerYearBorong->map(function ($items, $key) {
+        return [
+            'year' => $key,
+            'total' => $items->sum('total'),
+        ];
+    })->values();
+
+    $monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    $data = [
+        'menu' => 'dashboard2',
+        'submenu' => 'pemilik',
+        'transactionsPerDayEceran' => $transactionsPerDayEceran,
+        'transactionsPerMonthEceran' => $transactionsPerMonthEceran,
+        'transactionsPerYearEceran' => $transactionsPerYearEceran,
+        'transactionsPerDayBorong' => $transactionsPerDayBorong,
+        'transactionsPerMonthBorong' => $transactionsPerMonthBorong,
+        'transactionsPerYearBorong' => $transactionsPerYearBorong,
+        'selectedDayEceran' => $selectedDayEceran,
+        'selectedMonthEceran' => $selectedMonthEceran,
+        'selectedYearEceran' => $selectedYearEceran,
+        'selectedDayBorong' => $selectedDayBorong,
+        'selectedMonthBorong' => $selectedMonthBorong,
+        'selectedYearBorong' => $selectedYearBorong,
+        'monthNames' => $monthNames, // Sertakan $monthNames di dalam data
+    ];
+
+    return view('pemilik.dashboard', $data);
+}
+
+private function filterTransactions($transactions, $selectedDay, $selectedMonth, $selectedYear)
+{
+    return $transactions->filter(function ($transaction) use ($selectedDay, $selectedMonth, $selectedYear) {
+        return ($selectedYear === 'all' || $transaction->year == $selectedYear) &&
+               ($selectedMonth === 'all' || $transaction->month == $selectedMonth) &&
+               ($selectedDay === 'all' || $transaction->day == $selectedDay);
+    });
+}
+
+private function fillMissingMonths($transactionsPerMonth)
+{
+    $months = range(1, 12);
+    $years = $transactionsPerMonth->pluck('year')->unique();
+
+    foreach ($years as $year) {
+        foreach ($months as $month) {
+            $key = $month . '-' . $year;
+            if (!isset($transactionsPerMonth[$key])) {
+                $transactionsPerMonth[$key] = collect([
+                    (object) ['month' => $month, 'year' => $year, 'total' => 0]
+                ]);
             }
         }
-        ksort($data);
-        return collect($data);
     }
+
+    return $transactionsPerMonth;
+}
+
 
     public function produkbibit2(Request $request)
     {

@@ -8,44 +8,77 @@
     </ol>
     <div class="card mb-4">
         <div class="card-header">
-            Dashboard Data
+            Dashboard Data (Eceran)
         </div>
         <div class="card-body">
+            {{-- Filter eceran --}}
             <div class="row mb-3">
                 <div class="col">
-                    <label for="filterYear" class="form-label">Select Year:</label>
-                    <select class="form-select" id="filterYear">
+                    <label for="filterYearEceran" class="form-label">Select Year (Eceran):</label>
+                    <select class="form-select" id="filterYearEceran">
                         <option value="all">All</option>
                         @foreach($transactionsPerYearEceran as $yearData)
-                            <option value="{{ $yearData->first()->year }}" {{ $selectedYear == $yearData->first()->year ? 'selected' : '' }}>{{ $yearData->first()->year }}</option>
+                            <option value="{{ $yearData['year'] }}" {{ $selectedYearEceran == $yearData['year'] ? 'selected' : '' }}>{{ $yearData['year'] }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="col">
-                    <label for="filterMonth" class="form-label">Select Month:</label>
-                    <select class="form-select" id="filterMonth">
+                    <label for="filterMonthEceran" class="form-label">Select Month (Eceran):</label>
+                    <select class="form-select" id="filterMonthEceran">
                         <option value="all">All</option>
-                        @foreach(range(1, 12) as $month)
-                            <option value="{{ $month }}" {{ $selectedMonth == $month ? 'selected' : '' }}>{{ date('F', mktime(0, 0, 0, $month, 1)) }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col">
-                    <label for="filterDay" class="form-label">Select Day:</label>
-                    <select class="form-select" id="filterDay">
-                        <option value="all">All</option>
-                        @foreach(range(1, 31) as $day)
-                            <option value="{{ $day }}" {{ $selectedDay == $day ? 'selected' : '' }}>{{ $day }}</option>
+                        @foreach($transactionsPerMonthEceran as $monthYear => $monthData)
+                            @php
+                                $monthYearArray = explode('-', $monthYear);
+                                $month = $monthYearArray[0];
+                                $year = $monthYearArray[1];
+                            @endphp
+                            <option value="{{ $month }}" data-year="{{ $year }}" {{ $selectedMonthEceran == $month && $selectedYearEceran == $year ? 'selected' : '' }}>{{ $monthNames[$month - 1] }}</option>
                         @endforeach
                     </select>
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-6">
+                <div class="col">
                     <h5>Eceran Transactions</h5>
                     <canvas id="eceranChart"></canvas>
                 </div>
-                <div class="col-md-6">
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            Dashboard Data (Borong)
+        </div>
+        <div class="card-body">
+            {{-- Filter borong --}}
+            <div class="row mb-3">
+                <div class="col">
+                    <label for="filterYearBorong" class="form-label">Select Year (Borong):</label>
+                    <select class="form-select" id="filterYearBorong">
+                        <option value="all">All</option>
+                        @foreach($transactionsPerYearBorong as $yearData)
+                            <option value="{{ $yearData['year'] }}" {{ $selectedYearBorong == $yearData['year'] ? 'selected' : '' }}>{{ $yearData['year'] }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col">
+                    <label for="filterMonthBorong" class="form-label">Select Month (Borong):</label>
+                    <select class="form-select" id="filterMonthBorong">
+                        <option value="all">All</option>
+                        @foreach($transactionsPerMonthBorong as $monthYear => $monthData)
+                            @php
+                                $monthYearArray = explode('-', $monthYear);
+                                $month = $monthYearArray[0];
+                                $year = $monthYearArray[1];
+                            @endphp
+                            <option value="{{ $month }}" data-year="{{ $year }}" {{ $selectedMonthBorong == $month && $selectedYearBorong == $year ? 'selected' : '' }}>{{ $monthNames[$month - 1] }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
                     <h5>Borong Transactions</h5>
                     <canvas id="borongChart"></canvas>
                 </div>
@@ -62,63 +95,101 @@
         var ctxEceran = document.getElementById('eceranChart').getContext('2d');
         var ctxBorong = document.getElementById('borongChart').getContext('2d');
 
-        var transactionsPerDayEceran = @json($transactionsPerDayEceran);
         var transactionsPerMonthEceran = @json($transactionsPerMonthEceran);
         var transactionsPerYearEceran = @json($transactionsPerYearEceran);
-        var transactionsPerDayBorong = @json($transactionsPerDayBorong);
         var transactionsPerMonthBorong = @json($transactionsPerMonthBorong);
         var transactionsPerYearBorong = @json($transactionsPerYearBorong);
 
-        var selectedDay = "{{ $selectedDay }}";
-        var selectedMonth = "{{ $selectedMonth }}";
-        var selectedYear = "{{ $selectedYear }}";
+        var selectedMonthEceran = "{{ $selectedMonthEceran }}";
+        var selectedYearEceran = "{{ $selectedYearEceran }}";
+        var selectedMonthBorong = "{{ $selectedMonthBorong }}";
+        var selectedYearBorong = "{{ $selectedYearBorong }}";
 
         var labelsEceran = [];
         var dataEceran = [];
         var labelsBorong = [];
         var dataBorong = [];
 
-        function updateChartData() {
-            var year = document.getElementById('filterYear').value;
-            var month = document.getElementById('filterMonth').value;
-            var day = document.getElementById('filterDay').value;
+        // Array of month names
+        var monthNames = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+
+        function updateEceranChartData() {
+            var year = document.getElementById('filterYearEceran').value;
+            var month = document.getElementById('filterMonthEceran').value;
 
             labelsEceran = [];
             dataEceran = [];
+
+            if (month !== 'all') {
+                labelsEceran = transactionsPerMonthEceran[`${month}-${year}`] ? transactionsPerMonthEceran[`${month}-${year}`].map(item => item.day) : [];
+                dataEceran = transactionsPerMonthEceran[month + '-' + year] ? transactionsPerMonthEceran[month + '-' + year].map(item => item.total) : [];
+            } else if (year !== 'all') {
+                labelsEceran = [];
+                dataEceran = [];
+
+                for (var i = 1; i <= 12; i++) {
+                    var totalEceran = 0;
+                    transactionsPerMonthEceran[i + '-' + year] ? transactionsPerMonthEceran[i + '-' + year].forEach(function(item) {
+                        totalEceran += item.total;
+                    }) : 0;
+
+                    if (totalEceran > 0) {
+                        labelsEceran.push(monthNames[i - 1]); // Convert month number to month name
+                        dataEceran.push(totalEceran);
+                    }
+                }
+            } else {
+                labelsEceran = transactionsPerYearEceran.map(item => item.year);
+                dataEceran = transactionsPerYearEceran.map(item => item.total);
+            }
+
+            updateEceranChart();
+        }
+
+        function updateBorongChartData() {
+            var year = document.getElementById('filterYearBorong').value;
+            var month = document.getElementById('filterMonthBorong').value;
+
             labelsBorong = [];
             dataBorong = [];
 
-            if (day !== 'all') {
-                labelsEceran = transactionsPerDayEceran[day] ? transactionsPerDayEceran[day].map(item => item.day) : [];
-                dataEceran = transactionsPerDayEceran[day] ? transactionsPerDayEceran[day].map(item => item.total) : [];
-                labelsBorong = transactionsPerDayBorong[day] ? transactionsPerDayBorong[day].map(item => item.day) : [];
-                dataBorong = transactionsPerDayBorong[day] ? transactionsPerDayBorong[day].map(item => item.total) : [];
-            } else if (month !== 'all') {
-                labelsEceran = transactionsPerMonthEceran[month] ? transactionsPerMonthEceran[month].map(item => item.month) : [];
-                dataEceran = transactionsPerMonthEceran[month] ? transactionsPerMonthEceran[month].map(item => item.total) : [];
-                labelsBorong = transactionsPerMonthBorong[month] ? transactionsPerMonthBorong[month].map(item => item.month) : [];
-                dataBorong = transactionsPerMonthBorong[month] ? transactionsPerMonthBorong[month].map(item => item.total) : [];
+            if (month !== 'all') {
+
+                labelsBorong = transactionsPerMonthBorong[`${month}-${year}`]  ? transactionsPerMonthBorong[`${month}-${year}`].map(item => item.day) : [];
+                dataBorong = transactionsPerMonthBorong[month + '-' + year] ? transactionsPerMonthBorong[month + '-' + year].map(item => item.total) : [];
             } else if (year !== 'all') {
-                labelsEceran = transactionsPerYearEceran[year] ? transactionsPerYearEceran[year].map(item => item.year) : [];
-                dataEceran = transactionsPerYearEceran[year] ? transactionsPerYearEceran[year].map(item => item.total) : [];
-                labelsBorong = transactionsPerYearBorong[year] ? transactionsPerYearBorong[year].map(item => item.year) : [];
-                dataBorong = transactionsPerYearBorong[year] ? transactionsPerYearBorong[year].map(item => item.total) : [];
+                labelsBorong = [];
+                dataBorong = [];
+
+                for (var i = 1; i <= 12; i++) {
+                    var totalBorong = 0;
+                    transactionsPerMonthBorong[i + '-' + year] ? transactionsPerMonthBorong[i + '-' + year].forEach(function(item) {
+                        totalBorong += item.total;
+                    }) : 0;
+
+                    if (totalBorong > 0) {
+                        labelsBorong.push(monthNames[i - 1]); // Convert month number to month name
+                        dataBorong.push(totalBorong);
+                    }
+                }
             } else {
-                // Default case if no specific filter is selected
-                labelsEceran = transactionsPerYearEceran.map(item => item.first().year);
-                dataEceran = transactionsPerYearEceran.map(item => item.sum('total'));
-                labelsBorong = transactionsPerYearBorong.map(item => item.first().year);
-                dataBorong = transactionsPerYearBorong.map(item => item.sum('total'));
+                labelsBorong = transactionsPerYearBorong.map(item => item.year);
+                dataBorong = transactionsPerYearBorong.map(item => item.total);
             }
 
-            updateCharts();
+            updateBorongChart();
         }
 
-        function updateCharts() {
+        function updateEceranChart() {
             eceranChart.data.labels = labelsEceran;
             eceranChart.data.datasets[0].data = dataEceran;
             eceranChart.update();
+        }
 
+        function updateBorongChart() {
             borongChart.data.labels = labelsBorong;
             borongChart.data.datasets[0].data = dataBorong;
             borongChart.update();
@@ -168,11 +239,14 @@
             }
         });
 
-        document.getElementById('filterYear').addEventListener('change', updateChartData);
-        document.getElementById('filterMonth').addEventListener('change', updateChartData);
-        document.getElementById('filterDay').addEventListener('change', updateChartData);
+        document.getElementById('filterYearEceran').addEventListener('change', updateEceranChartData);
+        document.getElementById('filterMonthEceran').addEventListener('change', updateEceranChartData);
+        document.getElementById('filterYearBorong').addEventListener('change', updateBorongChartData);
+        document.getElementById('filterMonthBorong').addEventListener('change', updateBorongChartData);
 
-        updateChartData();
+        updateEceranChartData();
+        updateBorongChartData();
     });
+
 </script>
 @endsection

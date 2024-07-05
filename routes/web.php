@@ -7,6 +7,7 @@ use App\Http\Controllers\Pegawai;
 use App\Http\Controllers\Pelanggan;
 use App\Http\Controllers\Pemilik;
 use App\Http\Controllers\BoronganController;
+use App\Http\Controllers\ChartController;
 use App\Http\Controllers\EceranController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
@@ -107,7 +108,7 @@ Route::post('/pegawai/monitoringbibit/detail/{id}', [Pegawai::class, 'monitoring
 Route::get('/pegawai/monitoringbibit/hapus/{id}', [Pegawai::class, 'monitoringbibit_delete']);
 
 Route::get('/pemilik', [Pemilik::class, 'redirectdashboard']);
-Route::get('/pemilik/dashboard22', [Pemilik::class, 'dashboard']);
+Route::get('/pemilik/dashboard22', [Pemilik::class, 'dashboard'])->name('dashboard');
 Route::get('/pemilik/produkbibit', [Pemilik::class, 'produkbibit2']);
 Route::get('/pemilik/produkbibit/tambah', [Pemilik::class, 'add_produkbibit']);
 Route::post('/pemilik/produkbibit/tambah', [Pemilik::class, 'create_produkbibit']);
@@ -115,6 +116,8 @@ Route::get('/pemilik/produkbibit/hapus/{id}', [Pemilik::class, 'delete_produkbib
 Route::get('/pemilik/produkbibit/ubah/{id}', [Pemilik::class, 'edit_produkbibit']);
 Route::post('/pemilik/produkbibit/ubah/{id}', [Pemilik::class, 'update_produkbibit']);
 Route::get('/pemilik/stokbibit2', [Pemilik::class, 'stokbibit']);
+// Route::get('/chart', [ChartController::class, 'index']);
+// Route::get('/chart/data', [ChartController::class, 'getData']);
 
 Route::get('/pemilik/laporanpenjualan', [Pemilik::class, 'laporanpenjualan'])->name('laporanpenjualan');
 Route::get('/pemilik/laporanpenjualanborongan', [Pemilik::class, 'laporanpenjualanborongan'])->name('laporanpenjualanborongan');
@@ -137,3 +140,6 @@ Route::get('/pelanggan/tablemonitoring', [Pelanggan::class, 'monitoringbibittabl
 // In your routes file
 
 Route::post('/pelanggan/keranjang/update', [Pelanggan::class, 'updateCartQuantity']);
+// routes/web.php
+Route::get('/charts', [ChartController::class, 'index']);
+Route::get('/chart-data', [ChartController::class, 'getChartData']);        
