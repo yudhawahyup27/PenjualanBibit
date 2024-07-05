@@ -413,6 +413,7 @@ class Pelanggan extends Controller
         $totalSold = $product->terjual_bibit + $request->qty;
         $remainingStock = $product->stok_bibit - $request->qty;
 
+
         $kode_transaksi = "Ttx2" . uniqid();
 
         // Validate if the requested quantity exceeds the available stock
@@ -465,6 +466,12 @@ class Pelanggan extends Controller
             $updatedCartItem = DB::table('tb_keranjang')->where('id_keranjang', $existingCartItem->id_keranjang)->first();
             // dd($updatedCartItem);
         } else {
+            DB::table('tb_produk')
+            ->where('id_produk', $id_produk)
+            ->update([
+
+                'terjual_bibit'=> $totalSold,
+            ]);
             // Insert new item into the cart table
             DB::table('tb_keranjang')->insert([
                 'keranjang_id_produk' => $id_produk,
