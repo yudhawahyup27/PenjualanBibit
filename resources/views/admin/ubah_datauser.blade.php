@@ -4,7 +4,7 @@
 <div class="container-fluid px-4">
     <h1 class="mt-4">Data User</h1>
     <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/admin/data-pelanggan">Dashboard</a></li>
         <li class="breadcrumb-item "><a href="/admin/datauser">Data User</a></li>
         <li class="breadcrumb-item active">Tambah Data User</li>
     </ol>
@@ -51,12 +51,9 @@
                         <option value="2" <?php if ($get_user->role_user == 2) {
                                                 echo 'selected';
                                             } ?>>Pegawai</option>
-                        <option value="2" <?php if ($get_user->role_user == 3) {
+                        <option value="3" <?php if ($get_user->role_user == 3) {
                                                 echo 'selected';
                                             } ?>>Pemilik</option>
-                        <option value="3" <?php if ($get_user->role_user == 4) {
-                                                echo 'selected';
-                                            } ?>>Pelanggan</option>
                     </select>
                 </div>
                 <div class="form-floating mb-3">

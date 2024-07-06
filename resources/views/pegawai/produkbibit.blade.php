@@ -12,7 +12,7 @@
             List Data Produk Bibit
         </div>
         <div class="card-body">
-            <a class="btn btn-primary" href="<?= url('/') ?>//pegawai/produkbibit/tambah"><i class="fa-solid fa-plus"></i> Tambah Data</a>
+            <a class="btn btn-primary" href="<?= url('/') ?>/pegawai/produkbibit/tambah"><i class="fa-solid fa-plus"></i> Tambah Data</a>
             <div class="table-responsive">
                 <table class="table table-responsive" id="datatablesSimple">
                     <thead>
@@ -69,8 +69,8 @@
                                 <?= number_format((float)$key->harga_borong, 0, ',', '.') ?>
                             </td>
                             <td>
-                                <a href="<?= url('/') ?>//pegawai/produkbibit/ubah/{{$key->id_produk}}" class="btn btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
-                                <a href="<?= url('/') ?>//pegawai/produkbibit/hapus/{{$key->id_produk}}" class="btn btn-danger"><i class="fa-solid fa-trash"></i></a>
+                                <a href="<?= url('/') ?>/pegawai/produkbibit/ubah/{{$key->id_produk}}" class="btn btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
+                                <a href="<?= url('/') ?>/pegawai/produkbibit/hapus/{{$key->id_produk}}" class="btn btn-danger"><i class="fa-solid fa-trash"></i></a>
                             </td>
                         </tr>
                         @endforeach

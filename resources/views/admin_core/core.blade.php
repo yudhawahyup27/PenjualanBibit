@@ -44,7 +44,7 @@
                     <div class="sb-sidenav-menu">
                         <div class="nav">
                             <div class="sb-sidenav-menu-heading">Admin</div>
-                            <a class="nav-link <?php if($menu == 'dashboard'){ echo 'active'; } ?>" href="<?= url('/') ?>/admin/dashboard">
+                            <a class="nav-link <?php if($menu == 'dashboard'){ echo 'active'; } ?>" href="<?= url('/') ?>/admin/data-pelanggan">
                                 <div class="sb-nav-link-icon"><i class="fa-solid fa-gauge"></i></div>
                                 Dashboard
                             </a>

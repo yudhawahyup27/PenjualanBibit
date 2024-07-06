@@ -11,7 +11,7 @@ class Admin extends Controller
     //
     public function redirectdashboard()
     {
-        return redirect()->to('/admin/dashboard');
+        return redirect()->to('/admin/data-pelanggan');
     }
 
     public function dataUser(Request $request)
@@ -27,7 +27,9 @@ class Admin extends Controller
             return redirect()->to('/');
         }
 
-        $tblUser = DB::table('tb_user')->get();
+        $tblUser = DB::table('tb_user')
+    ->where('role_user', '!=', '4')
+    ->get();
         $data = [
             'menu'      =>  'datauser',
             'submenu'   =>  'admin',
@@ -197,9 +199,13 @@ class Admin extends Controller
             return redirect()->to('/');
         }
 
+        $tblUser = DB::table('tb_user')
+        ->where('role_user', '=', '4')
+        ->get();
         $data = [
             'menu'      =>  'dashboard',
             'submenu'   =>  'admin',
+            'datauser'  =>  $tblUser
         ];
         return view('admin/dashboard', $data);
     }

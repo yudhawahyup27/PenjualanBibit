@@ -60,7 +60,7 @@ Route::post('/alamat-pengiriman/ubah/{id}', [Pelanggan::class, 'update_alamatpen
 Route::get('/alamat-pengiriman/hapus/{id}', [Pelanggan::class, 'delete_alamatpengiriman']);
 
 Route::get('/admin', [Admin::class, 'redirectdashboard']);
-Route::get('/admin/dashboard', [Admin::class, 'dashboard']);
+Route::get('/admin/data-pelanggan', [Admin::class, 'dashboard']);
 Route::get('/admin/datauser', [Admin::class, 'datauser']);
 Route::get('/admin/datauser/tambah', [Admin::class, 'add_dataUser']);
 Route::post('/admin/datauser/tambah', [Admin::class, 'create_dataUser']);
@@ -142,4 +142,4 @@ Route::get('/pelanggan/tablemonitoring', [Pelanggan::class, 'monitoringbibittabl
 Route::post('/pelanggan/keranjang/update', [Pelanggan::class, 'updateCartQuantity']);
 // routes/web.php
 Route::get('/charts', [ChartController::class, 'index']);
-Route::get('/chart-data', [ChartController::class, 'getChartData']);        
+Route::get('/chart-data', [ChartController::class, 'getChartData']);

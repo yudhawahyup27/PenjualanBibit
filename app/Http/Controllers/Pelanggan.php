@@ -269,7 +269,7 @@ class Pelanggan extends Controller
             // Redirect based on user role
             switch ($user->role_user) {
                 case 1:
-                    return redirect('/admin/dashboard');
+                    return redirect('/admin/data-pelanggan');
                 case 2:
                     return redirect('/pegawai/produkbibit');
                 case 3:

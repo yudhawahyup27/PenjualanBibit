@@ -4,7 +4,7 @@
 <div class="container-fluid px-4">
     <h1 class="mt-4">Metode Pembayaran</h1>
     <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/admin/data-pelanggan">Dashboard</a></li>
         <li class="breadcrumb-item "><a href="/admin/datauser">Metode Pembayaran</a></li>
         <li class="breadcrumb-item active">Tambah Metode Pembayaran</li>
     </ol>
