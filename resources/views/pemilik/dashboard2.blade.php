@@ -17,18 +17,11 @@
                     </select>
                 </div>
                 <div class="col">
-                    <label for="filterMonthBorong" class="form-label" style="display: none;">Select Month (Borong):</label>
-                    <select class="form-select" id="filterMonthBorong" name="month_borong" style="display: none;">
+                    <label for="filterMonthBorong" class="form-label">Select Month (Borong):</label>
+                    <select class="form-select" id="filterMonthBorong" name="month_borong">
                         <option value="all">All</option>
-                        @foreach($transactionsPerMonthBorong as $monthYear => $transactions)
-                            @php
-                                $monthYearArray = explode('-', $monthYear);
-                                $month = $monthYearArray[0];
-                                $year = $monthYearArray[1];
-                            @endphp
-                            @if($selectedYearBorong == 'all' || $selectedYearBorong == $year)
-                                <option value="{{ $month }}" data-year="{{ $year }}" {{ $selectedMonthBorong == $month && $selectedYearBorong == $year ? 'selected' : '' }}>{{ $monthNames[$month - 1] }}</option>
-                            @endif
+                        @foreach(range(1, 12) as $month)
+                            <option value="{{ $month }}" {{ $selectedMonthBorong == $month ? 'selected' : '' }}>{{ $monthNames[$month - 1] }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -50,7 +43,6 @@
     document.addEventListener('DOMContentLoaded', function () {
         const yearSelectBorong = document.getElementById('filterYearBorong');
         const monthSelectBorong = document.getElementById('filterMonthBorong');
-        const monthLabelBorong = document.querySelector('label[for="filterMonthBorong"]');
         let borongChart;
 
         function updateBorongChart() {
@@ -121,24 +113,6 @@
         }
 
         yearSelectBorong.addEventListener('change', function() {
-            const selectedYear = yearSelectBorong.value;
-
-            if (selectedYear === 'all') {
-                monthSelectBorong.style.display = 'none';
-                monthLabelBorong.style.display = 'none';
-                monthSelectBorong.value = 'all';
-            } else {
-                monthSelectBorong.style.display = 'block';
-                monthLabelBorong.style.display = 'block';
-                Array.from(monthSelectBorong.options).forEach(option => {
-                    if (option.value === 'all' || option.dataset.year === selectedYear) {
-                        option.style.display = 'block';
-                    } else {
-                        option.style.display = 'none';
-                    }
-                });
-            }
-
             updateBorongChart();
         });
 

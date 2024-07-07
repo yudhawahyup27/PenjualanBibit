@@ -29,13 +29,8 @@
                     <label for="filterMonthEceran" class="form-label">Select Month (Eceran):</label>
                     <select class="form-select" id="filterMonthEceran">
                         <option value="all">All</option>
-                        @foreach($transactionsPerMonthEceran as $monthYear => $monthData)
-                            @php
-                                $monthYearArray = explode('-', $monthYear);
-                                $month = $monthYearArray[0];
-                                $year = $monthYearArray[1];
-                            @endphp
-                            <option value="{{ $month }}" data-year="{{ $year }}" {{ $selectedMonthEceran == $month && $selectedYearEceran == $year ? 'selected' : '' }}>{{ $monthNames[$month - 1] }}</option>
+                        @foreach(range(1, 12) as $month)
+                            <option value="{{ $month }}" {{ $selectedMonthBorong == $month ? 'selected' : '' }}>{{ $monthNames[$month - 1] }}</option>
                         @endforeach
                     </select>
                 </div>
