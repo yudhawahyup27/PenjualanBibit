@@ -29,7 +29,7 @@
                 </div>
                 <div class="mb-3">
                     <label for="exampleFormControlInput1" class="form-label">Tinggi</label>
-                    <input type="number" class="form-control" id="exampleFormControlInput1" name="perkembangan_tinggi" required>
+                    <input type="text" class="form-control" id="exampleFormControlInput1" name="perkembangan_tinggi" required>
                 </div>
                 <div class="mb-3">
                     <label for="exampleFormControlTextarea1" class="form-label">Keterangan</label>
