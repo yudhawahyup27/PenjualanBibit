@@ -143,3 +143,5 @@ Route::post('/pelanggan/keranjang/update', [Pelanggan::class, 'updateCartQuantit
 // routes/web.php
 Route::get('/charts', [ChartController::class, 'index']);
 Route::get('/chart-data', [ChartController::class, 'getChartData']);
+Route::get('pemilik/dashboard2', [Pemilik::class, 'dashboard2'])->name('dashboard2');
+

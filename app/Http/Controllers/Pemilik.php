@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Carbon;
 
 class Pemilik extends Controller
 {
@@ -105,6 +106,88 @@ class Pemilik extends Controller
 
     return view('pemilik.dashboard', $data);
 }
+
+public function dashboard2(Request $request)
+{
+    try {
+        $borongTransactions = DB::table('tb_transaksi_borong')->orderBy('created_at', 'desc')->get();
+
+        $selectedYearBorong = $request->input('year_borong', 'all');
+        $selectedMonthBorong = $request->input('month_borong', 'all');
+
+        if ($selectedYearBorong !== 'all') {
+            $borongTransactions = $borongTransactions->filter(function ($transaction) use ($selectedYearBorong) {
+                return Carbon::parse($transaction->created_at)->format('Y') == $selectedYearBorong;
+            });
+        }
+
+        if ($selectedMonthBorong !== 'all') {
+            $borongTransactions = $borongTransactions->filter(function ($transaction) use ($selectedMonthBorong) {
+                return Carbon::parse($transaction->created_at)->format('m') == $selectedMonthBorong;
+            });
+        }
+
+        if ($request->ajax()) {
+            if ($selectedYearBorong === 'all') {
+                $groupedTransactions = $borongTransactions->groupBy(function ($date) {
+                    return Carbon::parse($date->created_at)->format('Y');
+                });
+            } elseif ($selectedMonthBorong === 'all') {
+                $groupedTransactions = $borongTransactions->groupBy(function ($date) {
+                    return Carbon::parse($date->created_at)->format('m-Y');
+                });
+            } else {
+                $groupedTransactions = $borongTransactions->groupBy(function ($date) {
+                    return Carbon::parse($date->created_at)->format('d-m-Y');
+                });
+            }
+
+            $groupedTransactions = $groupedTransactions->map(function ($group) {
+                return [
+                    'total_transaksi' => $group->sum('total_transaksi'),
+                    'created_at' => $group->first()->created_at
+                ];
+            });
+
+            return response()->json([
+                'transactions' => $groupedTransactions->values()
+            ]);
+        }
+
+        $transactionsPerYearBorong = $borongTransactions->groupBy(function ($date) {
+            return Carbon::parse($date->created_at)->format('Y');
+        });
+
+        $transactionsPerMonthBorong = $borongTransactions->groupBy(function ($date) {
+            return Carbon::parse($date->created_at)->format('m-Y');
+        });
+
+        $menu = "Dashboard";
+        $submenu = "Pemilik";
+        $monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+        return view('pemilik.dashboard2', compact(
+            "menu", "submenu",
+            'transactionsPerYearBorong',
+            'transactionsPerMonthBorong',
+            'selectedYearBorong',
+            'selectedMonthBorong',
+            'monthNames'
+        ));
+    } catch (\Exception $e) {
+        Log::error('Error fetching data: ' . $e->getMessage());
+        if ($request->ajax()) {
+            return response()->json(['error' => 'Unable to fetch data'], 500);
+        }
+        return back()->with('error', 'Unable to fetch data');
+    }
+}
+
+
+
+
+
+
 
 private function filterTransactions($transactions, $selectedDay, $selectedMonth, $selectedYear)
 {
