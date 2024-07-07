@@ -56,8 +56,8 @@
                         <td><img src="{{ asset('image/' . $key->perkembangan_gambar) }}" alt="Gambar" width="50"></td>
 
                         <td>{{ $key->perkembangan_tanggal }}</td>
-                        <td>{{ $key->perkembangan_umur }}</td>
-                        <td>{{ $key->perkembangan_tinggi }}</td>
+                        <td>{{ $key->perkembangan_umur }} Hari</td>
+                        <td>{{ $key->perkembangan_tinggi }} Cm</td>
                         <td>{{ $key->perkembangan_deskripsi }}</td>
                     </tr>
                     @endforeach
