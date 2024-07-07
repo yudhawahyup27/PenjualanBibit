@@ -735,7 +735,7 @@ public function detail_cart_payment_create(Request $request)
         $getSesionId = $request->session()->get('id');
         $users = DB::table('tb_user')->where('id_user', $getSesionId)->limit(1)->first();
 
-        $cart = DB::table('tb_transaksi')->where('id_user_transaksi', $getSesionId)->get();
+        $cart = DB::table('tb_transaksi')->where('id_user_transaksi', $getSesionId)->orderBy('created_transaksi', 'desc')->get();
 
         $getTransaksi = DB::table('tb_transaksi')
         ->where('id_user_transaksi', $getSesionId)

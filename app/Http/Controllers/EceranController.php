@@ -107,6 +107,7 @@ class EceranController extends Controller
 
     public function processPayment(Request $request)
     {
+        date_default_timezone_set('Asia/Jakarta');
         $getSesionId = $request->session()->get('id');
         $user = DB::table('tb_user')->where('id_user', $getSesionId)->first();
 
@@ -166,6 +167,7 @@ class EceranController extends Controller
 
         $getKodeBarang = uniqid();
         $buktiTransferPath = '/path/to/bukti_transfer2';
+        $tanggalhariini = now();
 
         foreach ($cart as $item) {
             DB::table('tb_transaksi')->insert([
@@ -175,7 +177,7 @@ class EceranController extends Controller
                 'kode_transaksi' => $item->kode_transaksi,
                 'total_transaksi' => $totalTransaksi,
                 'status_transaksi' => '1',
-                'created_transaksi' => now(),
+                'created_transaksi' => $tanggalhariini,
                 'Qty_beli' => $item->qty_keranjang,
                 'bukti_transfer' => $buktiTransferPath,
             ]);
