@@ -84,7 +84,7 @@
 </td>
     <td>
         <div class="my-3">
-            <textarea name="detail_rumah" id="detail_rumah" class="form-control " rows="3" placeholder="Detail Rumah"></textarea>
+            <textarea name="detail_rumah" id="detail_rumah" class="form-control " rows="3" placeholder="Detail Rumah" required></textarea>
         </div>
     </td>
 </tr>

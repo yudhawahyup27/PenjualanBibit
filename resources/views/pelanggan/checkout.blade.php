@@ -60,7 +60,7 @@
             </div>
             <div class="my-3">
                 <label for="jumlah_perbatang" class="form-label">Kuantitas Bibit</label>
-                <input name="jumlah_perbatang" id="jumlah_perbatang" class="form-control" type="number" placeholder="Kuantitas Bibit" required>
+                <input name="jumlah_perbatang" id="jumlah_perbatang" class="form-control" type="number" placeholder="Kuantitas Bibit" required disabled>
             </div>
             <div class="my-3">
                 <label for="total" class="form-label">Total Bayar</label>
@@ -85,13 +85,36 @@
             </div>
             <div class="my-3">
                 <label for="detail_rumah" class="form-label">Detail Rumah</label>
-                <textarea name="detail_rumah" id="detail_rumah" class="form-control" placeholder="Detail Rumah"></textarea>
+                <textarea name="detail_rumah" id="detail_rumah" class="form-control" placeholder="Detail Rumah" required></textarea>
             </div>
             <div class="text-center">
-                <button type="submit" class="btn_1 full-width mb-2">Bayar</button>
+                <button type="submit" class="btn_1 full-width mb-2" id="bayarButton">Bayar</button>
             </div>
         </div>
     </form>
+
+    <!-- Modal -->
+    <div class="modal fade" id="quantityModal" tabindex="-1" role="dialog" aria-labelledby="quantityModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="quantityModalLabel">Peringatan</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    anda memasukan batas minimal dari luas lahan,
+                    Kuantitas Anda Sudah Lebih dari Minimal kuantitas beli borongon, <br>
+                    Silakan Pesan Eceran
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <a id="redirectLahanBtn" class="btn btn-primary" href="/">Beli Bibit Eceran</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
@@ -170,8 +193,12 @@
             }
         }
 
-        hitungTotal(); // Recalculate total when the shipping method changes
+        hitungTotal(); // Recalculate total when shipping changes
     });
+
+    document.getElementById('jumlah_perbatang').addEventListener('input', hitungTotal);
+    document.getElementById('harga_bibit').addEventListener('input', hitungTotal);
+    document.getElementById('pengiriman').addEventListener('change', hitungTotal);
 
     document.getElementById('produkborong_select').addEventListener('change', function () {
         var productId = this.value;
@@ -179,21 +206,15 @@
     });
 
     function fetchProductPrice(productId) {
-        if (productId) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', '/get-price/' + productId, true);
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    var response = JSON.parse(xhr.responseText);
-                    document.getElementById('harga_bibit').value = response.harga_borong;
-                    hitungTotal();
-                } else if (xhr.readyState == 4) {
-                    console.error('Error fetching data');
-                    alert('Gagal mengambil data harga bibit');
-                }
-            };
-            xhr.send();
-        }
+        fetch(`/produkborong/price/${productId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('harga_bibit').value = data.harga_bibit;
+                hitungTotal(); // Update total when price changes
+            })
+            .catch(error => {
+                console.error('Error fetching product price:', error);
+            });
     }
 
     function hitungTotal() {
@@ -202,17 +223,20 @@
         var ongkir = parseFloat(document.getElementById('pengiriman').value) || 0;
 
         var total = (kuantitas * hargaSatuan) + ongkir;
-        // let rupiahFormat = total.toLocaleString()
         document.getElementById('total').value = total;
     }
 
     function calculateQuantity(area) {
         var total = area * 2;
+        let bayarButton = document.getElementById('bayarButton');
 
-        let rupiahFormat = total.toLocaleString()
         if (total < 175) {
-            alert('Total luas lahan minimal 175');
+            bayarButton.disabled = true;
+            $('#quantityModal').modal('show'); // Show the modal
+        } else {
+            bayarButton.disabled = false;
         }
+
         return total;
     }
 
@@ -243,6 +267,5 @@
     document.getElementById('produkborong_select').dispatchEvent(new Event('change'));
     document.getElementById('pengiriman').dispatchEvent(new Event('change'));
 });
-
     </script>
 @endsection
