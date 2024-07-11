@@ -46,7 +46,12 @@
                             <td>{{ $key->kuantitas_bibit }}</td>
                             <td>{{ $key->nama_user }}</td>
                             <td>{{ $key->nama_bibit }}</td>
-                            <td>{{ $key->kecamatan_name }}</td>
+@if ($key->pengiriman == 0)
+<td>Ambil Di toko</td>
+@else
+<td>{{ $key->kecamatan_name }}</td>
+
+@endif
                             <td>{{ $key->detail_rumah }}</td>
                             <td>{{ $key->status_name }}</td>
                             <td>

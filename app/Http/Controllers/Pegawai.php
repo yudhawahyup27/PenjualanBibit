@@ -473,7 +473,6 @@ class Pegawai extends Controller
     }
 
     public function pesanan(Request $request)
-
     {
         $session_role = $request->session()->get('role');
         if ($session_role == 1) {
@@ -484,28 +483,29 @@ class Pegawai extends Controller
             return redirect()->to('/');
         }
 
-
-            $pesen = DB::table('tb_transaksi')->join('tb_user', 'tb_transaksi.id_user_transaksi', '=', 'tb_user.id_user')
-            ->join('tb_kecamatan','tb_transaksi.pengiriman','=','tb_kecamatan.kecamatan_id')
-            ->join('tb_produk','tb_transaksi.id_produk','=','tb_produk.id_produk')
-            ->orderBy('created_transaksi','desc')
+        $pesen = DB::table('tb_transaksi')
+            ->join('tb_user', 'tb_transaksi.id_user_transaksi', '=', 'tb_user.id_user')
+            ->leftJoin('tb_kecamatan', 'tb_transaksi.pengiriman', '=', 'tb_kecamatan.kecamatan_id')
+            ->join('tb_produk', 'tb_transaksi.id_produk', '=', 'tb_produk.id_produk')
+            ->select(
+                'tb_transaksi.*',
+                'tb_user.nama_user',
+                'tb_kecamatan.kecamatan_name',
+                'tb_produk.nama_bibit',
+                // DB::raw('IF(tb_transaksi.pengiriman = 0, "Ambil di Toko", tb_transaksi.detail_rumah) as detail_rumah')
+            )
+            ->orderBy('created_transaksi', 'desc')
             ->get();
 
-                // ->join('tb_user', 'tb_transaksi.id_user_transaksi', '=', 'tb_user.id_user')
-                // ->join('tb_status', 'tb_transaksi.status_transaksi', '=', 'tb_status.status_id')
-                // ->select('tb_transaksi.*', 'tb_user.nama_user', 'tb_status.status_name')
+        $data = [
+            'menu' => 'pesanan',
+            'submenu' => 'pegawai',
+            'pesen' => $pesen,
+        ];
 
-            // Debug data
-            // dd($pesen);
+        return view('pegawai.pesanan', $data);
+    }
 
-            $data = [
-                'menu'          =>  'pesanan',
-                'submenu'       =>  'pegawai',
-                'pesen'  =>  $pesen,
-            ];
-
-            return view('pegawai.pesanan', $data);
-        }
 
 
     public function pesanan_sudahbayar(Request $request)
@@ -598,7 +598,7 @@ class Pegawai extends Controller
         ->join('tb_user', 'tb_transaksi_borong.id_user_transaksi', '=', 'tb_user.id_user')
         ->join('tb_produk', 'tb_transaksi_borong.nama_bibit', '=', 'tb_produk.id_produk')
         ->join('tb_status','tb_transaksi_borong.status_transaksi','=','tb_status.status_id')
-        ->join('tb_kecamatan','tb_transaksi_borong.pengiriman','=','tb_kecamatan.kecamatan_id')
+        ->leftJoin('tb_kecamatan','tb_transaksi_borong.pengiriman','=','tb_kecamatan.kecamatan_id')
             ->get();
 
             // dd($tblTransaksi);

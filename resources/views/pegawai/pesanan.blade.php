@@ -38,7 +38,6 @@
                             <th>Detail Rumah</th>
                             <th>Total</th>
                             <th>Aksi</th>
-
                         </tr>
                     </tfoot>
                     <tbody>
@@ -49,27 +48,18 @@
                             <td>{{ $key->nama_bibit }}</td>
                             <td>{{ $key->Qty_beli }}</td>
                             <td>{{ $key->nama_user }}</td>
-                            <th>{{ $key->kecamatan_name }}</th>
-                            <th>{{ $key->detail_rumah }}</th>
+                            @if ($key->pengiriman == 0)
+                            <td>Ambil Di Toko</td>
+                            @else
+                            <td>{{ $key->kecamatan_name }}</td>
+                            @endif
+                            <td>{{ $key->detail_rumah }}</td>
                             <td>Rp {{ number_format((float)$key->total_transaksi, 0, ',', '.') }}</td>
-                            {{-- @if ($key->bukti_transfer)
-                            <td><img src="{{ asset('/storage/' . $key->bukti_transfer) }}" alt="Bukti Transfer" width="100"></td>
-
-                                    @else
-                                    <td>bukti transferan tidak ada data</td>
-
-                            @endif --}}
-
-
                             <td>
-                                {{-- @if($key->status_transaksi == 1)
-                                <a class="btn btn-primary" href="{{ url('/') }}/pegawai/pesanan/sudahbayar/{{ $key->id_transaksi }}">Sudah Bayar</a> --}}
                                 @if($key->status_transaksi == 1)
                                 <a class="btn btn-primary" href="{{ url('/') }}/pegawai/pesanan/sudahproses/{{ $key->id_transaksi }}">Sedang Di Proses</a>
-
                                 @elseif ($key->status_transaksi == 2)
                                 <a class="btn btn-primary" href="{{ url('/') }}/pegawai/pesanan/sudahdikirim/{{ $key->id_transaksi }}">Sedang Di Kirim</a>
-
                                 @elseif($key->status_transaksi == 3)
                                 <a class="btn btn-primary" href="{{ url('/') }}/pegawai/pesanan/sudahditerima/{{ $key->id_transaksi }}">Sedang Diterima</a>
                                 @elseif($key->status_transaksi == 4)
@@ -96,4 +86,4 @@
         });
     });
 </script>
-@endSection
+@endsection

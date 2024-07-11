@@ -64,7 +64,7 @@
             </div>
             <div class="my-3">
                 <label for="total" class="form-label">Total Bayar</label>
-                <input name="total" id="total" class="form-control" type="text" placeholder="Total Bayar" readonly>
+                <input name="total" id="total" class="form-control" type="text"      placeholder="Total Bayar" readonly>
             </div>
             <div class="my-3">
                 <label for="pengiriman" class="form-label">Pilih Pengiriman</label>
@@ -72,7 +72,7 @@
                     <option value="" selected disabled>-- PILIH PENGIRIMAN --</option>
                     <option value="0">Ambil di Toko</option>
                     @foreach($rumah as $key)
-                    <option value="{{ $key->kecamatan_id }}" data-alamat="{{ $key->alamatpengiriman_alamat }}" data-deskripsi="{{ $key->alamatpengiriman_deskripsi }}" data-kecamatan="{{ $key->kecamatan_name }}">
+                    <option value="{{ $key->ongkir}}" data-alamat="{{ $key->alamatpengiriman_alamat }}" data-deskripsi="{{ $key->alamatpengiriman_deskripsi }}" data-kecamatan="{{ $key->kecamatan_name }}">
                         Rumah
                     </option>
                 @endforeach
@@ -174,7 +174,7 @@
     var pengirimanSelect = document.getElementById('pengiriman');
     var detailRumahTextarea = document.getElementById('detail_rumah');
 
-    pengirimanSelect.addEventListener('change', function () {
+    pengirimanSelect.addEventListener('change', function() {
         var selectedOption = this.options[this.selectedIndex];
         var alamat = selectedOption.getAttribute('data-alamat');
         var deskripsi = selectedOption.getAttribute('data-deskripsi');
@@ -182,9 +182,10 @@
 
         if (this.value == "0") { // Ambil di Toko
             detailRumahTextarea.value = 'Kertosono - Jawa Timur';
-            detailRumahTextarea.disabled = true;
+            detailRumahTextarea.readOnly = true;
         } else {
-            detailRumahTextarea.disabled = false;
+            detailRumahTextarea.readOnly = false;
+            // detailRumahTextarea.readOnly = true;
             if (alamat && deskripsi) {
                 detailRumahTextarea.value = `${alamat}\n${deskripsi}\n${kecamatan}`;
             } else {
@@ -194,7 +195,6 @@
 
         hitungTotal(); // Recalculate total when the shipping method changes
     });
-
     document.getElementById('produkborong_select').addEventListener('change', function () {
         var productId = this.value;
         fetchProductPrice(productId);

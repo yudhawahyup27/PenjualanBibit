@@ -137,9 +137,9 @@
 
         if (this.value == "0") { // Ambil di Toko
             detailRumahTextarea.value = 'Kertosono - Jawa Timur';
-            detailRumahTextarea.disabled = true;
+            detailRumahTextarea.readOnly = true;
         } else {
-            detailRumahTextarea.disabled = false;
+            detailRumahTextarea.readOnly = false;
             if (alamat && deskripsi) {
                 detailRumahTextarea.value = `${alamat}\n${deskripsi}\n${kecamatan}`;
             } else {
