@@ -267,7 +267,7 @@ class Pegawai extends Controller
                 'harga_borong'        => $request->harga_borongan,
                 'gambar_bibit'      => $imageName,
                 'status_bibit'      => '1',
-                'created_produk'    => date('Y-m-d H:i:s'),
+                'updated_produk'    => date('Y-m-d H:i:s'),
             ]);
         } else {
             DB::table('tb_produk')->where('id_produk', $uri_one)->update([
@@ -277,7 +277,7 @@ class Pegawai extends Controller
                 'harga_borong'        => $request->harga_borongan,
                 'stok_bibit'        => $request->stok,
                 'status_bibit'      => '1',
-                'created_produk'    => date('Y-m-d H:i:s'),
+                'updated_produk'    => date('Y-m-d H:i:s'),
             ]);
         }
 
@@ -285,6 +285,7 @@ class Pegawai extends Controller
     }
     public function editProdukbibitStock($id, Request $request)
     {
+        date_default_timezone_set('Asia/Jakarta');
         $session_role = $request->session()->get('role');
         if ($session_role == 1) {
             return redirect()->to('/admin');
@@ -342,7 +343,7 @@ class Pegawai extends Controller
                 'harga_borong'      => $request->harga_borongan,
                 'gambar_bibit'      => $imageName,
                 'status_bibit'      => '1',
-                'created_produk'    => now(),
+                'updated_produk'    => now(),
             ]);
         } else {
             DB::table('tb_produk')->where('id_produk', $id)->update([
@@ -352,7 +353,7 @@ class Pegawai extends Controller
                 'harga_borong'      => $request->harga_borongan,
                 'stok_bibit'        => $request->stok,
                 'status_bibit'      => '1',
-                'created_produk'    => now(),
+                'updated_produk'    => now(),
             ]);
         }
         return redirect()->to('/pegawai/produkbibit');

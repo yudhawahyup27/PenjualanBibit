@@ -30,9 +30,6 @@
             </div>
             <div class="prod_info">
                 <h1>{{ $produk->nama_bibit }}</h1>
-                {{-- <span class="rating"><i class="icon-star voted"></i><i class="icon-star voted"></i><i
-                        class="icon-star voted"></i><i class="icon-star voted"></i><i class="icon-star"></i><em>4
-                        reviews</em></span> --}}
                 <p>{{ $produk->detail_bibit }}</p>
                 <div class="row">
                     <div class="col-lg-5 col-md-6">

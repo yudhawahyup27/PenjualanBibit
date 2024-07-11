@@ -424,6 +424,7 @@ private function fillMissingMonths($transactionsPerMonth)
 
     public function update_bibit(Request $request)
     {
+        date_default_timezone_set('Asia/Jakarta');
         $session_role = $request->session()->get('role');
         if ($session_role == 1) {
             return redirect()->to('/admin');
@@ -503,7 +504,7 @@ private function fillMissingMonths($transactionsPerMonth)
             'tk.Qty_beli as terjual',
             'tk.created_transaksi as tanggal_transaksi'
         )
-        ->join('tb_produk', 'tk.id_produk', '=', 'tb_produk.id_produk');  
+        ->join('tb_produk', 'tk.id_produk', '=', 'tb_produk.id_produk');
 
 
         // Ambil semua data tanpa filter

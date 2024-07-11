@@ -40,7 +40,7 @@
                             <td>{{$key->kode_bibit}}</td>
                             <td>{{ $key->nama_bibit? $key->nama_bibit : 'Belum ada data'}}</td>
                             <td>{{$key->stok_bibit}}</td>
-                            <td>{{$key->created_produk}}</td>
+                            <td>{{$key->updated_produk}}</td>
                         </tr>
                         @endforeach
                     </tbody>
