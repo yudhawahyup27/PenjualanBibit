@@ -21,11 +21,11 @@
                                         <img class="img-fluid lazy loaded" src="{{ url('/') }}/images/{{ $images }}" data-src="{{ url('/') }}/images/{{ $images }}" alt="" data-was-processed="true">
                                     </a>
                                 </figure>
-                                <div class="rating">
+                                {{-- <div class="rating">
                                     @for($i = 0; $i < 5; $i++)
                                         <i class="icon-star voted"></i>
                                     @endfor
-                                </div>
+                                </div> --}}
                                 <a href="/pelanggan/detail/{{ $key->id_produk }}">
                                     <h3>{{ $key->nama_bibit }}</h3>
                                 </a>

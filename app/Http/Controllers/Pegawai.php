@@ -229,7 +229,7 @@ class Pegawai extends Controller
         $uri_one = request()->segment(4);
         $tblProduk = DB::table('tb_produk')->where('id_produk', $uri_one)->first();
         $getuserpemilik = DB::table('tb_user')->where('role_user', '3')->get();
-dd($tblProduk);
+
         $data = [
             'menu'              =>  'produkbibit',
             'submenu'           =>  'pegawai',

@@ -55,9 +55,9 @@
                                 <img class="img-fluid lazy loaded" src="<?= url('/') ?>/images/<?= $images ?>" data-src="<?= url('/') ?>/images/<?= $images ?>" alt="" data-was-processed="true">
                                 <img class="img-fluid lazy loaded" src="<?= url('/') ?>/images/<?= $images ?>" data-src="<?= url('/') ?>/images/<?= $images ?>" alt="" data-was-processed="true">
                             </a>
-   
+
                         </figure>
-                        <div class="rating"><i class="icon-star voted"></i><i class="icon-star voted"></i><i class="icon-star voted"></i><i class="icon-star voted"></i><i class="icon-star voted"></i></div>
+                        {{-- <div class="rating"><i class="icon-star voted"></i><i class="icon-star voted"></i><i class="icon-star voted"></i><i class="icon-star voted"></i><i class="icon-star voted"></i></div> --}}
                         <a href="/pelanggan/detail/<?= $key->id_produk ?>">
                             <h3><?= $key->nama_bibit ?></h3>
                         </a>

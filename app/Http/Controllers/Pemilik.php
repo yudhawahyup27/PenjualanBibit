@@ -495,16 +495,16 @@ private function fillMissingMonths($transactionsPerMonth)
 
         // Query untuk data laporan penjualan tanpa filter
         $query = DB::table('tb_transaksi as tk')
-            ->select(
-                'tk.kode_transaksi as kode_transaksi',
-                // 'p.kode_bibit',
-                // 'p.nama_bibit',
-                'tk.total_transaksi as harga_beli',
-                'tk.Qty_beli as terjual',
-                'tk.created_transaksi as tanggal_transaksi'
-            );
-            // ->join('tb_produk as p', 'tk.id_produk', '=', 'p.id_produk');
-            // ->join('tb_transaksi as t', 'tk.kode_transaksi', '=', 't.kode_transaksi');
+        ->select(
+            'tk.kode_transaksi as kode_transaksi',
+            'tb_produk.kode_bibit',
+            'tb_produk.nama_bibit',
+            'tk.total_transaksi as harga_beli',
+            'tk.Qty_beli as terjual',
+            'tk.created_transaksi as tanggal_transaksi'
+        )
+        ->join('tb_produk', 'tk.id_produk', '=', 'tb_produk.id_produk');  
+
 
         // Ambil semua data tanpa filter
 
