@@ -438,6 +438,7 @@ class Pelanggan extends Controller
             $detailRumah = 'Kertosono - Jawa Timur';
         }
 
+        // dd($detailRumah);
         // Check if the product already exists in the cart
         $existingCartItem = DB::table('tb_keranjang')
             ->where('keranjang_id_produk', $id_produk)

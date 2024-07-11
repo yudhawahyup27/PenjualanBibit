@@ -13,27 +13,32 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-responsive" id="datatablesSimple">
+                <table class="table" id="datatablesSimple">
                     <thead>
                         <tr>
-                            <th>Ditambahkan</th>
+                            <th>Pembelian Pesanan</th>
                             <th>Kode Transaksi</th>
-                            <th>Id User</th>
+                            <th>Nama Produk</th>
+                            <th>QTY Beli</th>
                             <th>Nama User</th>
+                            <th>Kecamatan</th>
+                            <th>Detail Rumah</th>
                             <th>Total</th>
-                            {{-- <th>Bukti Transfer</th> --}}
-                            <th>#</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tfoot>
                         <tr>
-                            <th>Ditambahkan</th>
+                            <th>Pembelian Pesanan</th>
                             <th>Kode Transaksi</th>
-                            <th>Id User</th>
+                            <th>Nama Produk</th>
+                            <th>QTY Beli</th>
                             <th>Nama User</th>
+                            <th>Kecamatan</th>
+                            <th>Detail Rumah</th>
                             <th>Total</th>
                             <th>Aksi</th>
-                            {{-- <th>#</th> --}}
+
                         </tr>
                     </tfoot>
                     <tbody>
@@ -41,8 +46,11 @@
                         <tr>
                             <td>{{ $key->created_transaksi }}</td>
                             <td>{{ $key->kode_transaksi }}</td>
-                            <td>{{ $key->id_user_transaksi }}</td>
+                            <td>{{ $key->nama_bibit }}</td>
+                            <td>{{ $key->Qty_beli }}</td>
                             <td>{{ $key->nama_user }}</td>
+                            <th>{{ $key->kecamatan_name }}</th>
+                            <th>{{ $key->detail_rumah }}</th>
                             <td>Rp {{ number_format((float)$key->total_transaksi, 0, ',', '.') }}</td>
                             {{-- @if ($key->bukti_transfer)
                             <td><img src="{{ asset('/storage/' . $key->bukti_transfer) }}" alt="Bukti Transfer" width="100"></td>

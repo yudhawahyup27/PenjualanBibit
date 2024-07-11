@@ -17,6 +17,7 @@ class BoronganController extends Controller
 
     public function checkoutForm(Request $request)
     {
+        date_default_timezone_set('Asia/Jakarta');
         $produkborong = DB::table('tb_produk')->get();
         $kecamatan = DB::table('tb_kecamatan')->get();
         $tanggalTanam = now()->addDays(15)->toDateString();
@@ -59,6 +60,7 @@ class BoronganController extends Controller
 
     public function bayar_cart_borongan(Request $request)
     {
+        date_default_timezone_set('Asia/Jakarta');
         $request->validate([
             'produkborong_select' => 'required|exists:tb_produk,id_produk',
             'harga_bibit' => 'required|numeric',
@@ -80,7 +82,7 @@ class BoronganController extends Controller
 
         // Fetch customer data
         $customer = DB::table('tb_user')->where('id_user', $getSesionId)->first();
-
+dd($customer);
         $data = [
             'method'            => $request->input('payment_method'),
             'merchant_ref'      => $getKodeBarang,
@@ -119,7 +121,7 @@ class BoronganController extends Controller
                 'pengiriman' => $request->input('pengiriman'),
                 'metodepembayaran' => 'Tripay',
                 'status_transaksi' => '1',
-                'created_at' => $tanggalHariIni,
+                'created_at' => now(),
             ]);
 
             return redirect('/pelanggan/statustransaksi')->with('success', 'Transaksi berhasil dilakukan. Silakan selesaikan pembayaran melalui Tripay.');

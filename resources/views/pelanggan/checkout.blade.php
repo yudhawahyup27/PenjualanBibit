@@ -72,7 +72,7 @@
                     <option value="" selected disabled>-- PILIH PENGIRIMAN --</option>
                     <option value="0">Ambil di Toko</option>
                     @foreach($rumah as $key)
-                    <option value="{{ $key->ongkir }}" data-alamat="{{ $key->alamatpengiriman_alamat }}" data-deskripsi="{{ $key->alamatpengiriman_deskripsi }}" data-kecamatan="{{ $key->kecamatan_name }}">
+                    <option value="{{ $key->kecamatan_id }}" data-alamat="{{ $key->alamatpengiriman_alamat }}" data-deskripsi="{{ $key->alamatpengiriman_deskripsi }}" data-kecamatan="{{ $key->kecamatan_name }}">
                         Rumah
                     </option>
                 @endforeach
@@ -267,5 +267,22 @@
     document.getElementById('pengiriman').dispatchEvent(new Event('change'));
 });
 
+function fetchOngkir(kecamatan_id) {
+        if (kecamatan_id) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/get-ongkir/' + kecamatan_id, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    document.getElementById('pengiriman').value = response.ongkir;
+                    hitungTotal();
+                } else if (xhr.readyState == 4) {
+                    console.error('Error fetching data');
+                    alert('Gagal mengambil data ongkir');
+                }
+            };
+            xhr.send();
+        }
+    }
     </script>
 @endsection

@@ -82,7 +82,6 @@ Route::get('/pegawai/produkbibit/tambah', [Pegawai::class, 'add_produkbibit']);
 Route::post('/pegawai/produkbibit/tambah', [Pegawai::class, 'create_produkbibit']);
 Route::get('/pegawai/produkbibit/hapus/{id}', [Pegawai::class, 'delete_produkbibit']);
 Route::get('/pegawai/produkbibit/ubah/{id}', [Pegawai::class, 'edit_produkbibit']);
-Route::post('/pegawai/produkbibit/ubah/{id}', [Pegawai::class, 'update_produkbibit']);
 Route::get('/pegawai/stokbibit', [Pegawai::class, 'stokbibit']);
 Route::get('/pegawai/ongkir', [Pegawai::class, 'ongkoskirim']);
 Route::get('/pegawai/ongkir/tambah', [Pegawai::class, 'ongkoskirim_tambah']);
@@ -145,3 +144,6 @@ Route::get('/charts', [ChartController::class, 'index']);
 Route::get('/chart-data', [ChartController::class, 'getChartData']);
 Route::get('pemilik/dashboard2', [Pemilik::class, 'dashboard2'])->name('dashboard2');
 
+Route::get('/get-ongkir/{kecamatan_id}', [Pegawai::class, 'getOngkir'])->name('get-ongkir');
+Route::get('/pegawai/produkbibit/ubah/stock/{id}', [Pegawai::class, 'editProdukbibitStock']);
+Route::post('/pegawai/produkbibit/ubah/stock/{id}', [Pegawai::class, 'updateProdukbibitStock']);

@@ -173,9 +173,10 @@ class EceranController extends Controller
             DB::table('tb_transaksi')->insert([
                 'id_user_transaksi' => $getSesionId,
                 'id_produk' => $item->keranjang_id_produk,
-                'detail_rumah'=> "Rumahku",
+                'detail_rumah'=>  $item->detail_rumah,
                 'kode_transaksi' => $item->kode_transaksi,
                 'total_transaksi' => $totalTransaksi,
+                'pengiriman'=> $item->pengiriman_keranjang,
                 'status_transaksi' => '1',
                 'created_transaksi' => $tanggalhariini,
                 'Qty_beli' => $item->qty_keranjang,

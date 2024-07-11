@@ -63,6 +63,7 @@
                                 0
                                 @else
                                 {{ $key->terjual_bibit }}
+                                <a href="<?= url('/') ?>/pegawai/produkbibit/ubah/stock/{{$key->id_produk}}" class="btn btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
                                 @endif
                             </td>
                             <td>

@@ -17,9 +17,11 @@
                     <thead>
                         <tr>
                             <th>Kode Transaksi</th>
-                            <th>Id User</th>
+                            <th>Qty Pembelian</th>
                             <th>Nama Pelanggan</th>
                             <th>Nama Bibit</th>
+                            <th>Kecamatan Pengiriman</th>
+                            <th>Alamat Pengiriman</th>
                             <th>Status</th>
                             <th>Aksi</th>
                         </tr>
@@ -28,9 +30,11 @@
                         <tr>
 
                             <th>Kode Transaksi</th>
-                            <th>Id User</th>
+                            <th>Qty Pembelian</th>
                             <th>Nama Pelanggan</th>
                             <th>Nama Bibit</th>
+                            <th>Kecamatan Pengiriman</th>
+                            <th>Alamat Pengiriman</th>
                             <th>Status</th>
                             <th>Aksi</th>
                         </tr>
@@ -39,9 +43,11 @@
                         @foreach($tblTransaksi as $key)
                         <tr>
                             <td>{{ $key->kode_transaksi }}</td>
-                            <td>{{ $key->id_user_transaksi }}</td>
+                            <td>{{ $key->kuantitas_bibit }}</td>
                             <td>{{ $key->nama_user }}</td>
                             <td>{{ $key->nama_bibit }}</td>
+                            <td>{{ $key->kecamatan_name }}</td>
+                            <td>{{ $key->detail_rumah }}</td>
                             <td>{{ $key->status_name }}</td>
                             <td>
                                 <a class="btn btn-primary" href="{{ route('pegawai.monitoringbibit.detail', ['id' => $key->kode_transaksi]) }}">Tambah Data Monitoring</a>

@@ -229,7 +229,7 @@ class Pegawai extends Controller
         $uri_one = request()->segment(4);
         $tblProduk = DB::table('tb_produk')->where('id_produk', $uri_one)->first();
         $getuserpemilik = DB::table('tb_user')->where('role_user', '3')->get();
-
+dd($tblProduk);
         $data = [
             'menu'              =>  'produkbibit',
             'submenu'           =>  'pegawai',
@@ -238,9 +238,9 @@ class Pegawai extends Controller
         ];
         return view('pegawai/ubah_produkbibit', $data);
     }
-
     public function update_produkbibit(Request $request)
     {
+
         $session_role = $request->session()->get('role');
         if ($session_role == 1) {
             return redirect()->to('/admin');
@@ -280,8 +280,84 @@ class Pegawai extends Controller
                 'created_produk'    => date('Y-m-d H:i:s'),
             ]);
         }
+
         return redirect()->to('/pegawai/produkbibit');
     }
+    public function editProdukbibitStock($id, Request $request)
+    {
+        $session_role = $request->session()->get('role');
+        if ($session_role == 1) {
+            return redirect()->to('/admin');
+        } elseif ($session_role == 3) {
+            return redirect()->to('/pemilik');
+        } elseif ($session_role == 4) {
+            return redirect()->to('/');
+        } elseif ($session_role == '') {
+            return redirect()->to('/');
+        }
+
+        $tblProduk = DB::table('tb_produk')->where('id_produk', $id)->first();
+        $getuserpemilik = DB::table('tb_user')->where('role_user', '3')->get();
+
+        if (!$tblProduk) {
+            return redirect()->to('/pegawai/produkbibit')->with('error', 'Produk bibit tidak ditemukan.');
+        }
+
+        $data = [
+            'menu'              =>  'produkbibit',
+            'submenu'           =>  'pegawai',
+            'get_produk'        =>  $tblProduk,
+            'getuserpemilik'    =>  $getuserpemilik,
+        ];
+        return view('pegawai/ubah_produkbibitstock', $data);
+    }
+
+    public function updateProdukbibitStock($id, Request $request)
+    {
+        $session_role = $request->session()->get('role');
+        if ($session_role == 1) {
+            return redirect()->to('/admin');
+        } elseif ($session_role == 3) {
+            return redirect()->to('/pemilik');
+        } elseif ($session_role == 4) {
+            return redirect()->to('/');
+        } elseif ($session_role == '') {
+            return redirect()->to('/');
+        }
+
+        $tblProduk = DB::table('tb_produk')->where('id_produk', $id)->first();
+        if ($request->image1) {
+            $imageName = rand(1000, 9999) . time() . '.' . $request->image1->extension();
+            $request->image1->move(public_path('images'), $imageName);
+
+            if ($tblProduk && $tblProduk->gambar_bibit) {
+                unlink(public_path('images/') . $tblProduk->gambar_bibit);
+            }
+
+            DB::table('tb_produk')->where('id_produk', $id)->update([
+                'nama_bibit'        => $request->nama,
+                'detail_bibit'      => $request->detail,
+                'harga_bibit'       => $request->harga,
+                'stok_bibit'        => $request->stok,
+                'harga_borong'      => $request->harga_borongan,
+                'gambar_bibit'      => $imageName,
+                'status_bibit'      => '1',
+                'created_produk'    => now(),
+            ]);
+        } else {
+            DB::table('tb_produk')->where('id_produk', $id)->update([
+                'nama_bibit'        => $request->nama,
+                'detail_bibit'      => $request->detail,
+                'harga_bibit'       => $request->harga,
+                'harga_borong'      => $request->harga_borongan,
+                'stok_bibit'        => $request->stok,
+                'status_bibit'      => '1',
+                'created_produk'    => now(),
+            ]);
+        }
+        return redirect()->to('/pegawai/produkbibit');
+    }
+
 
     public function stokbibit(Request $request)
     {
@@ -409,6 +485,8 @@ class Pegawai extends Controller
 
 
             $pesen = DB::table('tb_transaksi')->join('tb_user', 'tb_transaksi.id_user_transaksi', '=', 'tb_user.id_user')
+            ->join('tb_kecamatan','tb_transaksi.pengiriman','=','tb_kecamatan.kecamatan_id')
+            ->join('tb_produk','tb_transaksi.id_produk','=','tb_produk.id_produk')
             ->orderBy('created_transaksi','desc')
             ->get();
 
@@ -519,6 +597,7 @@ class Pegawai extends Controller
         ->join('tb_user', 'tb_transaksi_borong.id_user_transaksi', '=', 'tb_user.id_user')
         ->join('tb_produk', 'tb_transaksi_borong.nama_bibit', '=', 'tb_produk.id_produk')
         ->join('tb_status','tb_transaksi_borong.status_transaksi','=','tb_status.status_id')
+        ->join('tb_kecamatan','tb_transaksi_borong.pengiriman','=','tb_kecamatan.kecamatan_id')
             ->get();
 
             // dd($tblTransaksi);
@@ -721,5 +800,9 @@ class Pegawai extends Controller
             return redirect()->to('/pegawai/monitoringbibit')->with('error', 'Transaction not found.');
         }
     }
-
+    public function getOngkir($kecamatan_id)
+    {
+        $kecamatan = DB::table('tb_kecamatan')::find($kecamatan_id);
+        return response()->json(['ongkir' => $kecamatan->ongkir]);
+    }
 }

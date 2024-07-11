@@ -21,6 +21,7 @@ class PaymentController extends Controller
 
     public function processPayment(Request $request)
     {
+        date_default_timezone_set('Asia/Jakarta');
         $request->validate([
             'produkborong_select' => 'required',
             'lahan' => 'required',
