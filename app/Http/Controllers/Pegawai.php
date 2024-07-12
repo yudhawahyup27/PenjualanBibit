@@ -594,23 +594,30 @@ class Pegawai extends Controller
         }
 
         $tblTransaksi = DB::table('tb_transaksi_borong')
-        ->orderBy('id','desc')
-        ->join('tb_user', 'tb_transaksi_borong.id_user_transaksi', '=', 'tb_user.id_user')
-        ->join('tb_produk', 'tb_transaksi_borong.nama_bibit', '=', 'tb_produk.id_produk')
-        ->join('tb_status','tb_transaksi_borong.status_transaksi','=','tb_status.status_id')
-        ->leftJoin('tb_kecamatan','tb_transaksi_borong.pengiriman','=','tb_kecamatan.kecamatan_id')
+            ->orderBy('id','desc')
+            ->join('tb_user', 'tb_transaksi_borong.id_user_transaksi', '=', 'tb_user.id_user')
+            ->join('tb_produk', 'tb_transaksi_borong.nama_bibit', '=', 'tb_produk.id_produk')
+            ->join('tb_status','tb_transaksi_borong.status_transaksi','=','tb_status.status_id')
+            ->leftJoin('tb_kecamatan','tb_transaksi_borong.pengiriman','=','tb_kecamatan.kecamatan_id')
+            ->select(
+                'tb_transaksi_borong.*',
+                'tb_user.nama_user',
+                'tb_kecamatan.kecamatan_name',
+                'tb_produk.nama_bibit',
+                'tb_status.status_name',
+                DB::raw('IF(tb_transaksi_borong.pengiriman = 0, "Ambil di Toko", tb_transaksi_borong.detail_rumah) as detail_rumah')
+            )
             ->get();
 
-            // dd($tblTransaksi);
-
         $data = [
-            'menu'                  =>  'monitoringbibit',
-            'submenu'               =>  'pegawai',
-            'tblTransaksi'          =>  $tblTransaksi,
+            'menu' => 'monitoringbibit',
+            'submenu' => 'pegawai',
+            'tblTransaksi' => $tblTransaksi,
         ];
 
-        return view('pegawai/monitoringbibit', $data);
+        return view('pegawai.monitoringbibit', $data);
     }
+
 
 
     public function monitoringbibit_detail(Request $request, $id)
@@ -801,9 +808,5 @@ class Pegawai extends Controller
             return redirect()->to('/pegawai/monitoringbibit')->with('error', 'Transaction not found.');
         }
     }
-    public function getOngkir($kecamatan_id)
-    {
-        $kecamatan = DB::table('tb_kecamatan')::find($kecamatan_id);
-        return response()->json(['ongkir' => $kecamatan->ongkir]);
-    }
+   
 }

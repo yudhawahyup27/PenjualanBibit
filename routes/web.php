@@ -145,6 +145,6 @@ Route::get('/charts', [ChartController::class, 'index']);
 Route::get('/chart-data', [ChartController::class, 'getChartData']);
 Route::get('pemilik/dashboard2', [Pemilik::class, 'dashboard2'])->name('dashboard2');
 
-Route::get('/get-ongkir/{kecamatan_id}', [Pegawai::class, 'getOngkir'])->name('get-ongkir');
+Route::get('/get-ongkir/{id}', [Pelanggan::class, 'getOngkir'])->name('get-ongkir');
 Route::get('/pegawai/produkbibit/ubah/stock/{id}', [Pegawai::class, 'editProdukbibitStock']);
 Route::post('/pegawai/produkbibit/ubah/stock/{id}', [Pegawai::class, 'updateProdukbibitStock']);

@@ -62,7 +62,7 @@
                 <label for="jumlah_perbatang" class="form-label">Kuantitas Bibit</label>
                 <input name="jumlah_perbatang" id="jumlah_perbatang" class="form-control" type="number" placeholder="Kuantitas Bibit" required readonly>
             </div>
-            <div class="my-3">
+            <div hidden class="my-3">
                 <label for="total" class="form-label">Total Bayar</label>
                 <input name="total" id="total" class="form-control" type="text"      placeholder="Total Bayar" readonly>
             </div>
@@ -72,20 +72,28 @@
                     <option value="" selected disabled>-- PILIH PENGIRIMAN --</option>
                     <option value="0">Ambil di Toko</option>
                     @foreach($rumah as $key)
-                    <option value="{{ $key->ongkir}}" data-alamat="{{ $key->alamatpengiriman_alamat }}" data-deskripsi="{{ $key->alamatpengiriman_deskripsi }}" data-kecamatan="{{ $key->kecamatan_name }}">
+                    <option value="{{ $key->kecamatan_id}}" data-alamat="{{ $key->alamatpengiriman_alamat }}" data-deskripsi="{{ $key->alamatpengiriman_deskripsi }}" data-kecamatan="{{ $key->kecamatan_name }}">
                         Rumah
                     </option>
                 @endforeach
                     <optgroup label="PILIH DAFTAR ALAMAT">
                         @foreach($kecamatan as $key)
-                            <option value="{{ $key->ongkir}}">{{ $key->kecamatan_name }}</option>
+                            <option value="{{ $key->kecamatan_id}}">{{ $key->kecamatan_name }}</option>
                         @endforeach
                     </optgroup>
                 </select>
             </div>
             <div class="my-3">
+                <label for="ongkir" class="form-label">Ongkir</label>
+                <input name="ongkir" id="ongkir" class="form-control" type="text"    readonly>
+            </div>
+            <div class="my-3">
                 <label for="detail_rumah" class="form-label">Detail Rumah</label>
                 <textarea name="detail_rumah" id="detail_rumah" class="form-control" placeholder="Detail Rumah" required></textarea>
+            </div>
+            <div class="my-3">
+                <label for="total" class="form-label">Total Pembelian</label><br>
+                <span id="totalFormatted"></span>
             </div>
             <div class="text-center">
                 <button type="submit" class="btn_1 full-width mb-2">Bayar</button>
@@ -171,30 +179,32 @@
         hitungTotal();
     });
 
-    var pengirimanSelect = document.getElementById('pengiriman');
     var detailRumahTextarea = document.getElementById('detail_rumah');
 
-    pengirimanSelect.addEventListener('change', function() {
-        var selectedOption = this.options[this.selectedIndex];
-        var alamat = selectedOption.getAttribute('data-alamat');
-        var deskripsi = selectedOption.getAttribute('data-deskripsi');
-        var kecamatan = selectedOption.getAttribute('data-kecamatan');
+    var pengirimanSelect = document.getElementById('pengiriman');
+pengirimanSelect.addEventListener('change', function() {
+    var kecamatan_id = this.value;
+    fetchOngkir(kecamatan_id);
 
-        if (this.value == "0") { // Ambil di Toko
-            detailRumahTextarea.value = 'Kertosono - Jawa Timur';
-            detailRumahTextarea.readOnly = true;
+    var selectedOption = this.options[this.selectedIndex];
+    var alamat = selectedOption.getAttribute('data-alamat');
+    var deskripsi = selectedOption.getAttribute('data-deskripsi');
+    var kecamatan = selectedOption.getAttribute('data-kecamatan');
+
+    if (this.value == "0") { // Ambil di Toko
+        document.getElementById('detail_rumah').value = 'Kertosono - Jawa Timur';
+        document.getElementById('detail_rumah').readOnly = true;
+    } else {
+        document.getElementById('detail_rumah').readOnly = false;
+        if (alamat && deskripsi) {
+            document.getElementById('detail_rumah').value = `${alamat}\n${deskripsi}\n${kecamatan}`;
         } else {
-            detailRumahTextarea.readOnly = false;
-            // detailRumahTextarea.readOnly = true;
-            if (alamat && deskripsi) {
-                detailRumahTextarea.value = `${alamat}\n${deskripsi}\n${kecamatan}`;
-            } else {
-                detailRumahTextarea.value = '';
-            }
+            document.getElementById('detail_rumah').value = '';
         }
+    }
 
-        hitungTotal(); // Recalculate total when the shipping method changes
-    });
+    hitungTotal(); // Recalculate total when the shipping method changes
+});
     document.getElementById('produkborong_select').addEventListener('change', function () {
         var productId = this.value;
         fetchProductPrice(productId);
@@ -221,11 +231,12 @@
     function hitungTotal() {
         var kuantitas = parseFloat(document.getElementById('jumlah_perbatang').value) || 0;
         var hargaSatuan = parseFloat(document.getElementById('harga_bibit').value) || 0;
-        var ongkir = parseFloat(document.getElementById('pengiriman').value) || 0;
-
+        var ongkir = parseFloat(document.getElementById('ongkir').value) || 0;
+//  console.log(ongkir,"Yudha")
         var total = (kuantitas * hargaSatuan) + ongkir;
         // let rupiahFormat = total.toLocaleString()
         document.getElementById('total').value = total;
+        document.getElementById('totalFormatted').textContent = formatRupiah(total);
     }
 
     function calculateQuantity(area) {
@@ -240,20 +251,8 @@
     }
 
     function formatRupiah(number) {
-        var rupiah = '';
-        var numberString = number.toString();
-        var sisa = numberString.length % 3;
-        var rupiah = numberString.substr(0, sisa);
-        var ribuan = numberString.substr(sisa).match(/\d{3}/g);
-
-        if (ribuan) {
-            var separator = sisa ? '.' : '';
-            rupiah += separator + ribuan.join('.');
-        }
-
-        return rupiah;
-    }
-
+                return number.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+            }
     // Initialize harga_bibit if there's a selected product
     const urlParams = new URLSearchParams(window.location.search);
     const productId = urlParams.get('productId');
@@ -262,6 +261,7 @@
         document.getElementById('produkborong_select').value = productId;
         fetchProductPrice(productId);
     }
+
 
     document.getElementById('produkborong_select').dispatchEvent(new Event('change'));
     document.getElementById('pengiriman').dispatchEvent(new Event('change'));
@@ -274,11 +274,12 @@ function fetchOngkir(kecamatan_id) {
             xhr.onreadystatechange = function () {
                 if (xhr.readyState == 4 && xhr.status == 200) {
                     var response = JSON.parse(xhr.responseText);
-                    document.getElementById('pengiriman').value = response.ongkir;
+                    document.getElementById('ongkir').value = response.ongkir;
+                    document.getElementById('rumah').value = response.ongkir;
                     hitungTotal();
                 } else if (xhr.readyState == 4) {
                     console.error('Error fetching data');
-                    alert('Gagal mengambil data ongkir');
+                    // alert('Gagal mengambil data ongkir');
                 }
             };
             xhr.send();

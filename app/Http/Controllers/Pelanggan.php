@@ -884,7 +884,26 @@ public function detail_cart_payment_create(Request $request)
         return redirect()->back()->with('success', 'Quantity and total price updated successfully.');
     }
 
+ public function getOngkir($id)
+    {
+        try {
+            // Validasi bahwa $id adalah angka
+            if (!is_numeric($id)) {
+                return response()->json(['error' => 'Invalid ID format'], 400);
+            }
 
+            // Cek apakah data ongkir tersedia berdasarkan kecamatan_id
+            $ongkir = DB::table('tb_kecamatan')->where('kecamatan_id', $id)->value('ongkir');
+
+            if ($ongkir !== null) {
+                return response()->json(['ongkir' => $ongkir], 200);
+            } else {
+                return response()->json(['error' => 'Data not found'], 404);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Internal Server Error'], 500);
+        }
+    }
 }
 
 
