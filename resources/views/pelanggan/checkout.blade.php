@@ -32,9 +32,34 @@
         </div>
     @endif
 
-    <form action="{{ route('payment.process') }}" method="post" enctype="multipart/form-data">
+    <form action="{{ route('payment.process') }}" method="post" enctype="multipart/form-data" id="paymentForm">
         @csrf
         <div class="mx-4 my-2">
+            <div class="my-3">
+                <label for="pengiriman" class="form-label">Pilih Pengiriman</label>
+                <select name="pengiriman" id="pengiriman" class="form-control" required>
+                    <option value="" selected disabled>-- PILIH PENGIRIMAN --</option>
+                    <option value="0">Ambil di Toko</option>
+                    @foreach($rumah as $key)
+                    <option value="{{ $key->kecamatan_id}}" data-alamat="{{ $key->alamatpengiriman_alamat }}" data-deskripsi="{{ $key->alamatpengiriman_deskripsi }}" data-kecamatan="{{ $key->kecamatan_name }}">
+                        Rumah
+                    </option>
+                @endforeach
+                    <optgroup label="PILIH DAFTAR ALAMAT">
+                        @foreach($kecamatan as $key)
+                            <option value="{{ $key->kecamatan_id}}">{{ $key->kecamatan_name }}</option>
+                        @endforeach
+                    </optgroup>
+                </select>
+            </div>
+            <div class="my-3">
+                <label for="ongkir" class="form-label">Ongkir</label>
+                <input name="ongkir" id="ongkir" class="form-control" type="text" readonly>
+            </div>
+            <div class="my-3">
+                <label for="detail_rumah" class="form-label">Detail Rumah</label>
+                <textarea name="detail_rumah" id="detail_rumah" class="form-control" placeholder="Detail Rumah" required></textarea>
+            </div>
             <div class="mb-3">
                 <label for="produkborong_select" class="form-label">Nama Bibit</label>
                 <select name="produkborong_select" id="produkborong_select" class="form-select" required>
@@ -64,33 +89,9 @@
             </div>
             <div hidden class="my-3">
                 <label for="total" class="form-label">Total Bayar</label>
-                <input name="total" id="total" class="form-control" type="text"      placeholder="Total Bayar" readonly>
+                <input name="total" id="total" class="form-control" type="text" placeholder="Total Bayar" readonly>
             </div>
-            <div class="my-3">
-                <label for="pengiriman" class="form-label">Pilih Pengiriman</label>
-                <select name="pengiriman" id="pengiriman" class="form-control" required>
-                    <option value="" selected disabled>-- PILIH PENGIRIMAN --</option>
-                    <option value="0">Ambil di Toko</option>
-                    @foreach($rumah as $key)
-                    <option value="{{ $key->kecamatan_id}}" data-alamat="{{ $key->alamatpengiriman_alamat }}" data-deskripsi="{{ $key->alamatpengiriman_deskripsi }}" data-kecamatan="{{ $key->kecamatan_name }}">
-                        Rumah
-                    </option>
-                @endforeach
-                    <optgroup label="PILIH DAFTAR ALAMAT">
-                        @foreach($kecamatan as $key)
-                            <option value="{{ $key->kecamatan_id}}">{{ $key->kecamatan_name }}</option>
-                        @endforeach
-                    </optgroup>
-                </select>
-            </div>
-            <div class="my-3">
-                <label for="ongkir" class="form-label">Ongkir</label>
-                <input name="ongkir" id="ongkir" class="form-control" type="text"    readonly>
-            </div>
-            <div class="my-3">
-                <label for="detail_rumah" class="form-label">Detail Rumah</label>
-                <textarea name="detail_rumah" id="detail_rumah" class="form-control" placeholder="Detail Rumah" required></textarea>
-            </div>
+
             <div class="my-3">
                 <label for="total" class="form-label">Total Pembelian</label><br>
                 <span id="totalFormatted"></span>
@@ -168,122 +169,118 @@
                 });
             });
         });
-    </script>
 
-    <script>
-   document.addEventListener('DOMContentLoaded', function () {
-    document.getElementById('lahan').addEventListener('input', function () {
-        var area = parseFloat(this.value) || 0;
-        var quantity = calculateQuantity(area);
-        document.getElementById('jumlah_perbatang').value = quantity;
-        hitungTotal();
-    });
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('lahan').addEventListener('input', function () {
+                var area = parseFloat(this.value) || 0;
+                var quantity = calculateQuantity(area);
+                document.getElementById('jumlah_perbatang').value = quantity;
+                hitungTotal();
+            });
 
-    var detailRumahTextarea = document.getElementById('detail_rumah');
+            var detailRumahTextarea = document.getElementById('detail_rumah');
+            var pengirimanSelect = document.getElementById('pengiriman');
 
-    var pengirimanSelect = document.getElementById('pengiriman');
-pengirimanSelect.addEventListener('change', function() {
-    var kecamatan_id = this.value;
-    fetchOngkir(kecamatan_id);
+            pengirimanSelect.addEventListener('change', function() {
+                var kecamatan_id = this.value;
 
-    var selectedOption = this.options[this.selectedIndex];
-    var alamat = selectedOption.getAttribute('data-alamat');
-    var deskripsi = selectedOption.getAttribute('data-deskripsi');
-    var kecamatan = selectedOption.getAttribute('data-kecamatan');
-
-    if (this.value == "0") { // Ambil di Toko
-        document.getElementById('detail_rumah').value = 'Kertosono - Jawa Timur';
-        document.getElementById('detail_rumah').readOnly = true;
-    } else {
-        document.getElementById('detail_rumah').readOnly = false;
-        if (alamat && deskripsi) {
-            document.getElementById('detail_rumah').value = `${alamat}\n${deskripsi}\n${kecamatan}`;
-        } else {
-            document.getElementById('detail_rumah').value = '';
-        }
-    }
-
-    hitungTotal(); // Recalculate total when the shipping method changes
-});
-    document.getElementById('produkborong_select').addEventListener('change', function () {
-        var productId = this.value;
-        fetchProductPrice(productId);
-    });
-
-    function fetchProductPrice(productId) {
-        if (productId) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', '/get-price/' + productId, true);
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    var response = JSON.parse(xhr.responseText);
-                    document.getElementById('harga_bibit').value = response.harga_borong;
+                if (kecamatan_id == "0") { // Ambil di Toko
+                    document.getElementById('detail_rumah').value = 'Kertosono - Jawa Timur';
+                    document.getElementById('detail_rumah').readOnly = true;
+                    document.getElementById('ongkir').value = 0;
                     hitungTotal();
-                } else if (xhr.readyState == 4) {
-                    console.error('Error fetching data');
-                    alert('Gagal mengambil data harga bibit');
+                } else {
+                    document.getElementById('detail_rumah').readOnly = false;
+                    var selectedOption = this.options[this.selectedIndex];
+                    var alamat = selectedOption.getAttribute('data-alamat');
+                    var deskripsi = selectedOption.getAttribute('data-deskripsi');
+                    var kecamatan = selectedOption.getAttribute('data-kecamatan');
+
+                    if (alamat && deskripsi) {
+                        document.getElementById('detail_rumah').value = `${alamat}\n${deskripsi}\n${kecamatan}`;
+                    } else {
+                        document.getElementById('detail_rumah').value = '';
+                    }
+
+                    fetchOngkir(kecamatan_id);
                 }
-            };
-            xhr.send();
-        }
-    }
+            });
 
-    function hitungTotal() {
-        var kuantitas = parseFloat(document.getElementById('jumlah_perbatang').value) || 0;
-        var hargaSatuan = parseFloat(document.getElementById('harga_bibit').value) || 0;
-        var ongkir = parseFloat(document.getElementById('ongkir').value) || 0;
-//  console.log(ongkir,"Yudha")
-        var total = (kuantitas * hargaSatuan) + ongkir;
-        // let rupiahFormat = total.toLocaleString()
-        document.getElementById('total').value = total;
-        document.getElementById('totalFormatted').textContent = formatRupiah(total);
-    }
+            document.getElementById('produkborong_select').addEventListener('change', function () {
+                var productId = this.value;
+                fetchProductPrice(productId);
+            });
 
-    function calculateQuantity(area) {
-        var total = area * 2;
+            function fetchProductPrice(productId) {
+                if (productId) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET', '/get-price/' + productId, true);
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState == 4 && xhr.status == 200) {
+                            var response = JSON.parse(xhr.responseText);
+                            document.getElementById('harga_bibit').value = response.harga_borong;
+                            hitungTotal();
+                        } else if (xhr.readyState == 4) {
+                            console.error('Error fetching data');
+                            alert('Gagal mengambil data harga bibit');
+                        }
+                    };
+                    xhr.send();
+                }
+            }
 
-        let rupiahFormat = total.toLocaleString()
-        if (total < 175) {
-            $('#quantityModal').modal('show');
-            alert('Total luas lahan minimal 175');
-        }
-        return total;
-    }
+            function hitungTotal() {
+                var kuantitas = parseFloat(document.getElementById('jumlah_perbatang').value) || 0;
+                var hargaSatuan = parseFloat(document.getElementById('harga_bibit').value) || 0;
+                var ongkir = parseFloat(document.getElementById('ongkir').value) || 0;
 
-    function formatRupiah(number) {
+                var total = (kuantitas * hargaSatuan) + ongkir;
+                document.getElementById('total').value = total;
+                document.getElementById('totalFormatted').textContent = formatRupiah(total);
+            }
+
+            function calculateQuantity(area) {
+                var total = area * 2;
+
+                if (total < 175) {
+                    $('#quantityModal').modal('show');
+                    alert('Total luas lahan minimal 175');
+                }
+                return total;
+            }
+
+            function formatRupiah(number) {
                 return number.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
             }
-    // Initialize harga_bibit if there's a selected product
-    const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get('productId');
 
-    if (productId) {
-        document.getElementById('produkborong_select').value = productId;
-        fetchProductPrice(productId);
-    }
-
-
-    document.getElementById('produkborong_select').dispatchEvent(new Event('change'));
-    document.getElementById('pengiriman').dispatchEvent(new Event('change'));
-});
-
-function fetchOngkir(kecamatan_id) {
-        if (kecamatan_id) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', '/get-ongkir/' + kecamatan_id, true);
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    var response = JSON.parse(xhr.responseText);
-                    document.getElementById('ongkir').value = response.ongkir;
-                    document.getElementById('rumah').value = response.ongkir;
-                    hitungTotal();
-                } else if (xhr.readyState == 4) {
-                    console.error('Error fetching data');
-                    // alert('Gagal mengambil data ongkir');
+            function fetchOngkir(kecamatan_id) {
+                if (kecamatan_id) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET', '/get-ongkir/' + kecamatan_id, true);
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState == 4 && xhr.status == 200) {
+                            var response = JSON.parse(xhr.responseText);
+                            document.getElementById('ongkir').value = response.ongkir;
+                            hitungTotal();
+                        } else if (xhr.readyState == 4) {
+                            console.error('Error fetching data');
+                        }
+                    };
+                    xhr.send();
                 }
-            };
-            xhr.send();
-        }
-    }
+            }
+
+            // Initialize harga_bibit if there's a selected product
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('productId');
+
+            if (productId) {
+                document.getElementById('produkborong_select').value = productId;
+                fetchProductPrice(productId);
+            }
+
+            document.getElementById('produkborong_select').dispatchEvent(new Event('change'));
+            document.getElementById('pengiriman').dispatchEvent(new Event('change'));
+        });
     </script>
 @endsection
