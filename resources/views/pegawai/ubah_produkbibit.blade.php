@@ -37,10 +37,6 @@
                     <input class="form-control" type="number" name="harga" placeholder="Isikan Harga Bibit" value="{{$get_produk->harga_bibit}}" required />
                 </div>
                 <div class="mb-3">
-                    <label>Stok</label>
-                    <input class="form-control" type="number" name="stok" placeholder="Isikan Stok Bibit" value="{{$get_produk->stok_bibit}}" required />
-                </div>
-                <div class="mb-3">
                     <label>Harga Borongan</label>
                     <input class="form-control" type="text" name="harga_borongan" placeholder="Isikan Harga Bibit borongan" value="{{$get_produk->harga_borong}}" required />
                 </div>

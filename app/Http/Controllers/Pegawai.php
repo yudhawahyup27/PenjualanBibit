@@ -240,7 +240,7 @@ class Pegawai extends Controller
     }
     public function update_produkbibit(Request $request)
     {
-
+        date_default_timezone_set('Asia/Jakarta');
         $session_role = $request->session()->get('role');
         if ($session_role == 1) {
             return redirect()->to('/admin');
@@ -263,21 +263,22 @@ class Pegawai extends Controller
                 'nama_bibit'        => $request->nama,
                 'detail_bibit'      => $request->detail,
                 'harga_bibit'       => $request->harga,
-                'stok_bibit'        => $request->stok,
+                'stok_bibit'        => $tblProduk->stok,
                 'harga_borong'        => $request->harga_borongan,
                 'gambar_bibit'      => $imageName,
                 'status_bibit'      => '1',
-                'updated_produk'    => date('Y-m-d H:i:s'),
+                'updated_produk'    => now(),
             ]);
         } else {
+            $tblProduk = DB::table('tb_produk')->where('id_produk', $uri_one)->first();
             DB::table('tb_produk')->where('id_produk', $uri_one)->update([
                 'nama_bibit'        => $request->nama,
                 'detail_bibit'      => $request->detail,
                 'harga_bibit'       => $request->harga,
                 'harga_borong'        => $request->harga_borongan,
-                'stok_bibit'        => $request->stok,
+                'stok_bibit'        => $tblProduk->stok_bibit,
                 'status_bibit'      => '1',
-                'updated_produk'    => date('Y-m-d H:i:s'),
+                'updated_produk'    =>now(),
             ]);
         }
 
@@ -328,6 +329,7 @@ class Pegawai extends Controller
         }
 
         $tblProduk = DB::table('tb_produk')->where('id_produk', $id)->first();
+
         if ($request->image1) {
             $imageName = rand(1000, 9999) . time() . '.' . $request->image1->extension();
             $request->image1->move(public_path('images'), $imageName);
@@ -336,22 +338,24 @@ class Pegawai extends Controller
                 unlink(public_path('images/') . $tblProduk->gambar_bibit);
             }
 
+
+
             DB::table('tb_produk')->where('id_produk', $id)->update([
-                'nama_bibit'        => $request->nama,
-                'detail_bibit'      => $request->detail,
-                'harga_bibit'       => $request->harga,
-                'stok_bibit'        => $request->stok,
-                'harga_borong'      => $request->harga_borongan,
+                'nama_bibit'        =>  $tblProduk->nama_bibit,
+                'detail_bibit'      =>  $tblProduk->detail_bibit,
+                'harga_bibit'       =>  $tblProduk->harga_bibit,
+                'harga_borong'      =>  $tblProduk->harga_borong,
                 'gambar_bibit'      => $imageName,
+                'stok_bibit'        => $request->stok,
                 'status_bibit'      => '1',
                 'updated_produk'    => now(),
             ]);
         } else {
             DB::table('tb_produk')->where('id_produk', $id)->update([
-                'nama_bibit'        => $request->nama,
-                'detail_bibit'      => $request->detail,
-                'harga_bibit'       => $request->harga,
-                'harga_borong'      => $request->harga_borongan,
+                'nama_bibit'        =>  $tblProduk->nama_bibit,
+                'detail_bibit'      =>  $tblProduk->detail_bibit,
+                'harga_bibit'       =>  $tblProduk->harga_bibit,
+                'harga_borong'      =>  $tblProduk->harga_borong,
                 'stok_bibit'        => $request->stok,
                 'status_bibit'      => '1',
                 'updated_produk'    => now(),
