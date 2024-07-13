@@ -315,6 +315,7 @@ class Pegawai extends Controller
 
     public function updateProdukbibitStock($id, Request $request)
     {
+        date_default_timezone_set('Asia/Jakarta');
         $session_role = $request->session()->get('role');
         if ($session_role == 1) {
             return redirect()->to('/admin');
@@ -808,5 +809,5 @@ class Pegawai extends Controller
             return redirect()->to('/pegawai/monitoringbibit')->with('error', 'Transaction not found.');
         }
     }
-   
+
 }

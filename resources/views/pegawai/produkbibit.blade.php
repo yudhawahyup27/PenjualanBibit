@@ -56,14 +56,16 @@
 
                                 <?= number_format((float)$key->harga_bibit, 0, ',', '.') ?>
                             </td>
-                            <td>{{$key->stok_bibit}}</td>
+                            <td>{{$key->stok_bibit}}
+                                <a href="<?= url('/') ?>/pegawai/produkbibit/ubah/stock/{{$key->id_produk}}" class="btn btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
+                            </td>
                             <td><img width="100" src="<?= url('/') ?>/images/<?= $key->gambar_bibit ?>" alt=""></td>
                             <td>
                                 @if($key->terjual_bibit == 0)
                                 0
                                 @else
                                 {{ $key->terjual_bibit }}
-                                <a href="<?= url('/') ?>/pegawai/produkbibit/ubah/stock/{{$key->id_produk}}" class="btn btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
+
                                 @endif
                             </td>
                             <td>
