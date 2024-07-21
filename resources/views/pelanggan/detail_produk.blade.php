@@ -211,11 +211,11 @@
             .then(response => response.json())
             .then(data => {
                 var citySelect = document.getElementById('city');
-                citySelect.innerHTML = '<option value="">Pilih Kota</option>';
+                citySelect.innerHTML = '<option value="">Pilih Kota & Kabupaten</option>';
                 data.forEach(function (city) {
                     var option = document.createElement('option');
                     option.value = city.city_id;
-                    option.textContent = city.city_name;
+                    option.textContent = city.type + ' ' + city.city_name;
                     citySelect.appendChild(option);
                 });
             });

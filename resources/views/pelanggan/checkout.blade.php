@@ -333,7 +333,7 @@ function fetchOngkir(kecamatan_id) {
                     data.forEach(function (city) {
                         var option = document.createElement('option');
                         option.value = city.city_id;
-                        option.textContent = city.city_name;
+                        option.textContent = city.type + ' ' + city.city_name;
                         citySelect.appendChild(option);
                     });
                 });
