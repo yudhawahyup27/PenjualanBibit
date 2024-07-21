@@ -20,7 +20,8 @@
                             <th>Qty Pembelian</th>
                             <th>Nama Pelanggan</th>
                             <th>Nama Bibit</th>
-                            <th>Kecamatan Pengiriman</th>
+                            <th>Kota dan Kabupaten</th>
+                            <th>provinsi</th>
                             <th>Alamat Pengiriman</th>
                             <th>Status</th>
                             <th>Aksi</th>
@@ -32,7 +33,8 @@
                             <th>Qty Pembelian</th>
                             <th>Nama Pelanggan</th>
                             <th>Nama Bibit</th>
-                            <th>Kecamatan Pengiriman</th>
+                            <th>Kota dan Kabupaten</th>
+                            <th>provinsi</th>
                             <th>Alamat Pengiriman</th>
                             <th>Status</th>
                             <th>Aksi</th>
@@ -45,11 +47,9 @@
                             <td>{{ $key->kuantitas_bibit }}</td>
                             <td>{{ $key->nama_user }}</td>
                             <td>{{ $key->nama_bibit }}</td>
-                            @if ($key->pengiriman == 0)
-                            <td>Ambil di Toko</td>
-                            @else
-                            <td>{{ $key->kecamatan_name }}</td>
-                            @endif
+
+                            <td>{{ $key->city_name }}</td>
+                            <td>{{ $key->province_name }}</td>
                             <td>{{ $key->detail_rumah }}</td>
                             <td>{{ $key->status_name }}</td>
                             <td>

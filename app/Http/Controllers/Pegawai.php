@@ -654,6 +654,12 @@ private function getProvinceName($provinceId)
             'tblTransaksi' => $tblTransaksi,
         ];
 
+           // Fetch city and province names from Raja Ongkir
+    foreach ( $tblTransaksi as $key) {
+        $key->city_name = $this->getCityName($key->pengiriman); // Assume pengiriman contains the city ID
+        $key->province_name = $this->getProvinceName($key->provinsi); // Assume provinsi contains the province ID
+    }
+
         return view('pegawai.monitoringbibit', $data);
     }
 
