@@ -8,31 +8,11 @@
             <form action="{{ route('laporanpenjualanborongan') }}" method="GET">
                 <div class="row">
                     <div class="col-md-3">
-                        <label for="selectedDay">Filter Hari:</label>
-                        <select name="selectedDay" id="selectedDay" class="form-control">
-                            <option value="">All</option>
-                            @for ($i = 1; $i <= 31; $i++)
-                                <option value="{{ $i }}" {{ $selectedDay == $i ? 'selected' : '' }}>{{ $i }}</option>
-                            @endfor
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="selectedMonth">Filter Bulan:</label>
-                        <select name="selectedMonth" id="selectedMonth" class="form-control">
-                            <option value="">All</option>
-                            @for ($i = 1; $i <= 12; $i++)
-                                <option value="{{ $i }}" {{ $selectedMonth == $i ? 'selected' : '' }}>{{ date('F', mktime(0, 0, 0, $i, 1)) }}</option>
-                            @endfor
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="selectedYear">Filter Tahun:</label>
-                        <select name="selectedYear" id="selectedYear" class="form-control">
-                            <option value="">All</option>
-                            @for ($i = date('Y'); $i >= date('Y') - 10; $i--)
-                                <option value="{{ $i }}" {{ $selectedYear == $i ? 'selected' : '' }}>{{ $i }}</option>
-                            @endfor
-                        </select>
+                        <label for="start">Filter Start Date</label>
+                        <input type="date" name="start" id="start" value="{{ request('start') }}" class="form-control">
+
+                        <label for="end">End Date</label>
+                        <input type="date" name="end" id="end" value="{{ request('end') }}" class="form-control">
                     </div>
                     <div class="col-md-3">
                         <label>&nbsp;</label><br>

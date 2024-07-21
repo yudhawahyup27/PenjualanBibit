@@ -26,24 +26,15 @@ class EceranController extends Controller
 
         $cart = DB::table('tb_keranjang')
             ->join('tb_produk', 'tb_keranjang.keranjang_id_produk', '=', 'tb_produk.id_produk')
-            ->leftJoin('tb_kecamatan', function($join) {
-                $join->on('tb_keranjang.pengiriman_keranjang', '=', 'tb_kecamatan.kecamatan_id')
-                    ->where('tb_keranjang.pengiriman_keranjang', '!=', 0);
-            })
-            ->select('tb_keranjang.*', 'tb_produk.gambar_bibit', 'tb_produk.nama_bibit', 'tb_produk.harga_bibit', 'tb_kecamatan.kecamatan_name', 'tb_kecamatan.ongkir')
+            ->select('tb_keranjang.*', 'tb_produk.gambar_bibit', 'tb_produk.nama_bibit', 'tb_produk.harga_bibit')
             ->where('keranjang_id_user', $getSesionId)
             ->get();
 
-        $countCart = DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->count();
+        $countCart = DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->count('qty_keranjang');
 
         $sumPrice = DB::table('tb_keranjang')->where('keranjang_id_user', $getSesionId)->sum('price_keranjang');
 
         $keranjang = DB::table('tb_keranjang')
-            ->leftJoin('tb_kecamatan', function($join) {
-                $join->on('tb_keranjang.pengiriman_keranjang', '=', 'tb_kecamatan.kecamatan_id')
-                    ->where('tb_keranjang.pengiriman_keranjang', '!=', 0);
-            })
-            ->select('tb_keranjang.*', 'tb_kecamatan.ongkir')
             ->where('keranjang_id_user', $getSesionId)
             ->first();
 
@@ -51,12 +42,8 @@ class EceranController extends Controller
             return redirect('/pengguna/keranjang');
         }
 
-        $totalOngkir = 0;
-        foreach ($cart as $item) {
-            if ($item->pengiriman_keranjang != 0) {
-                $totalOngkir += $item->ongkir;
-            }
-        }
+        $totalOngkir =  floatval($keranjang->ongkir);
+        
 
         $totalPriceWithOngkir = $sumPrice + $totalOngkir;
 
@@ -86,9 +73,15 @@ class EceranController extends Controller
             'item_details' => [
                 [
                     'id' => 'SHIPPING',
-                    'price' => $totalPriceWithOngkir,
+                    'price' =>$totalOngkir,
+                    'quantity' =>$countCart ,
+                    'name' => 'Ongkir',
+                ],
+                [
+                    'id' => 'Harga',
+                    'price' =>  $sumPrice,
                     'quantity' => 1,
-                    'name' => 'Shipping Cost',
+                    'name' => 'Harga',
                 ]
             ],
         ];
@@ -175,12 +168,17 @@ class EceranController extends Controller
                 'id_produk' => $item->keranjang_id_produk,
                 'detail_rumah'=>  $item->detail_rumah,
                 'kode_transaksi' => $item->kode_transaksi,
-                'total_transaksi' => $totalTransaksi,
+                'total_transaksi' => $totalTransaksi + $item->ongkir,
                 'pengiriman'=> $item->pengiriman_keranjang,
                 'status_transaksi' => '1',
                 'created_transaksi' => $tanggalhariini,
                 'Qty_beli' => $item->qty_keranjang,
                 'bukti_transfer' => $buktiTransferPath,
+                'kurir' => $item->kurir,
+                'provinsi'=> $item->provinsi,
+                'beban' => $item-> berat,
+                'ongkir'=> $item->ongkir,
+
             ]);
 
             // Reduce stock in the product table

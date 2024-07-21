@@ -123,50 +123,50 @@ class Pelanggan extends Controller
         DB::table('tb_alamatpengiriman')->where('alamatpengiriman_id', request()->segment(3))->delete();
         return redirect()->to('/alamat-pengiriman');
     }
-    public function detail_product(Request $request)
-    {
-        // Validate the incoming request
+    // public function detail_product(Request $request)
+    // {
+    //     // Validate the incoming request
 
-        // Retrieve the product ID from the URI
-        $productId = $request->segment(3);
-        // Retrieve the session user ID
-        $sessionUserId = $request->session()->get('id');
+    //     // Retrieve the product ID from the URI
+    //     $productId = $request->segment(3);
+    //     // Retrieve the session user ID
+    //     $sessionUserId = $request->session()->get('id');
 
-        // Fetch the product details
-        $product = DB::table('tb_produk')->where('id_produk', $productId)->first();
+    //     // Fetch the product details
+    //     $product = DB::table('tb_produk')->where('id_produk', $productId)->first();
 
-        // Fetch rumah and kecamatan data
-        $rumah = DB::table('tb_alamatpengiriman')
-            ->where('alamatpengiriman_user_id', $sessionUserId)
-            ->join('tb_kecamatan', 'tb_alamatpengiriman.alamatpengiriman_kecamatan_id', '=', 'tb_kecamatan.kecamatan_id')
-            ->select('tb_alamatpengiriman.*', 'tb_kecamatan.kecamatan_name', 'tb_kecamatan.kecamatan_id')
-            ->get();
+    //     // Fetch rumah and kecamatan data
+    //     $rumah = DB::table('tb_alamatpengiriman')
+    //         ->where('alamatpengiriman_user_id', $sessionUserId)
+    //         ->join('tb_kecamatan', 'tb_alamatpengiriman.alamatpengiriman_kecamatan_id', '=', 'tb_kecamatan.kecamatan_id')
+    //         ->select('tb_alamatpengiriman.*', 'tb_kecamatan.kecamatan_name', 'tb_kecamatan.kecamatan_id')
+    //         ->get();
 
-        // Initialize the data array with product details
-        $data = [
-            'menu'    => 'home',
-            'submenu' => 'pelanggan',
-            'produk'  => $product,
-            'rumah'   => $rumah
-        ];
+    //     // Initialize the data array with product details
+    //     $data = [
+    //         'menu'    => 'home',
+    //         'submenu' => 'pelanggan',
+    //         'produk'  => $product,
+    //         'rumah'   => $rumah
+    //     ];
 
-        // Fetch user and kecamatan data if session ID is available
-        if ($sessionUserId) {
-            $user = DB::table('tb_user')->where('id_user', $sessionUserId)->first();
-            $kecamatan = DB::table('tb_kecamatan')->get();
+    //     // Fetch user and kecamatan data if session ID is available
+    //     if ($sessionUserId) {
+    //         $user = DB::table('tb_user')->where('id_user', $sessionUserId)->first();
+    //         $kecamatan = DB::table('tb_kecamatan')->get();
 
-            // Add user and kecamatan data to the response
-            $data['nama'] = $user ? $user->nama_user : null;
-            $data['kecamatan'] = $kecamatan;
-        } else {
-            // Set default values if no session ID
-            $data['nama'] = null;
-            $data['kecamatan'] = collect();
-        }
+    //         // Add user and kecamatan data to the response
+    //         $data['nama'] = $user ? $user->nama_user : null;
+    //         $data['kecamatan'] = $kecamatan;
+    //     } else {
+    //         // Set default values if no session ID
+    //         $data['nama'] = null;
+    //         $data['kecamatan'] = collect();
+    //     }
 
-        // Return the view with the prepared data
-        return view('pelanggan/detail_produk', $data);
-    }
+    //     // Return the view with the prepared data
+    //     return view('pelanggan/detail_produk', $data);
+    // }
 
 
 
@@ -395,107 +395,107 @@ class Pelanggan extends Controller
         return $pdf->download('invoice.pdf');
     }
 
-    public function cart_create(Request $request, $id_produk)
-    {
-        $request->validate([
-            'pengiriman' => 'required|numeric',
-        ]);
+    // public function cart_create(Request $request, $id_produk)
+    // {
+    //     $request->validate([
+    //         'pengiriman' => 'required|numeric',
+    //     ]);
 
-        date_default_timezone_set('Asia/Jakarta');
-        $sessionUserId = $request->session()->get('id');
-        $product = DB::table('tb_produk')->where('id_produk', $id_produk)->first();
+    //     date_default_timezone_set('Asia/Jakarta');
+    //     $sessionUserId = $request->session()->get('id');
+    //     $product = DB::table('tb_produk')->where('id_produk', $id_produk)->first();
 
-        if (!$product) {
-            return redirect()->back()->with('error', 'Produk tidak ditemukan.');
-        }
+    //     if (!$product) {
+    //         return redirect()->back()->with('error', 'Produk tidak ditemukan.');
+    //     }
 
-        // Calculate total sold and remaining stock
-        $totalSold = $product->terjual_bibit + $request->qty;
-        $remainingStock = $product->stok_bibit - $request->qty;
+    //     // Calculate total sold and remaining stock
+    //     $totalSold = $product->terjual_bibit + $request->qty;
+    //     $remainingStock = $product->stok_bibit - $request->qty;
 
 
-        $kode_transaksi = "Ttx2" . uniqid();
+    //     $kode_transaksi = "Ttx2" . uniqid();
 
-        // Validate if the requested quantity exceeds the available stock
-        if ($remainingStock < 0) {
-            return redirect()->back()->with('error', 'Jumlah barang yang diminta melebihi stok yang tersedia.');
-        }
+    //     // Validate if the requested quantity exceeds the available stock
+    //     if ($remainingStock < 0) {
+    //         return redirect()->back()->with('error', 'Jumlah barang yang diminta melebihi stok yang tersedia.');
+    //     }
 
-        $pengiriman = $request->pengiriman;
-        $shippingCost = 0; // Default shipping cost
-        $detailRumah = '';
+    //     $pengiriman = $request->pengiriman;
+    //     $shippingCost = 0; // Default shipping cost
+    //     $detailRumah = '';
 
-        // If delivery to a kecamatan, get the shipping cost from the kecamatan table
-        if ($pengiriman != 0) {
-            $kecamatan = DB::table('tb_kecamatan')->where('kecamatan_id', $pengiriman)->first();
-            if (!$kecamatan) {
-                return redirect()->back()->with('error', 'Kecamatan tidak ditemukan.');
-            }
-            $shippingCost = $kecamatan->ongkir;
-            $detailRumah = $request->input('detail_rumah');
-        } else {
-            // Ambil di Toko
-            $detailRumah = 'Kertosono - Jawa Timur';
-        }
+    //     // If delivery to a kecamatan, get the shipping cost from the kecamatan table
+    //     if ($pengiriman != 0) {
+    //         $kecamatan = DB::table('tb_kecamatan')->where('kecamatan_id', $pengiriman)->first();
+    //         if (!$kecamatan) {
+    //             return redirect()->back()->with('error', 'Kecamatan tidak ditemukan.');
+    //         }
+    //         $shippingCost = $kecamatan->ongkir;
+    //         $detailRumah = $request->input('detail_rumah');
+    //     } else {
+    //         // Ambil di Toko
+    //         $detailRumah = 'Kertosono - Jawa Timur';
+    //     }
 
-        // dd($detailRumah);
-        // Check if the product already exists in the cart
-        $existingCartItem = DB::table('tb_keranjang')
-            ->where('keranjang_id_produk', $id_produk)
-            ->where('keranjang_id_user', $sessionUserId)
-            ->where('pengiriman_keranjang', $pengiriman)
-            ->first();
+    //     // dd($detailRumah);
+    //     // Check if the product already exists in the cart
+    //     $existingCartItem = DB::table('tb_keranjang')
+    //         ->where('keranjang_id_produk', $id_produk)
+    //         ->where('keranjang_id_user', $sessionUserId)
+    //         ->where('pengiriman_keranjang', $pengiriman)
+    //         ->first();
 
-        if ($existingCartItem) {
-            // Update qty_keranjang
-            $newQty = $existingCartItem->qty_keranjang + $request->qty;
+    //     if ($existingCartItem) {
+    //         // Update qty_keranjang
+    //         $newQty = $existingCartItem->qty_keranjang + $request->qty;
 
-            // Update existing cart item
-            DB::table('tb_keranjang')
-                ->where('id_keranjang', $existingCartItem->id_keranjang)
-                ->update([
-                    'qty_keranjang' => $newQty,
-                    'price_keranjang' => ($product->harga_bibit * $newQty),
-                    // 'pengiriman'
-                ]);
-                if ($request->action == 'cart') {
-                    return redirect()->to('/pelanggan/keranjang');
-                } elseif ($request->action == 'beli_langsung') {
-                    return redirect()->to('/pelanggan/detail_cart_payment');
-                }
-            // Display updated cart item
-            $updatedCartItem = DB::table('tb_keranjang')->where('id_keranjang', $existingCartItem->id_keranjang)->first();
-            // dd($updatedCartItem);
-        } else {
-            DB::table('tb_produk')
-            ->where('id_produk', $id_produk)
-            ->update([
+    //         // Update existing cart item
+    //         DB::table('tb_keranjang')
+    //             ->where('id_keranjang', $existingCartItem->id_keranjang)
+    //             ->update([
+    //                 'qty_keranjang' => $newQty,
+    //                 'price_keranjang' => ($product->harga_bibit * $newQty),
+    //                 // 'pengiriman'
+    //             ]);
+    //             if ($request->action == 'cart') {
+    //                 return redirect()->to('/pelanggan/keranjang');
+    //             } elseif ($request->action == 'beli_langsung') {
+    //                 return redirect()->to('/pelanggan/detail_cart_payment');
+    //             }
+    //         // Display updated cart item
+    //         $updatedCartItem = DB::table('tb_keranjang')->where('id_keranjang', $existingCartItem->id_keranjang)->first();
+    //         // dd($updatedCartItem);
+    //     } else {
+    //         DB::table('tb_produk')
+    //         ->where('id_produk', $id_produk)
+    //         ->update([
 
-                'terjual_bibit'=> $totalSold,
-            ]);
-            // Insert new item into the cart table
-            DB::table('tb_keranjang')->insert([
-                'keranjang_id_produk' => $id_produk,
-                'kode_transaksi' => $kode_transaksi,
-                'keranjang_id_user' => $sessionUserId,
-                'qty_keranjang' => $request->qty,
-                'pengiriman_keranjang' => $pengiriman,
-                'detail_rumah' => $detailRumah,
-                'price_keranjang' => ($product->harga_bibit * $request->qty),
-                'created_keranjang' => now(),
-                'updated_keranjang' => now(),
-            ]);
-            if ($request->action == 'cart') {
-                return redirect()->to('/pelanggan/keranjang');
-            } elseif ($request->action == 'beli_langsung') {
-                return redirect()->to('/pelanggan/detail_cart_payment');
-            }
+    //             'terjual_bibit'=> $totalSold,
+    //         ]);
+    //         // Insert new item into the cart table
+    //         DB::table('tb_keranjang')->insert([
+    //             'keranjang_id_produk' => $id_produk,
+    //             'kode_transaksi' => $kode_transaksi,
+    //             'keranjang_id_user' => $sessionUserId,
+    //             'qty_keranjang' => $request->qty,
+    //             'pengiriman_keranjang' => $pengiriman,
+    //             'detail_rumah' => $detailRumah,
+    //             'price_keranjang' => ($product->harga_bibit * $request->qty),
+    //             'created_keranjang' => now(),
+    //             'updated_keranjang' => now(),
+    //         ]);
+    //         if ($request->action == 'cart') {
+    //             return redirect()->to('/pelanggan/keranjang');
+    //         } elseif ($request->action == 'beli_langsung') {
+    //             return redirect()->to('/pelanggan/detail_cart_payment');
+    //         }
 
-            // Display newly inserted cart item
-            $newCartItem = DB::table('tb_keranjang')->where('kode_transaksi', $kode_transaksi)->first();
-            // dd($newCartItem);
-        }
-    }
+    //         // Display newly inserted cart item
+    //         $newCartItem = DB::table('tb_keranjang')->where('kode_transaksi', $kode_transaksi)->first();
+    //         // dd($newCartItem);
+    //     }
+    // }
 
 
 
@@ -596,7 +596,7 @@ class Pelanggan extends Controller
     $users = DB::table('tb_user')->where('id_user', $getSesionId)->first();
     $product = DB::table('tb_produk')->where('id_produk', $uri_one)->first();
     $produkborong = DB::table('tb_produkborong')->where('id', $uri_one)->first();
-
+//  dd($product);
     // Ambil semua item keranjang dengan informasi tambahan
     $cart = DB::table('tb_keranjang')
             ->join('tb_produk', 'tb_keranjang.keranjang_id_produk', '=', 'tb_produk.id_produk')

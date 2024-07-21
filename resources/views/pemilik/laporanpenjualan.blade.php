@@ -8,35 +8,15 @@
             <form action="{{ route('laporanpenjualan') }}" method="GET">
                 <div class="row">
                     <div class="col-md-3">
-                        <label for="selectedDay">Filter Hari:</label>
-                        <select name="selectedDay" id="selectedDay" class="form-control">
-                            <option value="">Pilih Hari</option>
-                            @for ($i = 1; $i <= 31; $i++)
-                                <option value="{{ $i }}" {{ $selectedDay == $i ? 'selected' : '' }}>{{ $i }}</option>
-                            @endfor
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="selectedMonth">Filter Bulan:</label>
-                        <select name="selectedMonth" id="selectedMonth" class="form-control">
-                            <option value="">Pilih Bulan</option>
-                            @for ($i = 1; $i <= 12; $i++)
-                                <option value="{{ $i }}" {{ $selectedMonth == $i ? 'selected' : '' }}>{{ date('F', mktime(0, 0, 0, $i, 1)) }}</option>
-                            @endfor
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="selectedYear">Filter Tahun:</label>
-                        <select name="selectedYear" id="selectedYear" class="form-control">
-                            <option value="">Pilih Tahun</option>
-                            @for ($i = date('Y'); $i >= date('Y') - 10; $i--)
-                                <option value="{{ $i }}" {{ $selectedYear == $i ? 'selected' : '' }}>{{ $i }}</option>
-                            @endfor
-                        </select>
+                        <label for="start">Filter Start Date</label>
+                        <input type="date" name="start" id="start" value="{{ request('start') }}" class="form-control">
+
+                        <label for="end">End Date</label>
+                        <input type="date" name="end" id="end" value="{{ request('end') }}" class="form-control">
                     </div>
                     <div class="col-md-3">
                         <label>&nbsp;</label><br>
-                        <button type="submit" class="btn btn-primary">Filter</button>
+                        <button type="submit" class="btn btn-primary mt-4">Filter</button>
                     </div>
                 </div>
             </form>
@@ -61,9 +41,9 @@
                             @foreach($data as $laporan)
                                 <tr>
                                     <td>{{ $laporan->kode_transaksi }}</td>
-                              <td>{{ $laporan->kode_transaksi }}</td>
-                                     <td>{{ $laporan->nama_bibit }}</td>
-                                     <td>{{ 'Rp ' . number_format($laporan->harga_beli, 0, ',', '.') }}</td>
+                                    <td>{{ $laporan->kode_bibit }}</td>
+                                    <td>{{ $laporan->nama_bibit }}</td>
+                                    <td>{{ 'Rp ' . number_format($laporan->harga_beli, 0, ',', '.') }}</td>
                                     <td>{{ $laporan->terjual }}</td>
                                     <td>{{ $laporan->tanggal_transaksi }}</td>
                                 </tr>

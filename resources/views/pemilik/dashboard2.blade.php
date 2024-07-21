@@ -8,22 +8,12 @@
             {{-- Filter borong --}}
             <div class="row mb-3">
                 <div class="col">
-                    <label for="filterYearBorong" class="form-label">Select Year (Borong):</label>
-                    <select class="form-select" id="filterYearBorong" name="year_borong">
-                        <option value="all">All</option>
-                        @foreach($transactionsPerYearBorong as $year => $transactions)
-                            <option value="{{ $year }}" {{ $selectedYearBorong == $year ? 'selected' : '' }}>{{ $year }}</option>
-                        @endforeach
-                    </select>
+                    <label for="startDateBorong" class="form-label">Start Date (Borong):</label>
+                    <input type="date" class="form-control" id="startDateBorong" name="start_date" value="{{ $startDate ? $startDate->format('Y-m-d') : '' }}">
                 </div>
                 <div class="col">
-                    <label for="filterMonthBorong" class="form-label">Select Month (Borong):</label>
-                    <select class="form-select" id="filterMonthBorong" name="month_borong">
-                        <option value="all">All</option>
-                        @foreach(range(1, 12) as $month)
-                            <option value="{{ $month }}" {{ $selectedMonthBorong == $month ? 'selected' : '' }}>{{ $monthNames[$month - 1] }}</option>
-                        @endforeach
-                    </select>
+                    <label for="endDateBorong" class="form-label">End Date (Borong):</label>
+                    <input type="date" class="form-control" id="endDateBorong" name="end_date" value="{{ $endDate ? $endDate->format('Y-m-d') : '' }}">
                 </div>
             </div>
             <div class="row">
@@ -41,15 +31,15 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const yearSelectBorong = document.getElementById('filterYearBorong');
-        const monthSelectBorong = document.getElementById('filterMonthBorong');
+        const startDateInputBorong = document.getElementById('startDateBorong');
+        const endDateInputBorong = document.getElementById('endDateBorong');
         let borongChart;
 
         function updateBorongChart() {
-            const selectedYear = yearSelectBorong.value;
-            const selectedMonth = monthSelectBorong.value;
+            const startDate = startDateInputBorong.value;
+            const endDate = endDateInputBorong.value;
 
-            fetch(`{{ route('dashboard2') }}?year_borong=${selectedYear}&month_borong=${selectedMonth}`, {
+            fetch(`{{ route('dashboard2') }}?start_date=${startDate}&end_date=${endDate}`, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
@@ -65,17 +55,15 @@
 
                     let labels, transactionData;
 
-                    if (selectedYear === 'all') {
-                        labels = data.transactions.map(transaction => new Date(transaction.created_at).getFullYear());
-                    } else if (selectedMonth === 'all') {
+                    if (startDate || endDate) {
                         labels = data.transactions.map(transaction => {
                             const date = new Date(transaction.created_at);
-                            return `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
+                            return `${date.getDate()} ${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
                         });
                     } else {
                         labels = data.transactions.map(transaction => {
                             const date = new Date(transaction.created_at);
-                            return `${date.getDate()} ${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
+                            return `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
                         });
                     }
 
@@ -112,11 +100,8 @@
                 .catch(error => console.error('Error fetching data:', error));
         }
 
-        yearSelectBorong.addEventListener('change', function() {
-            updateBorongChart();
-        });
-
-        monthSelectBorong.addEventListener('change', updateBorongChart);
+        startDateInputBorong.addEventListener('change', updateBorongChart);
+        endDateInputBorong.addEventListener('change', updateBorongChart);
 
         updateBorongChart();
     });

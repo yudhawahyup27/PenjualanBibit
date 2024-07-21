@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
 
 class Pegawai extends Controller
@@ -478,38 +479,71 @@ class Pegawai extends Controller
     }
 
     public function pesanan(Request $request)
-    {
-        $session_role = $request->session()->get('role');
-        if ($session_role == 1) {
-            return redirect()->to('/admin');
-        } elseif ($session_role == 3) {
-            return redirect()->to('/pemilik');
-        } elseif ($session_role == 4 || $session_role == '') {
-            return redirect()->to('/');
-        }
-
-        $pesen = DB::table('tb_transaksi')
-            ->join('tb_user', 'tb_transaksi.id_user_transaksi', '=', 'tb_user.id_user')
-            ->leftJoin('tb_kecamatan', 'tb_transaksi.pengiriman', '=', 'tb_kecamatan.kecamatan_id')
-            ->join('tb_produk', 'tb_transaksi.id_produk', '=', 'tb_produk.id_produk')
-            ->select(
-                'tb_transaksi.*',
-                'tb_user.nama_user',
-                'tb_kecamatan.kecamatan_name',
-                'tb_produk.nama_bibit',
-                // DB::raw('IF(tb_transaksi.pengiriman = 0, "Ambil di Toko", tb_transaksi.detail_rumah) as detail_rumah')
-            )
-            ->orderBy('created_transaksi', 'desc')
-            ->get();
-
-        $data = [
-            'menu' => 'pesanan',
-            'submenu' => 'pegawai',
-            'pesen' => $pesen,
-        ];
-
-        return view('pegawai.pesanan', $data);
+{
+    $session_role = $request->session()->get('role');
+    if ($session_role == 1) {
+        return redirect()->to('/admin');
+    } elseif ($session_role == 3) {
+        return redirect()->to('/pemilik');
+    } elseif ($session_role == 4 || $session_role == '') {
+        return redirect()->to('/');
     }
+
+    $pesen = DB::table('tb_transaksi')
+        ->join('tb_user', 'tb_transaksi.id_user_transaksi', '=', 'tb_user.id_user')
+        ->leftJoin('tb_kecamatan', 'tb_transaksi.pengiriman', '=', 'tb_kecamatan.kecamatan_id')
+        ->join('tb_produk', 'tb_transaksi.id_produk', '=', 'tb_produk.id_produk')
+        ->select(
+            'tb_transaksi.*',
+            'tb_user.nama_user',
+            'tb_kecamatan.kecamatan_name',
+            'tb_produk.nama_bibit'
+        )
+        ->orderBy('created_transaksi', 'desc')
+        ->get();
+
+    // Fetch city and province names from Raja Ongkir
+    foreach ($pesen as $key) {
+        $key->city_name = $this->getCityName($key->pengiriman); // Assume pengiriman contains the city ID
+        $key->province_name = $this->getProvinceName($key->provinsi); // Assume provinsi contains the province ID
+    }
+
+    $data = [
+        'menu' => 'pesanan',
+        'submenu' => 'pegawai',
+        'pesen' => $pesen,
+    ];
+
+    return view('pegawai.pesanan', $data);
+}
+
+private function getCityName($cityId)
+{
+    if ($cityId == 0) {
+        return "Ambil di Toko";
+    }
+
+    $response = Http::withHeaders([
+        'key' => '1365b0cb5a5a58e86a22df82f8084a94'
+    ])->get('https://api.rajaongkir.com/starter/city', [
+        'id' => $cityId
+    ]);
+
+    $city = $response->json();
+    return $city['rajaongkir']['results']['city_name'];
+}
+
+private function getProvinceName($provinceId)
+{
+    $response = Http::withHeaders([
+        'key' => '1365b0cb5a5a58e86a22df82f8084a94'
+    ])->get('https://api.rajaongkir.com/starter/province', [
+        'id' => $provinceId
+    ]);
+
+    $province = $response->json();
+    return $province['rajaongkir']['results']['province'];
+}
 
 
 
@@ -638,17 +672,10 @@ class Pegawai extends Controller
             return redirect()->to('/');
         }
 
-        // Tampilkan nilai-nilai dari $request tanpa validasi
-        // dd($request->all());
-
-        if ($request->hasFile('perkembangan_gambar')) {
-            $file = $request->file('perkembangan_gambar');
-            $filename = time().'.'.$file->getClientOriginalExtension();
-            $file->move(public_path('image'), $filename);
-
+        if ($request->isMethod('post')) {
             DB::table('tb_perkembangan')->insert([
                 'perkembangan_kode_transaksi' => $id,
-                'perkembangan_gambar' => $filename,
+                'perkembangan_link' => $request->input('perkembangan_link'),
                 'perkembangan_tanggal' => $request->input('perkembangan_tanggal'),
                 'perkembangan_umur' => $request->input('perkembangan_umur'),
                 'perkembangan_tinggi' => $request->input('perkembangan_tinggi'),
@@ -656,8 +683,6 @@ class Pegawai extends Controller
                 'perkembangan_created' => now(),
                 'perkembangan_updated' => now(),
             ]);
-
-            return redirect()->to('/pegawai/monitoringbibit')->with('success', 'Data berhasil ditambahkan');
         }
 
         $tblTransaksi = DB::table('tb_perkembangan')
@@ -671,9 +696,9 @@ class Pegawai extends Controller
             'tblTransaksi' => $tblTransaksi,
         ];
 
-        // Load view dengan data yang telah disiapkan
         return view('pegawai/monitoringbibit_detail', $data);
     }
+
 
 
 

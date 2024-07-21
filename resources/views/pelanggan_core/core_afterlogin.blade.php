@@ -32,6 +32,13 @@
             <div class="collapse navbar-collapse " id="navbarNavAltMarkup">
                 <!-- ml-auto still works just fine-->
                 <div class="navbar-nav ml-auto">
+                    <div>
+                        @if (request()->is('pelanggan/bibitborongan/checkout'))
+                        <a class="btn btn-primary mx-4" href="/">Beli Eceran</a>
+                        @else
+                        <a class="btn btn-primary mx-4"  href="/pelanggan/bibitborongan/checkout">Beli Borongan</a>
+                    @endif
+                    </div>
                     <div class="">
                         <a class="btn btn-secondary mr-2" href="<?= url('/') ?>/pelanggan/keranjang/">
                             <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>

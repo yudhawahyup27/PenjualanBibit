@@ -46,7 +46,7 @@
                                 <td><b>{{ $item->qty_keranjang }}</b></td>
                                 <td><b>Rp {{ number_format($item->harga_bibit, 0, ',', '.') }}</b></td>
                                 <td><b>Rp {{ number_format($item->price_keranjang, 0, ',', '.') }}</b></td>
-                                <td><b>{{ $item->kecamatan_name }}</b></td>
+                                {{-- <td><b>{{ $item->kecamatan_name }}</b></td> --}}
                             </tr>
                             @endforeach
                         </tbody>
@@ -69,12 +69,18 @@
                         @if(isset($keranjang))
                         <h5>Ongkos Kirim:
                             <?php
-                            $ongkir = $keranjang->ongkir ?? 0;
+                            // Konversi $ongkir ke float jika perlu
+                            $ongkir = is_numeric($keranjang->ongkir) ? (float) $keranjang->ongkir : 0;
+                            //  dd($ongkir);
+                            // Konversi $sumPrice ke float jika perlu
+                            $sumPrice = is_numeric($sumPrice) ? (float) $sumPrice : 0;
+
                             $total = $ongkir + $sumPrice;
                             ?>
                             <b>Rp {{ number_format($ongkir, 0, ',', '.') }}</b>
                         </h5>
                         <h5>Total Harga: <b>Rp {{ number_format($total, 0, ',', '.') }}</b></h5>
+
                         @endif
                     </div>
                 </div>

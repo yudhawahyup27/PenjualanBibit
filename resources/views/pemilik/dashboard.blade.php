@@ -17,22 +17,12 @@
             {{-- Filter eceran --}}
             <div class="row mb-3">
                 <div class="col">
-                    <label for="filterYearEceran" class="form-label">Select Year (Eceran):</label>
-                    <select class="form-select" id="filterYearEceran">
-                        <option value="all">All</option>
-                        @foreach($transactionsPerYearEceran as $yearData)
-                            <option value="{{ $yearData['year'] }}" {{ $selectedYearEceran == $yearData['year'] ? 'selected' : '' }}>{{ $yearData['year'] }}</option>
-                        @endforeach
-                    </select>
+                    <label for="filterStartDateEceran" class="form-label">Start Date:</label>
+                    <input type="date" class="form-control" id="filterStartDateEceran" name="start_date" value="{{ $startDate ? $startDate->format('Y-m-d') : '' }}">
                 </div>
                 <div class="col">
-                    <label for="filterMonthEceran" class="form-label">Select Month (Eceran):</label>
-                    <select class="form-select" id="filterMonthEceran">
-                        <option value="all">All</option>
-                        @foreach(range(1, 12) as $month)
-                            <option value="{{ $month }}" {{ $selectedMonthBorong == $month ? 'selected' : '' }}>{{ $monthNames[$month - 1] }}</option>
-                        @endforeach
-                    </select>
+                    <label for="filterEndDateEceran" class="form-label">End Date:</label>
+                    <input type="date" class="form-control" id="filterEndDateEceran" name="end_date" value="{{ $endDate ? $endDate->format('Y-m-d') : '' }}">
                 </div>
             </div>
             <div class="row">
@@ -43,107 +33,86 @@
             </div>
         </div>
     </div>
-
 </div>
 @endsection
 
 @section('js')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var ctxEceran = document.getElementById('eceranChart').getContext('2d');
-
-        var transactionsPerMonthEceran = @json($transactionsPerMonthEceran);
-        var transactionsPerYearEceran = @json($transactionsPerYearEceran);
-
-
-        var selectedMonthEceran = "{{ $selectedMonthEceran }}";
-        var selectedYearEceran = "{{ $selectedYearEceran }}";
-
-
-        var labelsEceran = [];
-        var dataEceran = [];
-
-
-        // Array of month names
-        var monthNames = [
-            'January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December'
-        ];
-
-        function updateEceranChartData() {
-            var year = document.getElementById('filterYearEceran').value;
-            var month = document.getElementById('filterMonthEceran').value;
-
-            labelsEceran = [];
-            dataEceran = [];
-
-            if (month !== 'all') {
-                labelsEceran = transactionsPerMonthEceran[`${month}-${year}`] ? transactionsPerMonthEceran[`${month}-${year}`].map(item => item.day) : [];
-                dataEceran = transactionsPerMonthEceran[month + '-' + year] ? transactionsPerMonthEceran[month + '-' + year].map(item => item.total) : [];
-            } else if (year !== 'all') {
-                labelsEceran = [];
-                dataEceran = [];
-
-                for (var i = 1; i <= 12; i++) {
-                    var totalEceran = 0;
-                    transactionsPerMonthEceran[i + '-' + year] ? transactionsPerMonthEceran[i + '-' + year].forEach(function(item) {
-                        totalEceran += item.total;
-                    }) : 0;
-
-                    if (totalEceran > 0) {
-                        labelsEceran.push(monthNames[i - 1]); // Convert month number to month name
-                        dataEceran.push(totalEceran);
-                    }
-                }
-            } else {
-                labelsEceran = transactionsPerYearEceran.map(item => item.year);
-                dataEceran = transactionsPerYearEceran.map(item => item.total);
-            }
-
-            updateEceranChart();
-        }
-
-
+    document.addEventListener('DOMContentLoaded', function () {
+        const startDateInputEceran = document.getElementById('filterStartDateEceran');
+        const endDateInputEceran = document.getElementById('filterEndDateEceran');
+        let eceranChart;
 
         function updateEceranChart() {
-            eceranChart.data.labels = labelsEceran;
-            eceranChart.data.datasets[0].data = dataEceran;
-            eceranChart.update();
+            const startDate = startDateInputEceran.value;
+            const endDate = endDateInputEceran.value;
+
+            fetch(`{{ route('dashboard') }}?start_date=${startDate}&end_date=${endDate}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('AJAX Response:', data);
+
+                    let labels, transactionData;
+
+                    if (startDate || endDate) {
+                        labels = data.transactions.map(transaction => {
+                            const date = new Date(transaction.created_transaksi);
+                            return `${date.getDate()} ${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
+                        });
+                    } else {
+                        labels = data.transactions.map(transaction => {
+                            const date = new Date(transaction.created_transaksi);
+                            return `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
+                        });
+                    }
+
+                    transactionData = data.transactions.map(transaction => transaction.total_transaksi);
+
+                    const chartData = {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Total Transaksi Eceran',
+                            data: transactionData,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    };
+
+                    if (eceranChart) {
+                        eceranChart.destroy();
+                    }
+
+                    const ctx = document.getElementById('eceranChart').getContext('2d');
+                    eceranChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: chartData,
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => console.error('Error fetching data:', error));
         }
 
+        startDateInputEceran.addEventListener('change', updateEceranChart);
+        endDateInputEceran.addEventListener('change', updateEceranChart);
 
-        var eceranChart = new Chart(ctxEceran, {
-            type: 'bar',
-            data: {
-                labels: labelsEceran,
-                datasets: [{
-                    label: 'Total Transactions (Eceran)',
-                    data: dataEceran,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-
-
-        document.getElementById('filterYearEceran').addEventListener('change', updateEceranChartData);
-        document.getElementById('filterMonthEceran').addEventListener('change', updateEceranChartData);
-
-
-        updateEceranChartData();
-
+        updateEceranChart();
     });
-
 </script>
 @endsection

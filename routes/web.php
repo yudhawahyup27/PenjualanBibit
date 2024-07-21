@@ -7,6 +7,7 @@ use App\Http\Controllers\Pegawai;
 use App\Http\Controllers\Pelanggan;
 use App\Http\Controllers\Pemilik;
 use App\Http\Controllers\BoronganController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\EceranController;
 use App\Http\Controllers\PaymentController;
@@ -32,8 +33,10 @@ Route::get('/tentang-kami', [Pelanggan::class, 'tentang_kami']);
 Route::get('/logout', [Pelanggan::class, 'logout']);
 
 Route::get('/pelanggan', [Pelanggan::class, 'pelanggan']);
-Route::get('/pelanggan/detail/{id}', [Pelanggan::class, 'detail_product']);
-Route::post('/pelanggan/detail/{id_produk}/beli', [Pelanggan::class, 'cart_create'])->name('cart.create');
+
+Route::get('/pelanggan/detail/{id}',  [CartController::class, 'showProductPage'])->name('product.show');
+Route::post('/cart/create/{id_produk}', [CartController::class, 'cart_create'])->name('cart.create');
+// Route::post('/pelanggan/detail/{id_produk}/beli', [Pelanggan::class, 'cart_create'])->name('cart.create');
 Route::get('/pelanggan/pembayaran/{id}', [Pelanggan::class, 'payment_product']);
 Route::get('/pelanggan/keranjang/', [Pelanggan::class, 'detail_cart']);
 Route::get('/pelanggan/keranjang/{id}/hapus', [Pelanggan::class, 'delete_cart_product']);
@@ -125,8 +128,12 @@ Route::get('/pemilik/laporanpenjualanborongan', [Pemilik::class, 'laporanpenjual
 Route::get('/get-price/{id}', [BoronganController::class, 'getPrice']);
 Route::get('/get-price/{id}', [Pelanggan::class, 'getPrice']);
 Route::get('/get-batang/{id}', [Pelanggan::class, 'getkuantitas']);
-Route::post('/pelanggan/bibitborongan/checkout', [PaymentController::class, 'processPayment'])->name('payment.process');
-Route::post('/midtrans/callback', [PaymentController::class, 'callback'])->name('midtrans.callback');;
+Route::post('/payment/process', [PaymentController::class, 'processPayment'])->name('payment.process');
+Route::get('/get-provinces', [PaymentController::class, 'getProvinces'])->name('payment.getProvinces');
+Route::get('/get-cities/{provinceId}', [PaymentController::class, 'getCities'])->name('payment.getCities');
+Route::post('/get-ongkir', [PaymentController::class, 'getOngkir'])->name('payment.getOngkir');
+// Route::post('/pelanggan/bibitborongan/checkout', [PaymentController::class, 'processPayment'])->name('payment.process');
+// Route::post('/midtrans/callback', [PaymentController::class, 'callback'])->name('midtrans.callback');;
 Route::get('/pelanggan/bibitborongan/checkout', [BoronganController::class, 'checkoutForm'])->name('borongan.checkout');
 
 Route::get('/pelanggan/bibitborongan', [Pelanggan::class, 'bibitborongan']);
@@ -148,3 +155,8 @@ Route::get('pemilik/dashboard2', [Pemilik::class, 'dashboard2'])->name('dashboar
 Route::get('/get-ongkir/{id}', [Pelanggan::class, 'getOngkir'])->name('get-ongkir');
 Route::get('/pegawai/produkbibit/ubah/stock/{id}', [Pegawai::class, 'editProdukbibitStock']);
 Route::post('/pegawai/produkbibit/ubah/stock/{id}', [Pegawai::class, 'updateProdukbibitStock']);
+Route::get('/terlaris', [Pemilik::class, 'terlaris'])->name('terlaris');
+//
+Route::get('/provinces', [CartController::class, 'getProvinces']);
+Route::get('/cities/{provinceId}', [CartController::class, 'getCities']);
+Route::post('/getShippingCost', [CartController::class, 'getShippingCost']);

@@ -27,7 +27,10 @@
                                 <td>Qty</td>
                                 <td>Harga/pcs</td>
                                 <td>Total</td>
+                                <td>Kurir</td>
+                                <td>Berat</td>
                                 <td>Pengiriman</td>
+                                <td>detail rumah</td>
                                 <td>#</td>
                             </tr>
                         </thead>
@@ -50,7 +53,11 @@
                                 </td>
                                 <td><b>Rp {{number_format((float)$key->harga_bibit, 0, ',', '.')}}</b></td>
                                 <td><b class="total-price" id="total-{{$key->id_keranjang}}">Rp {{number_format((float)$key->price_keranjang, 0, ',', '.')}}</b></td>
-                                <td><b>{{$key->kecamatan_name}}</b></td>
+                                <td>{{ $key->kurir }}</td>
+                                <td>{{ $key->berat }}</td>
+                                <td>{{ $key->pengiriman_keranjang }}</td>
+                                <td>{{ $key->detail_rumah }}</td>
+
                                 <td><a class="btn btn-danger" href="{{ url('/pelanggan/keranjang/' . $key->id_keranjang . '/hapus') }}"><i class="fa-solid fa-trash"></i></a></td>
                             </tr>
                             @endforeach

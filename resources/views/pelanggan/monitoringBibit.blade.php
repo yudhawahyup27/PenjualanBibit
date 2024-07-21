@@ -53,8 +53,9 @@
                     @foreach ($monitor as $key)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td><img src="{{ asset('image/' . $key->perkembangan_gambar) }}" alt="Gambar" width="50"></td>
+                        {{-- <td><img src="{{ asset('image/' . $key->perkembangan_gambar) }}" alt="Gambar" width="50"></td> --}}
 
+                        <td><a href="{{ $key->perkembangan_link }}">Link Video</a></td>
                         <td>{{ $key->perkembangan_tanggal }}</td>
                         <td>{{ $key->perkembangan_umur }} Hari</td>
                         <td>{{ $key->perkembangan_tinggi }} Cm</td>

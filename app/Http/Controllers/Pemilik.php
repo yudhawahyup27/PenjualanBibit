@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Carbon;
@@ -14,97 +15,75 @@ class Pemilik extends Controller
     {
         return redirect()->to('/pemilik/dashboard22');
     }
-   public function dashboard(Request $request)
+    public function dashboard(Request $request)
 {
-    // Ambil semua data tanpa filter
-    $allTransactionsEceran = DB::table('tb_transaksi')
-        ->select(DB::raw('DAY(created_transaksi) as day'), DB::raw('MONTH(created_transaksi) as month'), DB::raw('YEAR(created_transaksi) as year'), DB::raw('SUM(total_transaksi) as total'))
-        ->groupBy('day', 'month', 'year')
-        ->get();
+    try {
+        $allTransactionsEceran = DB::table('tb_transaksi')
+            ->orderBy('created_transaksi', 'desc')
+            ->get();
 
-    // Ambil semua data borongan tanpa filter
-    $allTransactionsBorong = DB::table('tb_transaksi_borong')
-    ->select(DB::raw('DAY(created_at) as day'), DB::raw('MONTH(created_at) as month'), DB::raw('YEAR(created_at) as year'), DB::raw('SUM(total_transaksi) as total'))
-    ->groupBy('day', 'month', 'year')
-    ->get();
-    // Dapatkan input filter untuk eceran
-    $selectedDayEceran = $request->input('selectedDayEceran', 'all');
-    $selectedMonthEceran = $request->input('selectedMonthEceran', 'all');
-    $selectedYearEceran = $request->input('selectedYearEceran', 'all');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
 
-    // Dapatkan input filter untuk borong
-    $selectedDayBorong = $request->input('selectedDayBorong', 'all');
-    $selectedMonthBorong = $request->input('selectedMonthBorong', 'all');
-    $selectedYearBorong = $request->input('selectedYearBorong', 'all');
+        if ($startDate) {
+            $startDate = Carbon::parse($startDate);
+            $allTransactionsEceran = $allTransactionsEceran->filter(function ($transaction) use ($startDate) {
+                return Carbon::parse($transaction->created_transaksi)->greaterThanOrEqualTo($startDate);
+            });
+        }
 
-    // Filter data berdasarkan input yang dipilih untuk eceran
-    $filteredTransactionsEceran = $this->filterTransactions($allTransactionsEceran, $selectedDayEceran, $selectedMonthEceran, $selectedYearEceran);
-    $filteredTransactionsBorong = $this->filterTransactions($allTransactionsBorong, $selectedDayBorong, $selectedMonthBorong, $selectedYearBorong);
+        if ($endDate) {
+            $endDate = Carbon::parse($endDate);
+            $allTransactionsEceran = $allTransactionsEceran->filter(function ($transaction) use ($endDate) {
+                return Carbon::parse($transaction->created_transaksi)->lessThanOrEqualTo($endDate);
+            });
+        }
 
-    // Kelompokkan data yang difilter berdasarkan hari, bulan, dan tahun sesuai kebutuhan untuk eceran
-    $transactionsPerDayEceran = $filteredTransactionsEceran->groupBy('day');
-    $transactionsPerMonthEceran = $filteredTransactionsEceran->groupBy(function ($item) {
-        return $item->month . '-' . $item->year; // Kelompokkan berdasarkan kombinasi bulan-tahun
-    });
-    $transactionsPerYearEceran = $filteredTransactionsEceran->groupBy('year');
+        if ($request->ajax()) {
+            if ($startDate || $endDate) {
+                $groupedTransactions = $allTransactionsEceran->groupBy(function ($date) {
+                    return Carbon::parse($date->created_transaksi)->format('d-m-Y');
+                });
+            } else {
+                $groupedTransactions = $allTransactionsEceran->groupBy(function ($date) {
+                    return Carbon::parse($date->created_transaksi)->format('m-Y');
+                });
+            }
 
-    // Kelompokkan data yang difilter berdasarkan hari, bulan, dan tahun sesuai kebutuhan untuk borong
-    $transactionsPerDayBorong = $filteredTransactionsBorong->groupBy('day');
-    $transactionsPerMonthBorong = $filteredTransactionsBorong->groupBy(function ($item) {
-        return $item->month . '-' . $item->year; // Kelompokkan berdasarkan kombinasi bulan-tahun
-    });
-    $transactionsPerYearBorong = $filteredTransactionsBorong->groupBy('year');
+            $groupedTransactions = $groupedTransactions->map(function ($group) {
+                return [
+                    'total_transaksi' => $group->sum('total_transaksi'),
+                    'created_transaksi' => $group->first()->created_transaksi
+                ];
+            });
 
-  // Isi bulan yang hilang jika hanya tahun yang dipilih untuk eceran
-    if ($selectedMonthEceran === 'all' && $selectedDayEceran === 'all') {
-        $transactionsPerMonthEceran = $this->fillMissingMonths($transactionsPerMonthEceran);
+            return response()->json([
+                'transactions' => $groupedTransactions->values()
+            ]);
+        }
+
+        $transactionsPerDate = $allTransactionsEceran->groupBy(function ($date) {
+            return Carbon::parse($date->created_transaksi)->format('d-m-Y');
+        });
+
+        $menu = "Dashboard";
+        $submenu = "Pemilik";
+        $monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+        return view('pemilik.dashboard', compact(
+            "menu", "submenu",
+            'transactionsPerDate',
+            'startDate',
+            'endDate',
+            'monthNames'
+        ));
+    } catch (\Exception $e) {
+        Log::error('Error fetching data: ' . $e->getMessage());
+        if ($request->ajax()) {
+            return response()->json(['error' => 'Unable to fetch data'], 500);
+        }
+        return back()->with('error', 'Unable to fetch data');
     }
-
-    // Isi bulan yang hilang jika hanya tahun yang dipilih untuk borong
-    if ($selectedMonthBorong === 'all' && $selectedDayBorong === 'all') {
-        $transactionsPerMonthBorong = $this->fillMissingMonths($transactionsPerMonthBorong);
-    }
-
-    // Ubah data yang dikelompokkan ke format array yang cocok untuk JSON untuk eceran
-    $transactionsPerYearEceran = $transactionsPerYearEceran->map(function ($items, $key) {
-        return [
-            'year' => $key,
-            'total' => $items->sum('total'),
-        ];
-    })->values();
-
-    // Ubah data yang dikelompokkan ke format array yang cocok untuk JSON untuk borong
-    $transactionsPerYearBorong = $transactionsPerYearBorong->map(function ($items, $key) {
-        return [
-            'year' => $key,
-            'total' => $items->sum('total'),
-        ];
-    })->values();
-
-    $monthNames = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-
-    $data = [
-        'menu' => 'dashboard2',
-        'submenu' => 'pemilik',
-        'transactionsPerDayEceran' => $transactionsPerDayEceran,
-        'transactionsPerMonthEceran' => $transactionsPerMonthEceran,
-        'transactionsPerYearEceran' => $transactionsPerYearEceran,
-        'transactionsPerDayBorong' => $transactionsPerDayBorong,
-        'transactionsPerMonthBorong' => $transactionsPerMonthBorong,
-        'transactionsPerYearBorong' => $transactionsPerYearBorong,
-        'selectedDayEceran' => $selectedDayEceran,
-        'selectedMonthEceran' => $selectedMonthEceran,
-        'selectedYearEceran' => $selectedYearEceran,
-        'selectedDayBorong' => $selectedDayBorong,
-        'selectedMonthBorong' => $selectedMonthBorong,
-        'selectedYearBorong' => $selectedYearBorong,
-        'monthNames' => $monthNames, // Sertakan $monthNames di dalam data
-    ];
-
-    return view('pemilik.dashboard', $data);
 }
 
 public function dashboard2(Request $request)
@@ -112,33 +91,31 @@ public function dashboard2(Request $request)
     try {
         $borongTransactions = DB::table('tb_transaksi_borong')->orderBy('created_at', 'desc')->get();
 
-        $selectedYearBorong = $request->input('year_borong', 'all');
-        $selectedMonthBorong = $request->input('month_borong', 'all');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
 
-        if ($selectedYearBorong !== 'all') {
-            $borongTransactions = $borongTransactions->filter(function ($transaction) use ($selectedYearBorong) {
-                return Carbon::parse($transaction->created_at)->format('Y') == $selectedYearBorong;
+        if ($startDate) {
+            $startDate = Carbon::parse($startDate);
+            $borongTransactions = $borongTransactions->filter(function ($transaction) use ($startDate) {
+                return Carbon::parse($transaction->created_at)->greaterThanOrEqualTo($startDate);
             });
         }
 
-        if ($selectedMonthBorong !== 'all') {
-            $borongTransactions = $borongTransactions->filter(function ($transaction) use ($selectedMonthBorong) {
-                return Carbon::parse($transaction->created_at)->format('m') == $selectedMonthBorong;
+        if ($endDate) {
+            $endDate = Carbon::parse($endDate);
+            $borongTransactions = $borongTransactions->filter(function ($transaction) use ($endDate) {
+                return Carbon::parse($transaction->created_at)->lessThanOrEqualTo($endDate);
             });
         }
 
         if ($request->ajax()) {
-            if ($selectedYearBorong === 'all') {
+            if ($startDate || $endDate) {
                 $groupedTransactions = $borongTransactions->groupBy(function ($date) {
-                    return Carbon::parse($date->created_at)->format('Y');
-                });
-            } elseif ($selectedMonthBorong === 'all') {
-                $groupedTransactions = $borongTransactions->groupBy(function ($date) {
-                    return Carbon::parse($date->created_at)->format('m-Y');
+                    return Carbon::parse($date->created_at)->format('d-m-Y');
                 });
             } else {
                 $groupedTransactions = $borongTransactions->groupBy(function ($date) {
-                    return Carbon::parse($date->created_at)->format('d-m-Y');
+                    return Carbon::parse($date->created_at)->format('m-Y');
                 });
             }
 
@@ -154,12 +131,8 @@ public function dashboard2(Request $request)
             ]);
         }
 
-        $transactionsPerYearBorong = $borongTransactions->groupBy(function ($date) {
-            return Carbon::parse($date->created_at)->format('Y');
-        });
-
-        $transactionsPerMonthBorong = $borongTransactions->groupBy(function ($date) {
-            return Carbon::parse($date->created_at)->format('m-Y');
+        $transactionsPerDate = $borongTransactions->groupBy(function ($date) {
+            return Carbon::parse($date->created_at)->format('d-m-Y');
         });
 
         $menu = "Dashboard";
@@ -168,10 +141,9 @@ public function dashboard2(Request $request)
 
         return view('pemilik.dashboard2', compact(
             "menu", "submenu",
-            'transactionsPerYearBorong',
-            'transactionsPerMonthBorong',
-            'selectedYearBorong',
-            'selectedMonthBorong',
+            'transactionsPerDate',
+            'startDate',
+            'endDate',
             'monthNames'
         ));
     } catch (\Exception $e) {
@@ -182,7 +154,6 @@ public function dashboard2(Request $request)
         return back()->with('error', 'Unable to fetch data');
     }
 }
-
 
 
 
@@ -490,41 +461,30 @@ private function fillMissingMonths($transactionsPerMonth)
     public function laporanpenjualan(Request $request)
     {
         // Ambil nilai filter dari request atau default ke null
-        $selectedDay = $request->input('selectedDay', null);
-        $selectedMonth = $request->input('selectedMonth', null);
-        $selectedYear = $request->input('selectedYear', null);
+        $start = $request->input('start', null);
+        $end = $request->input('end', null);
 
         // Query untuk data laporan penjualan tanpa filter
         $query = DB::table('tb_transaksi as tk')
-        ->select(
-            'tk.kode_transaksi as kode_transaksi',
-            'tb_produk.kode_bibit',
-            'tb_produk.nama_bibit',
-            'tk.total_transaksi as harga_beli',
-            'tk.Qty_beli as terjual',
-            'tk.created_transaksi as tanggal_transaksi'
-        )
-        ->join('tb_produk', 'tk.id_produk', '=', 'tb_produk.id_produk');
-
-
-        // Ambil semua data tanpa filter
-
+            ->select(
+                'tk.kode_transaksi as kode_transaksi',
+                'tb_produk.kode_bibit',
+                'tb_produk.nama_bibit',
+                'tk.total_transaksi as harga_beli',
+                'tk.Qty_beli as terjual',
+                'tk.created_transaksi as tanggal_transaksi'
+            )
+            ->join('tb_produk', 'tk.id_produk', '=', 'tb_produk.id_produk');
 
         // Terapkan filter jika ada input dari pengguna
-        if ($selectedDay) {
-            $query->whereDay('tk.created_transaksi', $selectedDay);
+        if ($start) {
+            $query->whereDate('tk.created_transaksi', '>=', $start);
         }
-        if ($selectedMonth) {
-            $query->whereMonth('tk.created_transaksi', $selectedMonth);
-        }
-        if ($selectedYear) {
-            $query->whereYear('tk.created_transaksi', $selectedYear);
+        if ($end) {
+            $query->whereDate('tk.created_transaksi', '<=', $end);
         }
 
         $laporanData = $query->paginate(10);
-
-        // Debug: cek hasil query
-        // dd($laporanData);
 
         // Definisikan variabel menu untuk navigasi
         $menu = 'laporanpenjualan';
@@ -534,21 +494,21 @@ private function fillMissingMonths($transactionsPerMonth)
             'menu' => $menu,
             'submenu' => 'pemilik',
             'data' => $laporanData,
-            'selectedDay' => $selectedDay,
-            'selectedMonth' => $selectedMonth,
-            'selectedYear' => $selectedYear,
+            'start' => $start,
+            'end' => $end,
         ];
 
         return view('pemilik.laporanpenjualan', $data);
     }
 
 
+
     public function laporanpenjualanborongan(Request $request)
     {
         // Get filter values from request or set to null if not present
-        $selectedDay = $request->input('selectedDay', null);
-        $selectedMonth = $request->input('selectedMonth', null);
-        $selectedYear = $request->input('selectedYear', null);
+   // Ambil nilai filter dari request atau default ke null
+   $start = $request->input('start', null);
+   $end = $request->input('end', null);
 
         // Start building the query
         $query = DB::table('tb_transaksi_borong as tb')
@@ -559,17 +519,13 @@ private function fillMissingMonths($transactionsPerMonth)
                 'tb.kuantitas_bibit as terjual',
                 'tb.created_at as tanggal_transaksi'
             );
+            if ($start) {
+                $query->whereDate('tb.created_at', '>=', $start);
+            }
+            if ($end) {
+                $query->whereDate('tb.created_at', '<=', $end);
+            }
 
-        // Apply filters if provided
-        if ($selectedDay) {
-            $query->whereDay('tb.created_at', $selectedDay);
-        }
-        if ($selectedMonth) {
-            $query->whereMonth('tb.created_at', $selectedMonth);
-        }
-        if ($selectedYear) {
-            $query->whereYear('tb.created_at', $selectedYear);
-        }
 
         // Get the paginated result
         $laporanData = $query->paginate(10);
@@ -582,14 +538,26 @@ private function fillMissingMonths($transactionsPerMonth)
             'menu' => $menu,
             'submenu' => 'pemilik',
             'data' => $laporanData,
-            'selectedDay' => $selectedDay,
-            'selectedMonth' => $selectedMonth,
-            'selectedYear' => $selectedYear,
+            'start' => $start,
+            'end' => $end,
         ];
 
         return view('pemilik.laporanpenjualanborongan', $data);
     }
 
+    public function terlaris(Request $request){
+        $topSales = DB::table('tb_produk')
+        ->orderBy('terjual_bibit', 'desc')
+        ->take(10)
+        ->get(['nama_bibit', 'terjual_bibit']);
 
+        $menu='terlaris';
+        $data = [
+            'menu' => $menu,
+            'submenu' => 'pemilik',
+            'topSales' => $topSales,
+        ];
+        return view('pemilik.terlaris', $data);
+    }
 
 }

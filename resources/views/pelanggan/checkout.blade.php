@@ -35,9 +35,9 @@
     <form action="{{ route('payment.process') }}" method="post" enctype="multipart/form-data">
         @csrf
         <div class="mx-4 my-2">
-            <div class="my-3">
+            <div hidden class="my-3">
                 <label for="pengiriman" class="form-label">Pilih Pengiriman</label>
-                <select name="pengiriman" id="pengiriman" class="form-control" required>
+                <select name="pengiriman" id="pengiriman" class="form-control" >
                     <option value="" selected disabled>-- PILIH PENGIRIMAN --</option>
                     <option value="0">Ambil di Toko</option>
                     @foreach($rumah as $key)
@@ -52,10 +52,29 @@
                     </optgroup>
                 </select>
             </div>
-            <div class="my-3">
+            <div hidden class="my-3">
                 <label for="ongkir" class="form-label">Ongkir</label>
                 <input name="ongkir" id="ongkir" class="form-control" type="text"    readonly>
             </div>
+            <tr>
+                <td><h5>Provinsi</h5></td>
+                <td>
+                    <select name="province" id="province" class="form-control" required>
+                        <option value="">Pilih Provinsi</option>
+                        @foreach($provinces as $province)
+                            <option value="{{ $province['province_id'] }}">{{ $province['province'] }}</option>
+                        @endforeach
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><h5>Kota</h5></td>
+                <td>
+                    <select name="city" id="city" class="form-control" required>
+                        <option value="">Pilih Kota</option>
+                    </select>
+                </td>
+            </tr>
             <div class="my-3">
                 <label for="detail_rumah" class="form-label">Detail Rumah</label>
                 <textarea name="detail_rumah" id="detail_rumah" class="form-control" placeholder="Detail Rumah" required></textarea>
@@ -77,15 +96,26 @@
             </div>
             <div class="mb-3">
                 <label for="tanggal_tanam" class="form-label">Tanggal Pengiriman</label>
-                <input name="tanggal_tanam" type="date" class="form-control" id="tanggal_tanam" value="{{ $tanggalTanam }}" disabled required>
+                <input name="tanggal_tanam" type="date" class="form-control" min="{{ $tanggalTanam }}" id="tanggal_tanam" value="{{ $tanggalTanam }}">
             </div>
             <div class="custom-select-container">
                 <label for="lahan" class="form-label">Luas Lahan</label>
                 <input name="lahan" id="lahan" class="form-control" type="text" placeholder="Lahan" required>
             </div>
             <div class="my-3">
+                <select name="courier" id="courier" class="form-control" required>
+                    <option value="jne">JNE</option>
+                    <option value="pos">Pos Indonesia</option>
+                    <option value="tiki">TIKI</option>
+                </select>
+            </div>
+            <div class="my-3">
                 <label for="jumlah_perbatang" class="form-label">Kuantitas Bibit</label>
                 <input name="jumlah_perbatang" id="jumlah_perbatang" class="form-control" type="number" placeholder="Kuantitas Bibit" required readonly>
+            </div>
+            <div>
+                <label for="">Bobot /gram</label>
+                <input id="totalWeightInput" name="totalWeightInput" type="text" class="form-control" value="" readonly>
             </div>
             <div hidden class="my-3">
                 <label for="total" class="form-label">Total Bayar</label>
@@ -177,6 +207,9 @@
         var area = parseFloat(this.value) || 0;
         var quantity = calculateQuantity(area);
         document.getElementById('jumlah_perbatang').value = quantity;
+        var totalWeight = Math.ceil(quantity / 30) * 1000; // Hitung total berat dalam gram
+
+totalWeightInput.value = totalWeight + ' gram'; // Set nilai total berat pada input
         hitungTotal();
     });
 
@@ -287,5 +320,23 @@ function fetchOngkir(kecamatan_id) {
             xhr.send();
         }
     }
+    </script>
+    <script>
+
+        document.getElementById('province').addEventListener('change', function () {
+            var provinceId = this.value;
+            fetch('/cities/' + provinceId)
+                .then(response => response.json())
+                .then(data => {
+                    var citySelect = document.getElementById('city');
+                    citySelect.innerHTML = '<option value="">Pilih Kota</option>';
+                    data.forEach(function (city) {
+                        var option = document.createElement('option');
+                        option.value = city.city_id;
+                        option.textContent = city.city_name;
+                        citySelect.appendChild(option);
+                    });
+                });
+        });
     </script>
 @endsection

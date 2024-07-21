@@ -54,6 +54,10 @@
                                 <div class="sb-nav-link-icon"><i class="fa-solid fa-boxes-packing"></i></i></div>
                                 Stok
                             </a>
+                            <a class="nav-link <?php if($menu == 'terlaris'){ echo 'active'; } ?>" href="<?= url('/') ?>/terlaris">
+                                <div class="sb-nav-link-icon"><i class="fa-solid fa-boxes-packing"></i></i></div>
+                                Terlaris
+                            </a>
                             <a class="nav-link <?php if($menu == 'bibit2'){ echo 'active'; } ?>" href="<?= url('/') ?>/pemilik/produkbibit">
                                 <div class="sb-nav-link-icon"><i class="fa-solid fa-boxes-packing"></i></i></div>
                                 Bibit

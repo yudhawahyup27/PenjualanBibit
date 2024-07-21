@@ -21,7 +21,10 @@
                             <th>Nama Produk</th>
                             <th>QTY Beli</th>
                             <th>Nama User</th>
-                            <th>Kecamatan</th>
+                            <th>Kota</th>
+                            <th>Provinsi</th>
+                            <th>Beban</th>
+                            <th>Kurir</th>
                             <th>Detail Rumah</th>
                             <th>Total</th>
                             <th>Aksi</th>
@@ -34,7 +37,10 @@
                             <th>Nama Produk</th>
                             <th>QTY Beli</th>
                             <th>Nama User</th>
-                            <th>Kecamatan</th>
+                            <th>Kota</th>
+                            <th>Provinsi</th>
+                            <th>Beban</th>
+                            <th>Kurir</th>
                             <th>Detail Rumah</th>
                             <th>Total</th>
                             <th>Aksi</th>
@@ -48,11 +54,10 @@
                             <td>{{ $key->nama_bibit }}</td>
                             <td>{{ $key->Qty_beli }}</td>
                             <td>{{ $key->nama_user }}</td>
-                            @if ($key->pengiriman == 0)
-                            <td>Ambil Di Toko</td>
-                            @else
-                            <td>{{ $key->kecamatan_name }}</td>
-                            @endif
+                            <td>{{ $key->city_name }}</td>
+                            <td>{{ $key->province_name }}</td>
+                            <td>{{ $key->beban }}</td>
+                            <td>{{ $key->kurir }}</td>
                             <td>{{ $key->detail_rumah }}</td>
                             <td>Rp {{ number_format((float)$key->total_transaksi, 0, ',', '.') }}</td>
                             <td>

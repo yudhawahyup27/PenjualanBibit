@@ -82,7 +82,7 @@
                         </form>
                     </div>
                     <div class="col-6">
-                        <h5>Total Harga: <b>Rp {{ number_format($sumPrice, 0, ',', '.') }}</b></h5>
+                        <h5>Total Harga:jh <b>Rp {{ number_format($sumPrice, 0, ',', '.') }}</b></h5>
                         @if(isset($keranjang))
                         <h5>Ongkos Kirim:
                             <?php
