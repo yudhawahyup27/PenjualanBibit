@@ -264,7 +264,7 @@ class Pegawai extends Controller
                 'nama_bibit'        => $request->nama,
                 'detail_bibit'      => $request->detail,
                 'harga_bibit'       => $request->harga,
-                'stok_bibit'        => $tblProduk->stok,
+                // 'stok_bibit'        => $tblProduk->stok,
                 'harga_borong'        => $request->harga_borongan,
                 'gambar_bibit'      => $imageName,
                 'status_bibit'      => '1',

@@ -35,6 +35,10 @@
                     <div>
                         @if (request()->is('pelanggan/bibitborongan/checkout'))
                         <a class="btn btn-primary mx-4" href="/">Beli Eceran</a>
+                        @elseif (request()->is('pelanggan/tablemonitoring'))
+                        <a class="btn btn-primary mx-4" href="/">Beranda</a>
+                        @elseif (request()->is('pelanggan/statustransaksi'))
+                        <a class="btn btn-primary mx-4" href="/">Beranda</a>
                         @else
                         <a class="btn btn-primary mx-4"  href="/pelanggan/bibitborongan/checkout">Beli Borongan</a>
                     @endif
