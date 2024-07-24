@@ -695,10 +695,12 @@ private function getProvinceName($provinceId)
             ->where('perkembangan_kode_transaksi', $id)
             ->get();
 
+            $hariini = now()->format('Y-m-d');
         $data = [
             'menu' => 'monitoringbibit',
             'submenu' => 'pegawai',
             'id' => $id,
+            'hariini' => $hariini,
             'tblTransaksi' => $tblTransaksi,
         ];
 
